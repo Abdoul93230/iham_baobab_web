@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 
 export default function InviteAmiPage() {
   const [emails, setEmails] = useState(['']);
-  const productImage = 'https://via.placeholder.com/150'; // Remplacez par l'URL de votre produit
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const productImage = 'https://cc-prod.scene7.com/is/image/CCProdAuthor/product-photography_P1_900x420?$pjpeg$&jpegSize=200&wid=900'; // Replace with your product URL
+  const maxEmailFields = 5;
 
   const handleEmailChange = (index, value) => {
     const updatedEmails = [...emails];
@@ -11,7 +15,9 @@ export default function InviteAmiPage() {
   };
 
   const addEmailField = () => {
-    setEmails([...emails, '']);
+    if (emails.length < maxEmailFields) {
+      setEmails([...emails, '']);
+    }
   };
 
   const removeEmailField = (index) => {
@@ -19,55 +25,78 @@ export default function InviteAmiPage() {
     setEmails(updatedEmails);
   };
 
-  const handleSubmit = () => {
+  const isValidEmail = (email) => /\S+@\S+\.\S+/.test(email);
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    setSuccessMessage('');
+    setErrorMessage('');
+
+    const invalidEmails = emails.filter(email => email && !isValidEmail(email));
+
+    if (invalidEmails.length > 0) {
+      setErrorMessage(`Les emails suivants sont invalides : ${invalidEmails.join(', ')}`);
+      setLoading(false);
+      return;
+    }
+
     const message = `J'ai trouvé ce produit génial ! Regardez-le : ${productImage}`;
     const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
     
     alert(`Invitations envoyées à : ${emails.join(', ')}`);
-    window.open(whatsappUrl, '_blank'); // Ouvre WhatsApp avec le message
+    window.open(whatsappUrl, '_blank'); 
+    setSuccessMessage('Invitations envoyées avec succès !');
+    setLoading(false);
   };
 
   return (
-    <div className="flex flex-col items-center p-6 bg-white rounded-lg shadow-md max-w-lg mx-auto">
-      <h2 className="text-2xl font-semibold mb-4 text-[#30A08B]">Inviter des amis</h2>
-      
-      <img src={productImage} alt="Produit" className="w-full h-auto mb-4 rounded-md shadow-md" />
+    <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-gray-100">
+      <div className="flex flex-col items-center p-6 bg-white rounded-lg shadow-md max-w-lg w-full">
+        <h2 className="text-2xl font-semibold mb-4 text-[#30A08B] text-center">Inviter des amis</h2>
+        
+        <img src={productImage} alt="Produit" className="w-full h-auto mb-4 rounded-md shadow-md" />
 
-      <div className="w-full">
-        {emails.map((email, index) => (
-          <div key={index} className="flex items-center mb-4">
-            <input
-              type="email"
-              placeholder="Email de l'ami"
-              value={email}
-              onChange={(e) => handleEmailChange(index, e.target.value)}
-              className="flex-grow p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#30A08B] mr-2"
-            />
-            {index > 0 && (
-              <button
-                className="px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
-                onClick={() => removeEmailField(index)}
-              >
-                Supprimer
-              </button>
-            )}
-          </div>
-        ))}
+        <div className="w-full space-y-4">
+          {emails.map((email, index) => (
+            <div key={index} className="flex items-center">
+              <input
+                type="email"
+                placeholder="Email de l'ami"
+                value={email}
+                onChange={(e) => handleEmailChange(index, e.target.value)}
+                className="flex-grow p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#30A08B] mr-2"
+              />
+              {index > 0 && (
+                <button
+                  className="px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                  onClick={() => removeEmailField(index)}
+                >
+                  Supprimer
+                </button>
+              )}
+            </div>
+          ))}
+          {emails.length < maxEmailFields && (
+            <button
+              className="w-full mb-4 px-4 py-2 bg-[#30A08B] text-white rounded-md hover:bg-opacity-90"
+              onClick={addEmailField}
+            >
+              Ajouter un ami
+            </button>
+          )}
+        </div>
+        
+        {successMessage && <div className="text-green-600">{successMessage}</div>}
+        {errorMessage && <div className="text-red-600">{errorMessage}</div>}
+        
         <button
-          className="mb-4 px-4 py-2 bg-[#30A08B] text-white rounded-md hover:bg-opacity-90"
-          onClick={addEmailField}
+          className={`w-full px-4 py-2 ${loading ? 'bg-gray-500' : 'bg-[#B2905F]'} text-white rounded-md hover:bg-opacity-90`}
+          onClick={handleSubmit}
+          disabled={loading}
         >
-          Ajouter un ami
+          {loading ? 'Envoi...' : 'Envoyer les invitations'}
         </button>
       </div>
-      
-      <button
-        className="px-4 py-2 bg-[#B2905F] text-white rounded-md hover:bg-opacity-90"
-        onClick={handleSubmit}
-      >
-        Envoyer les invitations
-      </button>
     </div>
   );
 }
-
