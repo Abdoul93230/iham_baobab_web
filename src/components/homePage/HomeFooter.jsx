@@ -7,7 +7,10 @@ import {
   FaWhatsapp,
   FaLinkedin,
 } from "react-icons/fa";
-
+import MasterCard from "../paementPage/paiementPhoto/masterCard.jpeg";
+import VisaCard from "../paementPage/paiementPhoto/VisaCard.png";
+import DomicileCard from "../paementPage/paiementPhoto/domicile.jpeg";
+import MobileMoney from "../paementPage/paiementPhoto/MobileMoney.png";
 function HomeFooter() {
   return (
     <footer className="bg-gradient-to-r mt-4 from-[#30A08B] to-[#B2905F] text-white py-8">
@@ -17,17 +20,17 @@ function HomeFooter() {
             <h3 className="text-lg font-bold mb-4">À propos</h3>
             <ul className="space-y-2">
               <li>
-                <button className="hover:text-emerald-300 transition duration-300">
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
                   Qui sommes-nous
                 </button>
               </li>
               <li>
-                <button className="hover:text-emerald-300 transition duration-300">
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
                   Nos magasins
                 </button>
               </li>
               <li>
-                <button className="hover:text-emerald-300 transition duration-300">
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
                   IHAM Baobab Anniversery {new Date().getFullYear()}
                 </button>
               </li>
@@ -38,27 +41,27 @@ function HomeFooter() {
             <h3 className="text-lg font-bold mb-4">Service client</h3>
             <ul className="space-y-2">
               <li>
-                <button className="hover:text-emerald-300 transition duration-300">
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
                   Contactez-nous
                 </button>
               </li>
               <li>
-                <button className="hover:text-emerald-300 transition duration-300">
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
                   Devenir vendeure  
                 </button>
               </li>
               <li>
-                <button className="hover:text-emerald-300 transition duration-300">
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
                   expedier votre commande 
                 </button>
               </li>
               <li>
-                <button className="hover:text-emerald-300 transition duration-300">
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
                   Par tout au Niger 
                 </button>
               </li>
               <li>
-                <button className="hover:text-emerald-300 transition duration-300">
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
                  Retourner une commande 
                 </button>
               </li>
@@ -69,32 +72,32 @@ function HomeFooter() {
             <h3 className="text-lg font-bold mb-4">Suivez-nous</h3>
             <ul className="flex flex-wrap space-x-4">
               <li>
-                <button className="hover:text-emerald-300 transition duration-300">
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
                   <FaFacebook size={20} />
                 </button>
               </li>
               <li>
-                <button className="hover:text-emerald-300 transition duration-300">
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
                   <FaTwitter size={20} />
                 </button>
               </li>
               <li>
-                <button className="hover:text-emerald-300 transition duration-300">
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
                   <FaInstagram size={20} />
                 </button>
               </li>
               <li>
-                <button className="hover:text-emerald-300 transition duration-300">
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
                   <FaTiktok size={20} />
                 </button>
               </li>
               <li>
-                <button className="hover:text-emerald-300 transition duration-300">
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
                   <FaLinkedin size={20} />
                 </button>
               </li>
               <li>
-                <button className="hover:text-emerald-300 transition duration-300">
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
                   <FaWhatsapp size={20} />
                 </button>
               </li>
@@ -132,19 +135,24 @@ function HomeFooter() {
             </p>
             <div className="flex space-x-4">
               <img
-                src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png"
-                alt="Moyens de paiement"
-                className="h-8"
+                src={MasterCard}
+                alt="Master Card"
+                className="h-10 w-22 cursor-pointer object-contain "
               />
               <img
-                src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png"
+                src={VisaCard}
                 alt="MasterCard"
-                className="h-8"
+                className="h-10 w-22 cursor-pointer object-contain "
               />
               <img
-                src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png"
-                alt="PayPal"
-                className="h-8"
+                src={DomicileCard}
+                alt="Domicile Card"
+                className="h-10 w-22 cursor-pointer object-contain "
+              />
+              <img
+                src={MobileMoney}
+                alt="Mobile Money"
+                className="h-10 w-22 cursor-pointer object-contain "
               />
             </div>
           </div>

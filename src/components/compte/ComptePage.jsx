@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export default function UserProfile() {
+export default function ComptePage() {
   const navigation = useNavigate();
   const [name, setName] = useState('Abassa');
   const [email, setEmail] = useState('delomodibo@gmail.com');

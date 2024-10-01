@@ -1,5 +1,5 @@
 import React from 'react';
-import { Facebook, X, Instagram, Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin } from "lucide-react";
 import FacebookIcon from '@mui/icons-material/Facebook';
 import XIcon from '@mui/icons-material/X';
 import InstagramIcon from '@mui/icons-material/Instagram';
@@ -22,11 +22,11 @@ const HomeProductsFooter = () => {
           <div>
             <h3 className="text-xl font-bold mb-4">Liens utiles</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="hover:text-gray-300">Accueil</a></li>
-              <li><a href="#" className="hover:text-gray-300">Produits</a></li>
-              <li><a href="#" className="hover:text-gray-300">À propos</a></li>
-              <li><a href="#" className="hover:text-gray-300">Contact</a></li>
-              <li><a href="#" className="hover:text-gray-300">FAQ</a></li>
+              <li><button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">Accueil</button></li>
+              <li><button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">Produits</button></li>
+              <li><button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">À propos</button></li>
+              <li><button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">Contact</button></li>
+              <li><button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">FAQ</button></li>
             </ul>
           </div>
 

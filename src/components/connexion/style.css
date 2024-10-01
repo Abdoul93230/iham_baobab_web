@@ -20,3 +20,8 @@
 .input-container input {
   padding:9px;
 }  
+.service{
+  height: 100%;
+  margin: 0;
+  overflow: hidden; 
+}

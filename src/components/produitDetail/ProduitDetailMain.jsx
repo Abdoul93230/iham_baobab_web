@@ -213,9 +213,9 @@ function ProduitDetailMain() {
                     {" "}
                     {/* Espacement ajouté ici */}
                     <img
-                      src="https://ae-pic-a1.aliexpress-media.com/kf/Sa7dd8ba3783d4d4c9224ea5ea4092890u/366x64.png_.webp"
+                      src={require("./logoPromo.png")}
                       alt="Promotion"
-                      className="w-full h-auto"
+                      className="w-full h-auto z-2"
                     />
                   </div>
                   <p className="text-sm text-gray-600">2+ pièces, extra -5%</p>

@@ -9,6 +9,14 @@ import Suggestion from './pages/Suggestion';
 import Compte from './pages/Compte';
 import CommandeSuivi from './pages/Commande';
 import InviteAmi from './pages/InviteAmi';
+import Informagtion from './pages/Informagtion';
+import Question from './pages/Question';
+import Confidentialite from './pages/Confidentialite'
+import Notification from './pages/Notification'
+import Paement from './pages/Paement';
+import Service from './pages/Service';
+import Livraison from './pages/Livraison';
+
 import "./App.css"
 import ForgetPassword from './components/forgetPassword/ForgetPassword';
 
@@ -28,6 +36,13 @@ function App() {
         <Route path='/Compte' element={<Compte/> } /> 
         <Route path='/Commande' element={<CommandeSuivi/> } /> 
         <Route path='/Inviter les amis' element={<InviteAmi/> } /> 
+        <Route path='/Legal information' element={<Informagtion/> } /> 
+        <Route path='/Question Fréquement possées' element={<Question/> } /> 
+        <Route path='/Avis de confidentialité' element={<Confidentialite/> } /> 
+        <Route path='/Paramètre de notification' element={<Notification/> } /> 
+        <Route path='/Paement' element={<Paement/> } /> 
+        <Route path='/Service' element={<Service/> } /> 
+        <Route path='/Livraison' element={<Livraison/> } /> 
        </Routes>
        
        </BrowserRouter>
