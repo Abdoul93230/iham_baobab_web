@@ -4,7 +4,7 @@ import FacebookIcon from '@mui/icons-material/Facebook';
 import XIcon from '@mui/icons-material/X';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
-
+import LogoText from "../../image/LogoText.png";
 const HomeProductsFooter = () => {
   return (
     <footer className="bg-gradient-to-r from-[#30A08B] to-[#B2905F] text-white py-12">
@@ -46,6 +46,7 @@ const HomeProductsFooter = () => {
                 <Mail className="h-5 w-5 mr-2" />
                 <span>contact@example.com</span>
               </li>
+ 
             </ul>
           </div>
 
@@ -64,12 +65,22 @@ const HomeProductsFooter = () => {
 
         {/* Réseaux sociaux et copyright */}
         <div className="mt-8 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
-          <div className="flex space-x-4 mb-4 md:mb-0">
-            <a href="#" className="hover:text-gray-300"><FacebookIcon className="h-6 w-6" /></a>
-            <a href="#" className="hover:text-gray-300"><XIcon className="h-6 w-6" /></a>
-            <a href="#" className="hover:text-gray-300"><InstagramIcon className="h-6 w-6" /></a>
-            <a href="#" className="hover:text-gray-300"><LinkedInIcon className="h-6 w-6" /></a>
-          </div>
+          <div className="flex items-center space-x-4 mb-4 md:mb-0">
+            <span href="#" className="hover:text-gray-300"><FacebookIcon className="h-6 w-6" /></span>
+            <span href="#" className="hover:text-gray-300"><XIcon className="h-6 w-6" /></span>
+            <span href="#" className="hover:text-gray-300"><InstagramIcon className="h-6 w-6" /></span>
+            <span href="#" className="hover:text-gray-300"><LinkedInIcon className="h-6 w-6" /></span>
+               {/* <div className='w-96 h-20'>
+
+  <img
+    src={LogoText}
+    alt="Logo IHAM Baobab"
+    className="w-full h-full object-cover transition-transform duration-300 transform hover:scale-105"
+    />
+    </div> */}
+    </div>
+     
+  
           <p className="text-gray-400 text-sm">
             © {new Date().getFullYear()} Ihambaobab. Tous droits réservés.
           </p>

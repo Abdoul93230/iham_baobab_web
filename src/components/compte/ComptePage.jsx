@@ -8,7 +8,7 @@ export default function ComptePage() {
   const [phone, setPhone] = useState('85822480');
 
   return (
-    <div className="flex flex-col h-screen bg-gray-800">
+    <div className="flex flex-col h-screen bg-gray-100">
       {/* Main content */}
       <div className="flex-grow flex justify-center items-center p-4">
         <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">

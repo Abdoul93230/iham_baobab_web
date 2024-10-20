@@ -4,7 +4,8 @@ import { Plus, Minus, Trash2, Menu, User, ChevronDown, ShoppingCart, Camera, Sea
 import LogoText from "../../image/LogoText.png";
 // import './style.css'
 
-function HomeHeader({chg}) {
+
+function HomeHeader() {
   const navigate = useNavigate();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -92,15 +93,13 @@ function HomeHeader({chg}) {
         </button>
       </div>
       <div className="flex flex-col items-center space-y-4 p-4">
-        <button onClick={() => toggleDropdown('categories')} className="text-amber-800 shadow-sm p-2 p-2 hover-bg-amber-30 hover:text-amber-900 text-start w-full flex justify-between items-center">Catégories <ChevronDown /></button>
-        {activeDropdown === 'categories' && renderDropdownContent('categories')}
+        <button className="text-amber-800 shadow-sm p-2 p-2 hover-bg-amber-30 hover:text-amber-900 text-start w-full flex justify-between items-center">Catégories <ChevronDown /></button>
+      
         <button className="text-amber-800 hover:text-amber-900 text-start shadow-sm p-2 w-full p-2 hover-bg-amber-30">Promotions</button>
         <button className="text-amber-800 hover:text-amber-900 text-start shadow-sm p-2 w-full p-2 hover-bg-amber-30">Nouveautés</button>
-        <button onClick={() => toggleDropdown('account')} className="text-amber-800 p-2 hover-bg-amber-30 shadow-sm p-2 hover:text-amber-900 text-start w-full flex justify-between items-center">Compte <ChevronDown /></button>
-        {activeDropdown === 'account' && renderDropdownContent('account')}
-        <button onClick={() => toggleDropdown('help')} className="text-amber-800 shadow-sm p-2 hover-bg-amber-30 p-2 hover:text-amber-900 text-start w-full flex justify-between items-center">Plus<ChevronDown />
+        <button className="text-amber-800 p-2 hover-bg-amber-30 shadow-sm p-2 hover:text-amber-900 text-start w-full flex justify-between items-center">Compte <ChevronDown /></button>
+        <button className="text-amber-800 shadow-sm p-2 hover-bg-amber-30 p-2 hover:text-amber-900 text-start w-full flex justify-between items-center">Plus<ChevronDown />
         </button>
-        {activeDropdown === 'help' && renderDropdownContent('help')}
         <button className="text-amber-800 hover:text-amber-900 text-start w-full shadow-sm p-2 hover-bg-amber-30 ">Notifications </button>
         <button className="text-amber-800 hover:text-amber-900 text-start w-full shadow-sm p-2 hover-bg-amber-30 ">Liste de souhaits</button>
         <button className="text-amber-800 hover:text-amber-900 text-start w-full shadow-sm p-2 hover-bg-amber-30 ">Panier</button>
@@ -115,99 +114,10 @@ function HomeHeader({chg}) {
     { id: 2, name: "Casque audio ABC", price: 129.99, quantity: 2, image: "https://cc-prod.scene7.com/is/image/CCProdAuthor/product-photography_P1_900x420?$pjpeg$&jpegSize=200&wid=900" },
     { id: 3, name: "Chargeur portable", price: 39.99, quantity: 1, image: "https://cc-prod.scene7.com/is/image/CCProdAuthor/product-photography_P1_900x420?$pjpeg$&jpegSize=200&wid=900" },
   ]);
-
-  const addToCart = (item) => {
-    setCartItems(prevItems => {
-      const existingItem = prevItems.find(i => i.id === item.id);
-      if (existingItem) {
-        return prevItems.map(i => 
-          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
-        );
-      }
-      return [...prevItems, { ...item, quantity: 1 }];
-    });
-  };
-
-  const removeFromCart = (id) => {
-    setCartItems(prevItems => prevItems.filter(item => item.id !== id));
-  };
-
-  const updateQuantity = (id, delta) => {
-    setCartItems(prevItems => 
-      prevItems.map(item => 
-        item.id === id 
-          ? { ...item, quantity: Math.max(0, item.quantity + delta) } 
-          : item
-      ).filter(item => item.quantity > 0)
-    );
-  };
-  const closeCart = () => {
-    // Fonction qui gère la fermeture du panier
-  };
   
-  const handleCheckout = () => {
-    setIsCartOpen(false)
-  };
-  const cartTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  const renderCartItems = () => ( 
-    <div className="fixed right-0 w-full max-w-sm md:max-w-md lg:max-w-lg h-full bg-white text-black top-5 rounded shadow-lg z-50 p-4 flex flex-col justify-between">
-      {cartItems.length > 0 ? (
-        <div className="flex-1 overflow-y-auto">
-          {cartItems.map((item) => (
-            <div key={item.id} className="flex items-center justify-between border-b py-4 border-gray-300">
-              <div className="flex items-center space-x-4">
-                <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded" />
-                <div>
-                  <p className="text-xl font-semibold text-[#B17236]">{item.name}</p> 
-                  <div className="flex items-center space-x-2 mt-1">
-                    <button
-                      onClick={() => updateQuantity(item.id, -1)}
-                      className="bg-[#B2905F] text-white p-2 rounded hover:bg-[#30A08B] transition" 
-                    >
-                      <Minus className="h-5 w-5" />
-                    </button>
-                    <span className="text-xl">{item.quantity}</span>
-                    <button
-                      onClick={() => updateQuantity(item.id, 1)}
-                      className="bg-[#B2905F] text-white p-2 rounded hover:bg-[#30A08B] transition" 
-                    >
-                      <Plus className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-xl font-bold text-[#B17236]">{(item.price * item.quantity).toFixed(2)}€</span> 
-                <button
-                  onClick={() => removeFromCart(item.id)}
-                  className="text-red-600 hover:text-red-800 transition"
-                >
-                  <Trash2 className="h-5 w-5" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-center text-gray-500 text-lg">Votre panier est vide.</p>
-      )}
-      
-      {/* Footer avec bouton Checkout */}
-      <div className="border-t pt-4 mt-4">
-        <div className="flex justify-between font-bold mb-4">
-          <span className="text-xl">Total:</span>
-          <span className="text-xl text-[#30A08B]">{cartTotal.toFixed(2)}€</span>
-        </div>
-        <button
-          className="w-full bg-[#30A08B] text-white text-lg py-3 rounded hover:bg-[#26785e] transition"
-          onClick={handleCheckout} 
-        >
-          Checkout
-        </button>
-      </div>
-    </div>
-  );
+
+
+
   
   
   
@@ -218,12 +128,12 @@ function HomeHeader({chg}) {
     setIsMenuOpen(!isMenuOpen)
   }
   return (
-    <>
-      {/* Top bar */}
-      <div className="bg-emerald-700 text-white py-1 px-4 text-sm flex justify-between items-center">
+    <div className="">
+      {/*  fixed w-full  Top bar */}
+      <div className="bg-emerald-700 text-white py-1 px-4 text-sm  flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <span className="flex items-center">
-            <Phone className="h-4 w-4 mr-1" /> Support: +33 1 23 45 67 89
+            <Phone className="h-4 w-4 mr-1" /> Support: +227 85822480
           </span>
           <span className="flex items-center">
             <Truck className="h-4 w-4 mr-1" /> Livraison gratuite dès 50€
@@ -253,15 +163,21 @@ function HomeHeader({chg}) {
 
 
               <div className="relative flex items-center space-x-9 p-1 bg-gradient-to-r from-amber-100 to-amber-300 shadow-md rounded-xl">
-  <button
+ 
+    <button
     onClick={toggleMenu}
     className="text-amber-800  hover:text-amber-900 md:hidden focus:outline-none transition-transform duration-300 transform hover:rotate-180"
     aria-label="Toggle menu"
   >
-    <Menu className="h-8 w-8 cursor-pointer" />
-  </button>
+     {isMenuOpen ? (
+<X className="h-8 w-8 text-amber-800 hover:text-amber-900" />
+): 
+<Menu className="h-8 w-8 cursor-pointer" />
+}
+</button>
 
-  <span className="text-2xl w-24 h-16 font-extrabold text-amber-900 tracking-widest">
+
+  <span className="text-2xl w-24 h-16 font-extrabold text-amber-900 tracking-widest" onClick={() => navigate("/Home")}>
     <img
       src={LogoText}
       className="w-auto h-full object-contain cursor-pointer transition-opacity duration-300 hover:opacity-90"
@@ -275,7 +191,7 @@ function HomeHeader({chg}) {
         <Menu className="w-8 h-8" />
       </button>
       <button className="bg-green-500 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
-      <div className="relative text-amber-800 hover:text-amber-900" aria-label="Notifications">
+      <div className="relative text-amber-800 hover:text-amber-900" aria-label="Notifications" onClick={() => navigate("/Notification header")}>
         <Bell className="h-6 w-6" />
         <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-4 h-4 text-xs text-white flex items-center justify-center">3</span>
       </div>
@@ -287,12 +203,8 @@ function HomeHeader({chg}) {
         </div>
       </button>
       <button className="bg-blue-500 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
-      <div onClick={() => setIsCartOpen(!isCartOpen)} className="relative">
-          {cartCount > 0 && (
-            <div className="bg-emerald-600 rounded-full z-10 w-5 h-5 flex items-center justify-center text-white text-xs font-bold absolute -top-2 -right-2">
-              {cartCount}
-            </div>
-          )}
+      <div onClick={() => navigate("/Panier")} className="relative">
+            <div className="bg-emerald-600 rounded-full z-10 w-5 h-5 flex items-center justify-center text-white text-xs font-bold absolute -top-2 -right-2"> 10 </div>
             <ShoppingCart className="h-6 w-6 text-amber-800 hover:text-amber-900 cursor-pointer transition-transform transform hover:scale-110" aria-label="Panier" />
         </div>
       </button>
@@ -311,7 +223,7 @@ function HomeHeader({chg}) {
           {/* Search bar */}
           <div className="relative flex-grow max-w-xl mx-4 my-2 w-full">
             <input
-              className="border-2 border-emerald-600 p-2 rounded-full w-full focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="border-2 text-[#30A08B] border-emerald-600 p-2 rounded-full w-full focus:outline-none focus:ring-2 focus:ring-emerald-500"
               type="text"
               placeholder="Rechercher des produits..."
               maxLength={35}
@@ -371,27 +283,31 @@ function HomeHeader({chg}) {
               {activeDropdown === 'help' && renderDropdownContent('help')}
             </div>
 
-            <button className="relative text-amber-800 hover:text-amber-900" aria-label="Notifications">
+            <button onClick={() => navigate("/Notification header")} className="relative text-amber-800 hover:text-amber-900" aria-label="Notifications">
               {/* Je veux que tu me créer un contenu pour mon panier si une fois je clique sur cette button  */}
               <Bell className="h-6 w-6" />
-              <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-4 h-4 text-xs text-white flex items-center justify-center">3</span>
+
+          
+        <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-4 h-4 text-xs text-white flex items-center justify-center">
+          {/* {unreadCount} */}
+          2
+        </span>
+
+
             </button>
      
         <button className="relative text-amber-800 hover:text-amber-900" aria-label="Wishlist">
           <Heart className="h-6 w-6" />
           <span className="absolute -top-1 -right-1 bg-emerald-500 rounded-full w-4 h-4 text-xs text-white flex items-center justify-center">5</span>
         </button>
-        <div onClick={() => setIsCartOpen(!isCartOpen)} className="relative">
-          {cartCount > 0 && (
-            <div className="bg-emerald-600 rounded-full z-10 w-5 h-5 flex items-center justify-center text-white text-xs font-bold absolute -top-2 -right-2">
-              {cartCount}
-            </div>
-          )}
+        <div onClick={() => navigate("/Panier")} className="relative">
+            <div className="bg-emerald-600 rounded-full z-10 w-5 h-5 flex items-center justify-center text-white text-xs font-bold absolute -top-2 -right-2"> 2 </div>
             <ShoppingCart className="h-6 w-6 text-amber-800 hover:text-amber-900 cursor-pointer transition-transform transform hover:scale-110" aria-label="Panier" />
         </div>
+
         {isCartOpen && (
           <div className="absolute right-0 w-full h-screen max-w-sm md:max-w-md lg:max-w-lg text-black top-5 rounded shadow-lg z-50 p-2">
-            {renderCartItems()}
+            1
           </div>
         )}
           </nav>
@@ -405,7 +321,7 @@ function HomeHeader({chg}) {
 
       {/* Mobile menu */}
       {isMobileMenuOpen && renderMobileMenu()}
-    </>
+    </div>
   );
 }
 

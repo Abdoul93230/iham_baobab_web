@@ -56,8 +56,6 @@ const carouselImages = [
 const Home = ({isOpen}) => {
   const swiperRef = useRef(null);
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}

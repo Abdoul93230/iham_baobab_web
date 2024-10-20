@@ -5,12 +5,22 @@ import {
   ShieldCheck,
   Minus,
   Plus,
-  Package,
   Share2,
   Heart,
+  Store,
+  MessageCircle,
+  X,
 } from "lucide-react";
+import {
+  FaInstagram,
+  FaFacebook,
+  FaLinkedin,
+  FaWhatsapp,
+  FaStar,
+} from "react-icons/fa";
 import ProduitSimilaires from "./ProduitSimilaires";
 import CommentaireProduit from "./CommentaireProduit";
+import CountryPage from "./CountryPage";
 
 function ProduitDetailMain() {
   const swiperRef = useRef(null);
@@ -18,9 +28,15 @@ function ProduitDetailMain() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedSizeImage, setSelectedSizeImage] = useState(null);
-  const [quantity, setQuantity] = useState(5);
-
+  const [quantity, setQuantity] = useState(0);
+  const [liked, setLiked] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isCommentOpen, setIsCommentOpen] = useState(false);
+  const [isCountryOpen, setIsCountryOpen] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [commentText, setCommentText] = useState("");
+  const [rating, setRating] = useState(0);
 
   const handleMouseEnter = () => {
     setIsZoomed(true);
@@ -134,7 +150,105 @@ function ProduitDetailMain() {
   const decreaseQuantity = () => setQuantity((prev) => Math.max(1, prev - 1));
   const increaseQuantity = () => setQuantity((prev) => Math.min(5, prev + 1));
 
+  // Pour les like
+  const handleLike = () => {
+    if (!liked) {
+      setLiked(true);
+    }
+  };
 
+  //pour les share
+
+  const ShareModal = ({ isOpen, onClose }) => {
+    if (!isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 z-10 flex items-center p-3 justify-center bg-black bg-opacity-50">
+        <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+          <h2
+            className="text-xl font-bold mb-4 text-center"
+            style={{ color: "#30A08B" }}
+          >
+            Partager sur
+          </h2>
+          <div className="flex justify-around mb-4">
+            <a
+              href="https://www.facebook.com/sharer/sharer.php?u=YOUR_URL"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <FaFacebook className="w-8 h-8 text-blue-600 hover:scale-110 transition-transform" />
+            </a>
+            <a
+              href="https://wa.me/?text=YOUR_URL"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <FaWhatsapp className="w-8 h-8 text-green-500 hover:scale-110 transition-transform" />
+            </a>
+            <a
+              href="https://www.linkedin.com/shareArticle?mini=true&url=YOUR_URL"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <FaLinkedin className="w-8 h-8 text-blue-700 hover:scale-110 transition-transform" />
+            </a>
+            <a
+              href="https://www.instagram.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <FaInstagram className="w-8 h-8 text-pink-600 hover:scale-110 transition-transform" />
+            </a>
+          </div>
+          <button
+            onClick={onClose}
+            className="mt-4 w-full bg-red-500 text-white p-2 rounded flex items-center justify-center hover:bg-red-600 transition-colors"
+          >
+            <X className="mr-2" />
+            Fermer
+          </button>
+        </div>
+      </div>
+    );
+  };
+  const handleShareClick = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleClose = () => {
+    setIsModalOpen(false);
+  };
+
+  // pour les commentaire
+  const StarRating = ({ rating, setRating }) => {
+    return (
+      <div className="flex items-center justify-center mb-4">
+        {[...Array(5)].map((_, index) => (
+          <FaStar
+            key={index}
+            className={`w-6 h-6 cursor-pointer ${
+              index < rating ? "text-[#30A08B]" : "text-gray-400"
+            }`} // Utilisation de #30A08B pour les étoiles remplies
+            onClick={() => setRating(index + 1)}
+          />
+        ))}
+        <span className="ml-2 text-sm" style={{ color: "#B17236" }}>
+          Note: {rating}
+        </span>{" "}
+        {/* Couleur pour la note */}
+      </div>
+    );
+  };
+
+  const handleCommentSubmit = (e) => {
+    e.preventDefault();
+    if (commentText) {
+      setComments([...comments, { text: commentText, rating }]);
+      setCommentText("");
+      setRating(0);
+    }
+  };
 
   return (
     <div className="container mx-auto p-4" ref={swiperRef}>
@@ -143,7 +257,7 @@ function ProduitDetailMain() {
           className="w-full lg:w-auto h-40 lg:h-96"
           style={styles.scrollbarHide}
         >
-          <div className="flex lg:flex-col gap-2">
+          <div className="flex w-[90px] lg:flex-col gap-2">
             {images.map((image, index) => (
               <div
                 key={index}
@@ -297,14 +411,23 @@ function ProduitDetailMain() {
           <div className="p-3">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Livré vers</h2>
-              <div className="flex items-center">
+
+              <div
+                className="flex items-center cursor-pointer"
+                onClick={() => setIsCountryOpen(true)}
+              >
                 <MapPin className="w-5 h-5 mr-1" />
                 <span>Niger</span>
               </div>
+              {isCountryOpen && (
+                <div className="fixed inset-0 p-3 z-10 flex items-center justify-center bg-black bg-opacity-50">
+                  <CountryPage />
+                </div>
+              )}
             </div>
 
             <div className="bg-red-50 p-4 rounded-lg mb-4">
-              <h3 className="font-semibold mb-2">L'engagement AliExpress</h3>
+              <h3 className="font-semibold mb-2">L'engagement IHAM Baobab</h3>
               <div className="flex items-start space-x-2 text-gray-600">
                 <Truck className="w-5 h-5 mt-1 flex-shrink-0" />
                 <p>
@@ -343,7 +466,7 @@ function ProduitDetailMain() {
                   value={quantity}
                   onChange={(e) =>
                     setQuantity(
-                      Math.max(1, Math.min(5, parseInt(e.target.value) || 1))
+                      Math.max(1, Math.min(parseInt(e.target.value) || 1))
                     )
                   }
                   className="w-16 text-center border rounded-md p-1 border-gray-300"
@@ -356,7 +479,7 @@ function ProduitDetailMain() {
                 </button>
               </div>
               <p className="text-sm text-gray-600 mt-1">
-                5 article(s) au maximum
+                Vous pouvez ajouter autant de produits que vous le souhaitez.
               </p>
             </div>
 
@@ -369,58 +492,136 @@ function ProduitDetailMain() {
               </button>
             </div>
           </div>
-
           <div className="flex justify-between px-6 py-4 border-t">
-            <button className="p-2">
-              <Package className="w-5 h-5" />
-            </button>
-            <button className="p-2">
-              <Share2 className="w-5 h-5" />
-            </button>
-            <button className="p-2 flex items-center">
-              <Heart className="w-5 h-5 mr-1" />
-              <span>1406</span>
-            </button>
+            <div className="flex flex-col items-center">
+              <button className="p-2">
+                <Store className="w-5 h-5" />
+              </button>
+              <span className="text-sm">Boutique</span>
+            </div>
+
+            <div className="flex flex-col items-center">
+              <button
+                className="p-2 flex items-center"
+                onClick={() => setIsCommentOpen(true)}
+              >
+                <MessageCircle className="w-5 h-5" />
+              </button>
+              <span className="text-sm">Commenter</span>
+              {isCommentOpen && (
+                <div className="fixed inset-0 p-3 z-10 flex items-center justify-center bg-black bg-opacity-50">
+                  <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+                    <h2
+                      className="text-xl font-bold mb-4 text-center"
+                      style={{ color: "#30A08B" }}
+                    >
+                      Ajouter un commentaire
+                    </h2>
+                    <StarRating rating={rating} setRating={setRating} />
+                    <form
+                      onSubmit={handleCommentSubmit}
+                      className="flex flex-col mb-4"
+                    >
+                      <textarea
+                        className="w-full p-2 border border-gray-300 rounded mt-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        rows="3"
+                        value={commentText}
+                        onChange={(e) => setCommentText(e.target.value)}
+                        placeholder="Écrire un commentaire..."
+                        style={{ borderColor: "#B2905F" }}
+                      />
+                      <button
+                        type="submit"
+                        className="mt-2 bg-[#B17236] text-white p-2 rounded hover:bg-[#B2905F] transition-colors"
+                      >
+                        Envoyer
+                      </button>
+                    </form>
+                    <button
+                      onClick={() => setIsCommentOpen(false)}
+                      className="mt-4 w-full bg-red-500 text-white p-2 rounded flex items-center justify-center hover:bg-red-600 transition-colors"
+                    >
+                      <X className="mr-2" />
+                      Fermer
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col items-center">
+              <button className="p-2" onClick={handleShareClick}>
+                <Share2 className="w-5 h-5" />
+              </button>
+              <span className="text-sm">Partager</span>
+              <ShareModal isOpen={isModalOpen} onClose={handleClose} />
+            </div>
+
+            <div className="flex flex-col items-center">
+              <button
+                className={`p-2 flex items-center transition-colors duration-300 transform ${
+                  liked ? "bg-[#30A08B] animate-like" : "bg-transparent"
+                } hover:bg-[#B2905F] rounded-md ${
+                  liked ? "cursor-not-allowed" : ""
+                }`}
+                onClick={handleLike}
+                disabled={liked} // Désactive le bouton si déjà aimé
+              >
+                <Heart
+                  className={`w-5 h-5 ${liked ? "text-white" : "text-black"}`}
+                />
+                <span className={`ml-1 ${liked ? "text-white" : "text-black"}`}>
+                  {liked ? "1" : "0"} {/* Affiche 1 si aimé, sinon 0 */}
+                </span>
+              </button>
+              <span className="text-sm">Like</span>
+
+              <style jsx>{`
+                @keyframes like {
+                  0% {
+                    transform: scale(1);
+                  }
+                  50% {
+                    transform: scale(1.2);
+                  }
+                  100% {
+                    transform: scale(1);
+                  }
+                }
+
+                .animate-like {
+                  animation: like 0.3s ease-in-out;
+                }
+              `}</style>
+            </div>
           </div>
         </div>
       </div>
       <ProduitSimilaires />
       <div className="py-3">
-  <div className="border-t border-gray-300 mb-4" />
+        <div className="border-t border-gray-300 mb-4" />
 
-  <h2 className="text-2xl font-semibold text-[#B17236] mb-2">Produit Détail</h2>
+        <h2 className="text-2xl font-semibold text-[#B17236] mb-2">
+          Produit Détail
+        </h2>
 
-  <p className="text-gray-700 leading-relaxed">
-    <span className="font-bold">Lorem ipsum:</span>  dolor sit amet consectetur adipisicing elit. Provident nobis praesentium illo, maiores eaque, numquam totam odit aperiam 
-    rem soluta tenetur pariatur deleniti exercitationem! Aliquid ex hic magnam vitae eligendi? Cum non blanditiis vel corrupti veniam unde atque, ut incidunt.
-  </p>
+        <p className="text-gray-700 leading-relaxed">
+          <span className="font-bold">Lorem ipsum:</span> dolor sit amet
+          consectetur adipisicing elit. Provident nobis praesentium illo,
+          maiores eaque, numquam totam odit aperiam rem soluta tenetur pariatur
+          deleniti exercitationem! Aliquid ex hic magnam vitae eligendi? Cum non
+          blanditiis vel corrupti veniam unde atque, ut incidunt.
+        </p>
 
-  <p className="text-gray-700 leading-relaxed mt-4">
-    <span className="font-bold">Lorem ipsum:</span>  dolor sit amet consectetur, adipisicing elit. Omnis eius neque ratione fugit. Nulla quasi aperiam beatae odio fugiat, ipsum sequi ullam accusamus.
-  </p>
-</div>
-<ProduitSimilaires />
-
-
-
-
-
-
-    <CommentaireProduit/>
-    
-
-    
-
-
-
-
-
-
-
-
-
-
-
+        <p className="text-gray-700 leading-relaxed mt-4">
+          <span className="font-bold">Lorem ipsum:</span> dolor sit amet
+          consectetur, adipisicing elit. Omnis eius neque ratione fugit. Nulla
+          quasi aperiam beatae odio fugiat, ipsum sequi ullam accusamus.
+        </p>
+      </div>
+      <ProduitSimilaires />
+      <CommentaireProduit />
+      
     </div>
   );
 }

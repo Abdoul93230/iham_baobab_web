@@ -133,7 +133,7 @@ function ProduitSimilaires() {
           key={article.id}
           className="cursor-pointer rounded-md border overflow-hidden border-gray-300 shadow-md hover:shadow-lg transition-shadow duration-200"
         >
-          <div className="relative w-full h-40">
+          <div className=" relative  w-full h-40">
             <img
               src={article.image}
               className="w-full h-full object-cover"

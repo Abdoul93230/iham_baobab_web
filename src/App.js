@@ -16,9 +16,13 @@ import Notification from './pages/Notification'
 import Paement from './pages/Paement';
 import Service from './pages/Service';
 import Livraison from './pages/Livraison';
+import SuiviCommand from './pages/SuiviCommand';
 
 import "./App.css"
 import ForgetPassword from './components/forgetPassword/ForgetPassword';
+import Panier from './pages/Panier';
+import BellPage from './pages/BellPage';
+import ResusCommand from './pages/ResusCommand';
 
 function App() {
   return (
@@ -43,6 +47,10 @@ function App() {
         <Route path='/Paement' element={<Paement/> } /> 
         <Route path='/Service' element={<Service/> } /> 
         <Route path='/Livraison' element={<Livraison/> } /> 
+        <Route path='/Panier' element={<Panier/> } /> 
+        <Route path='/Suivre la commande' element={<SuiviCommand/> } /> 
+        <Route path='/Notification header' element={<BellPage/> } /> 
+        <Route path='/Commande réisus' element={<ResusCommand/> } /> 
        </Routes>
        
        </BrowserRouter>

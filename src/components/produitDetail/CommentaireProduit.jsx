@@ -124,7 +124,7 @@ function CommentaireProduit() {
         <span>
           {comment.name} | {comment.date}
         </span>
-        <div className="flex text-nowrap items-center">
+        <div className="flex text-nowrap cursor-pointer items-center">
           <svg
             className="w-4 h-4 mr-1"
             fill="none"

@@ -30,18 +30,11 @@ function SuggestionPage() {
   return (
     <div className="flex container flex-col h-screen bg-gray-100">
       {/* Header */}
-      <div className="flex items-center p-4 border-b border-gray-200 bg-white shadow">
-        <button onClick={() => navigate(-1)} className="text-blue-500">
-          <ChevronLeft className="h-6 w-6" />
-        </button>
-        <h1 className="text-xl font-semibold text-center flex-grow">
-          Suggestion Page
-        </h1>
-      </div>
+
 
       {/* Main content */}
-      <div className="flex-grow p-4 flex flex-col items-center bg-gray-50">
-        <h2 className="text-xl font-semibold text-[#B17236] mb-4">
+      <div className="flex-grow p-4 flex flex-col bg-gray-50">
+        <h2 className="text-xl text-start font-semibold text-[#B17236] mb-4">
           Votre suggestion
         </h2>
 
