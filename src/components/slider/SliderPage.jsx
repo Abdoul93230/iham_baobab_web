@@ -17,7 +17,7 @@ const SliderPage = ({products, name}) => {
       <Swiper
         ref={swiperRef}
         autoplay={true}
-        navigation={false} // Désactive la navigation intégrée
+        navigation={false} 
         slidesPerView={2}
         spaceBetween={20}
         breakpoints={{
