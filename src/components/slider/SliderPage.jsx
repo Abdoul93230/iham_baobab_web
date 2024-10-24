@@ -2,85 +2,16 @@ import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/swiper-bundle.css';
 import {ShoppingCart} from 'lucide-react';
-const products = [
-    {
-      id: 1,
-      name: 'Product 1',
-      price: 29.99,
-      image: 'https://zz.jumia.is/cms/Coupon_Corner_TN300x300.jpg',
-    },
-    {
-      id: 2,
-      name: 'Product 2',
-      price: 39.99,
-      image: 'https://zz.jumia.is/cms/Coupon_Corner_TN300x300.jpg',
-    },
-    {
-      id: 3,
-      name: 'Product 3',
-      price: 19.99,
-      image: 'https://zz.jumia.is/cms/Coupon_Corner_TN300x300.jpg',
-    },
-    {
-      id: 4,
-      name: 'Product 4',
-      price: 49.99,
-      image: 'https://zz.jumia.is/cms/Coupon_Corner_TN300x300.jpg',
-    },
-    {
-      id: 5,
-      name: 'Product 5',
-      price: 25.99,
-      image: 'https://zz.jumia.is/cms/Coupon_Corner_TN300x300.jpg',
-    },
-    {
-      id: 6,
-      name: 'Product 6',
-      price: 15.99,
-      image: 'https://zz.jumia.is/cms/Coupon_Corner_TN300x300.jpg',
-    },
-    {
-      id: 7,
-      name: 'Product 7',
-      price: 35.99,
-      image: 'https://zz.jumia.is/cms/Coupon_Corner_TN300x300.jpg',
-    },
-    {
-      id: 8,
-      name: 'Product 8',
-      price: 45.99,
-      image: 'https://zz.jumia.is/cms/Coupon_Corner_TN300x300.jpg',
-    },
-    {
-      id: 9,
-      name: 'Product 9',
-      price: 55.99,
-      image: 'https://zz.jumia.is/cms/Coupon_Corner_TN300x300.jpg',
-    },
-    {
-      id: 10,
-      name: 'Product 10',
-      price: 65.99,
-      image: 'https://zz.jumia.is/cms/Coupon_Corner_TN300x300.jpg',
-    },
-    {
-      id: 11,
-      name: 'Product 10',
-      price: 65.99,
-      image: 'https://zz.jumia.is/cms/Coupon_Corner_TN300x300.jpg',
-    },
-    {
-      id: 12,
-      name: 'Product 10',
-      price: 65.99,
-      image: 'https://zz.jumia.is/cms/Coupon_Corner_TN300x300.jpg',
-    },
-  ];
+import { useNavigate } from "react-router-dom";
 
 
-const SliderPage = () => {
+
+const SliderPage = ({products, name}) => {
   const swiperRef = React.useRef(null);
   
+  const navigation = useNavigate();
+
+
   return (
     <div className="mx-auto p-2 relative">
       <Swiper
@@ -97,13 +28,31 @@ const SliderPage = () => {
         className="my-8"
       >
         {products.map((product) => (
-      <SwiperSlide key={product.id} className="flex justify-center border cursor-pointer overflow-hidden rounded-lg">
-        <div className='absolute z-2 right-3 top-2 bg-[#62aca2bb] p-2 rounded-full h-5 text-sm  text-white justify-center items-center flex'>-10%</div>
+      <SwiperSlide key={product._id}
+      onClick={() => navigation(`/ProduitDétail/${product._id}`)}
+      className="flex justify-center border cursor-pointer overflow-hidden rounded-lg">
+
+{product.prixPromo > 0 ? (
+
+<div className='absolute z-2 right-3 top-2 bg-[#62aca2bb] p-2 rounded-full h-5 text-sm  text-white justify-center items-center flex'>- {Math.round(
+                        ((product.prix - product.prixPromo) / product.prix) * 100
+                      )}{" "}
+                      %</div>
+
+                   
+                  ) : (
+                    <></>
+                  )}
+
+
+
+
+        
       <div className="flex flex-col w-full h-auto transition-transform transform hover:scale-105">
-        <img src={product.image} alt={product.name} className="w-full h-32 object-center " />
+        <img src={product.image1} alt={product.name} className="w-full h-32 object-center " />
         <div className="mt-auto text-center shadow-sm bg-white">
-          <h2 className="text-lg font-semibold text-[#30A08B]">{product.name}</h2>
-          <p className="text-md text-[#B2905F]">${product.price.toFixed(2)}</p>
+          <h2 className="text-lg font-semibold text-[#30A08B]">{product.name.slice(0, 10)}...</h2>
+          <p className="text-md text-[#B2905F]">Cfa {product.prix.toFixed(2)}</p>
             <div className="absolute z-2 right-2 bottom-2 transform opacity-0  hover:opacity-100">
             <ShoppingCart />
             </div>

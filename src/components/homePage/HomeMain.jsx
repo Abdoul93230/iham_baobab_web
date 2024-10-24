@@ -5,39 +5,13 @@ import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+import { shuffle } from "lodash";
 import ProduitPage from "../produit/ProduitPage";
 import SliderPage from "../slider/SliderPage";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
-const products = [
-  {
-    id: 1,
-    name: "Produit 1",
-    price: "19,99 €",
-    image:
-      "https://cc-prod.scene7.com/is/image/CCProdAuthor/product-photography_P1_900x420?$pjpeg$&jpegSize=200&wid=900",
-  },
-  {
-    id: 2,
-    name: "Produit 2",
-    price: "29,99 €",
-    image:
-      "https://www.codeur.com/blog/wp-content/uploads/2019/06/photo-produit-ecommerce.jpg",
-  },
-  {
-    id: 3,
-    name: "Produit 3",
-    price: "39,99 €",
-    image:
-      "https://www.fontainebleau-blog.com/wp-content/uploads/2020/02/comment-reussir-belles-photos-de-paysage-660x248.jpg",
-  },
-  {
-    id: 4,
-    name: "Produit 4",
-    price: "49,99 €",
-    image:
-      "https://img.freepik.com/photos-premium/photo-appareil-photo-noir-objectif-long-trepied-montagne-arriere-plan_978521-558.jpg?w=360",
-  },
-];
+
 
 const categories = [
   { id: 1, name: "Homme", icon: "🏠" },
@@ -54,7 +28,40 @@ const carouselImages = [
 ];
 
 const Home = ({isOpen}) => {
+  const BackendUrl = process.env.REACT_APP_Backend_Url;
   const swiperRef = useRef(null);
+  const navigation = useNavigate();
+  const [allTypes, setAllTypes] = useState([]);
+  const [allCategories, setAllCategories] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
+
+
+  const DATA_Products = useSelector((state) => state.products.data);
+  const DATA_Types = useSelector((state) => state.products.types);
+  const DATA_Categories = useSelector((state) => state.products.categories);
+  const DATA_Pubs = useSelector((state) => state.products.products_Pubs);
+
+  
+  const clefElectronique = DATA_Categories
+  ? DATA_Categories.find((item) => item.name === "électroniques")
+  : null;
+
+
+  function getRandomElements(array) {
+    const shuffledArray = shuffle(array);
+    return shuffledArray.slice(0, 10);
+  }
+  function getRandomElementsSix(array) {
+    const shuffledArray = shuffle(array);
+    return shuffledArray.slice(0, 4);
+  }
+  function getRandomElementss(array, nbr) {
+    const shuffledArray = shuffle(array);
+    return shuffledArray.slice(0, nbr);
+  }
+
+
+
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -74,14 +81,21 @@ const Home = ({isOpen}) => {
               Catégories
             </h2>
             <ul>
-              {categories.map((category) => (
-                <li key={category.id} className="mb-2">
+              {DATA_Categories.map((category) => {
+                if(category.name =="all"){
+                  return null;
+                }
+                return <li key={category.id} className="mb-2">
                   <button className="w-full text-left py-2 px-4 rounded hover:bg-[#FFE9CC] transition-colors duration-200 flex items-center space-x-2">
-                    <span>{category.icon}</span>
-                    <span>{category.name}</span>
+                    {/* <span>{category.icon}</span> */}
+
+                    <img src={category?.image} alt="loading"
+                    style={{width:30,height:30,objectFit:"contain",borderRadius:"50%"}}
+                     />
+                    <span>{category?.name}</span>
                   </button>
                 </li>
-              ))}
+              })}
               <div className="container py-20">
                 <div className="card w-100 h-50 overflow-hidden">
                   {carouselImages.map((image, index) => {
@@ -105,12 +119,12 @@ const Home = ({isOpen}) => {
                 autoplay={{ delay: 3000 }}
                 className="mb-8 rounded-lg overflow-hidden"
               >
-                {carouselImages.map((image, index) => (
+                {DATA_Pubs.map((param, index) => (
                   <SwiperSlide key={index}>
                     <img
-                      src={image}
+                      src={param.image}
                       alt={`Slide ${index + 1}`}
-                      className="w-full h-[400px] object-cover"
+                      className="w-full h-[400px]"
                     />
                   </SwiperSlide>
                 ))}
@@ -136,15 +150,15 @@ const Home = ({isOpen}) => {
                 Produits vedettes
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {products.map((product) => (
+                {getRandomElementss(DATA_Products,4).map((product) => (
                   <div
-                    key={product.id}
+                    key={product._id}
                     className="bg-white rounded-lg overflow-hidden transition-transform duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
                   >
-                    <div className="relative">
+                    <div className="relative" onClick={() => navigation(`/ProduitDétail/${product._id}`)}>
                       <img
-                        src={product.image}
-                        alt={product.name}
+                        src={product.image1}
+                        alt={product.name.slice(0, 10)}
                         className="w-full h-48 object-cover transition-transform duration-200"
                       />
                       <span className="absolute top-2 right-2 bg-[#30A08B] text-white text-xs font-bold px-2 rounded-full">
@@ -153,7 +167,7 @@ const Home = ({isOpen}) => {
                     </div>
                     <div className="p-4">
                       <h3 className="font-semibold text-lg mb-2">
-                        {product.name}
+                        {product.name.slice(0, 20)}...
                       </h3>
                       <p className="text-[#B17236] font-bold text-lg">
                         {product.price}
@@ -182,13 +196,71 @@ const Home = ({isOpen}) => {
             </div>
           ))}
         </div>
-        <ProduitPage name={"📱 Électroniques"} />
+
+
+
+        {DATA_Categories.map((param, index) => {
+          if (
+            // getRandomElements(
+            //   DATA_Products.filter(
+            //     (item) =>
+            //       item.ClefType ===
+            //       DATA_Types.find((i) => i.clefCategories === param._id)?._id
+            //   )
+            // ).length > 0 &&
+            // param._id !== clefElectronique?._id
+            getRandomElements(
+              DATA_Products.filter(
+                (item) =>
+                  item.ClefType ===
+                  DATA_Types.find((i) => i.clefCategories === param._id)?._id
+              )
+            ).length > 0 &&
+            param._id !== clefElectronique?._id
+          )
+            return (
+              <div key={index}>
+                <ProduitPage
+                  products={getRandomElementsSix(
+                    DATA_Products.filter((item) =>
+                      DATA_Types.some(
+                        (type) =>
+                          type.clefCategories === param?._id &&
+                          item.ClefType === type._id
+                      )
+                    )
+                  )}
+                  name={param.name}
+                />
+                <SliderPage
+                  products={getRandomElements(
+                    DATA_Products.filter((item) =>
+                      DATA_Types.some(
+                        (type) =>
+                          type.clefCategories === param?._id &&
+                          item.ClefType === type._id
+                      )
+                    )
+                  )}
+                  name={param.name}
+                />
+              </div>
+            );
+          else return null;
+        })}
+
+
+
+
+
+
+        {/* <ProduitPage name={"📱 Électroniques"} />
         <SliderPage />
         <ProduitPage name={"💄 Beauté"} />
         <SliderPage />
         <ProduitPage name={"🍳 Cuisine & Ustensiles"} />
         <SliderPage />
-        <ProduitPage name={"🔌 Électroménager"} />
+        <ProduitPage name={"🔌 Électroménager"} /> */}
       </main>
     </div>
   );
