@@ -4,7 +4,6 @@ import {
   FaEnvelope,
   FaFacebook,
   FaTwitter,
-  FaCopy,
   FaUserPlus,
   FaHistory,
   FaTimes,

@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Minus, Trash2, Menu, User, ChevronDown, ShoppingCart, Camera, Search, Heart, Bell, Globe, Truck, Gift, Phone, X, FolderIcon  } from "lucide-react";
+import { Plus, Sparkles, Trash2, Menu, User, ChevronDown, ChevronUp, ShoppingCart, Camera, Search, Heart, Bell, Globe, Truck, Gift, Phone, X, FolderIcon  } from "lucide-react";
 import LogoText from "../../image/LogoText.png";
+import HeaderMobile from "./HeaderMobile";
 // import './style.css'
 
 
@@ -12,7 +13,8 @@ function HomeHeader() {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const [navIcon, setNavIcon] = useState(false)
+  const [openSection, setOpenSection] = useState(null);
+  const [hoveredItem, setHoveredItem] = useState(null);
 
   const toggleDropdown = (dropdown) => {
     setActiveDropdown(prevDropdown => prevDropdown === dropdown ? null : dropdown);
@@ -80,32 +82,14 @@ function HomeHeader() {
         return null;
     }
   };
-// fonctionnalité du menu en forma mobile 
-
-
 
 
   const renderMobileMenu = () => (
-    <div className="md:hidden bg-gradient-to-r from-[#30A08B] to-[#B2905F] fixed inset-0 bg-white bg-opacity-20 z-50">
-      <div className="flex justify-end p-2">
-        <button onClick={() => setIsMobileMenuOpen(false)} className="text-white">
-          <X className="h-6 w-6 text-amber-800 hover:text-amber-900" />
-        </button>
-      </div>
-      <div className="flex flex-col items-center space-y-4 p-4">
-        <button className="text-amber-800 shadow-sm p-2 p-2 hover-bg-amber-30 hover:text-amber-900 text-start w-full flex justify-between items-center">Catégories <ChevronDown /></button>
-      
-        <button className="text-amber-800 hover:text-amber-900 text-start shadow-sm p-2 w-full p-2 hover-bg-amber-30">Promotions</button>
-        <button className="text-amber-800 hover:text-amber-900 text-start shadow-sm p-2 w-full p-2 hover-bg-amber-30">Nouveautés</button>
-        <button className="text-amber-800 p-2 hover-bg-amber-30 shadow-sm p-2 hover:text-amber-900 text-start w-full flex justify-between items-center">Compte <ChevronDown /></button>
-        <button className="text-amber-800 shadow-sm p-2 hover-bg-amber-30 p-2 hover:text-amber-900 text-start w-full flex justify-between items-center">Plus<ChevronDown />
-        </button>
-        <button className="text-amber-800 hover:text-amber-900 text-start w-full shadow-sm p-2 hover-bg-amber-30 ">Notifications </button>
-        <button className="text-amber-800 hover:text-amber-900 text-start w-full shadow-sm p-2 hover-bg-amber-30 ">Liste de souhaits</button>
-        <button className="text-amber-800 hover:text-amber-900 text-start w-full shadow-sm p-2 hover-bg-amber-30 ">Panier</button>
-      </div>
-    </div>
+    <HeaderMobile
+    setIsMobileMenuOpen={setIsMobileMenuOpen}
+    navigate={navigate}/>
   );
+
 
 
   // panier code 

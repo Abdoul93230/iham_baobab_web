@@ -11,6 +11,7 @@ import SliderPage from "../slider/SliderPage";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
+import CategorieMobile from "./CategorieMobile";
 
 
 const categories = [
@@ -143,6 +144,8 @@ const Home = ({isOpen}) => {
                 <span className="text-lg">→</span>
               </div>
             </section>
+
+            <CategorieMobile/>
 
             {/* Featured Products */}
             <section>
