@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-const products = [
+const productss = [
   {
     id: 1,
     name: "Produit 1",
@@ -40,13 +40,30 @@ const products = [
   },
 ];
 
-const ProduitPage = ({ name }) => {
-  const navigation = useNavigate();
 
+
+
+
+
+
+
+
+
+const ProduitPage = ({ products,name }) => {
+  const navigation = useNavigate();
+  console.log(products)
   const handleAddToCart = (product) => {
     // Logique d'ajout au panier
     alert(`${product.name} a été ajouté au panier !`);
   };
+
+  function getRandomIntBetween3and5() {
+    return Math.floor(Math.random() * (5 - 3 + 1)) + 3;
+}
+
+
+
+
 
   return (
     <div className="mx-auto">
@@ -55,39 +72,47 @@ const ProduitPage = ({ name }) => {
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {products.map((product) => {
-          const discountedPrice = product.discount
-            ? (product.price * (1 - product.discount / 100)).toFixed(2)
-            : product.price.toFixed(2);
+          const discountedPrice = product.prixPromo
+            ?  product.prixPromo
+            : product.prix.toFixed(2);
 
           return (
             <div
               className="bg-white rounded-lg overflow-hidden shadow-lg transition-transform duration-300 hover:scale-105 hover:shadow-xl cursor-pointer relative"
-              key={product.id}
-              onClick={() => navigation("/Produit détail")}
+              key={product._id}
+              onClick={() => navigation(`/ProduitDétail/${product._id}`)}
             >
               <div className="relative">
                 <img
-                  src={product.image}
+                  src={product.image1}
                   alt={product.name}
                   className="w-full h-48 object-cover"
                 />
-                {product.discount > 0 && (
+                {product.prixPromo > 0 && (
                   <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold py-1 px-2 rounded">
-                    -{product.discount}%
+                    - {Math.round(
+                        ((product.prix - product.prixPromo) / product.prix) * 100
+                      )}{" "}%
                   </span>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#30A08B] opacity-30"></div>
               </div>
               <div className="p-4 flex flex-col">
-                <h4 className="font-bold text-lg">{product.name}</h4>
-                <p className="text-gray-700 mb-2">{product.description}</p>
+                <h4 className="font-bold text-lg">{product.name.slice(0, 20)}...</h4>
+                {/* <p className="text-gray-700 mb-2"
+                
+                dangerouslySetInnerHTML={{
+                  __html: product.description.slice(0, 100),
+                }}
+                
+                ></p> */}
 
                 {/* Évaluation par étoiles */}
                 <div className="flex items-center mb-2">
                   {[...Array(5)].map((_, index) => (
                     <svg
                       key={index}
-                      className={`w-4 h-4 ${index < Math.floor(product.rating) ? 'text-yellow-400' : 'text-gray-300'}`}
+                      className={`w-4 h-4 ${index < Math.floor(getRandomIntBetween3and5()) ? 'text-yellow-400' : 'text-gray-300'}`}
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -96,18 +121,18 @@ const ProduitPage = ({ name }) => {
                   ))}
                 </div>
 
-                {product.discount > 0 ? (
+                {product.prixPromo > 0 ? (
                   <>
                     <p className="font-bold text-red-600 line-through">
-                      ${product.price.toFixed(2)}
+                      Cfa {product.prix.toFixed(2)}
                     </p>
                     <p className="font-bold text-[#B17236]">
-                      ${discountedPrice}
+                    Cfa {discountedPrice}
                     </p>
                   </>
                 ) : (
                   <p className="font-bold text-[#B17236]">
-                    ${product.price.toFixed(2)}
+                    Cfa {product.prix.toFixed(2)}
                   </p>
                 )}
 

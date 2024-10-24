@@ -6,9 +6,11 @@ import {
   RefreshCw,
   ShoppingCart,
   CreditCard,
-  Tag,Check, AlertCircle
+  Tag,
+  Check,
+  AlertCircle,
 } from "lucide-react";
-import OrderConfirmation from './OrderConfirmation'; 
+import OrderConfirmation from "./OrderConfirmation";
 
 const PanierPage = ({ total = 0, onPaymentComplete }) => {
   const [articles, setArticles] = useState([]);
@@ -24,25 +26,6 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
       setArticles([
         {
           id: 1,
-          nom: "T-shirt Classic",
-          description: "T-shirt en coton bio",
-          prix: 19.99,
-          prixOriginal: 29.99,
-          quantite: 1,
-          enPromo: true,
-          image: "https://zz.jumia.is/cms/Coupon_Corner_TN300x300.jpg",
-        },
-        {
-          id: 2,
-          nom: "Jeans Slim",
-          description: "Jeans coupe moderne",
-          prix: 49.99,
-          quantite: 1,
-          enPromo: false,
-          image: "https://zz.jumia.is/cms/Coupon_Corner_TN300x300.jpg",
-        },
-        {
-          id: 3,
           nom: "T-shirt Classic",
           description: "T-shirt en coton bio",
           prix: 19.99,
@@ -99,31 +82,28 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
     const totalAvecReduction = sousTotal - (sousTotal * reduction) / 100;
     return (totalAvecReduction + fraisExpedition).toFixed(2);
   };
-  // pour les button passer la commande 
+  // pour les button passer la commande
 
-    const [loading, setLoading] = useState(false);
-    const [paymentStatus, setPaymentStatus] = useState(null);
-    const [showConfirmation, setShowConfirmation] = useState(false);
-    
-  
-    const handlePayment = async () => {
-      try {
-        setLoading(true);
-        // Simuler un appel API de paiement
-        await new Promise(resolve => setTimeout(resolve, 2000));
-  
-        // Simuler un succès de paiement
-        setShowConfirmation(true); // Affiche le composant de confirmation
-        if (onPaymentComplete) {
-          onPaymentComplete();
-        }
-      } catch (error) {
-      } finally {
-        setLoading(false);
+  const [loading, setLoading] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+
+  const handlePayment = async () => {
+    try {
+      setLoading(true);
+      // Simuler un appel API de paiement
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Simuler un succès de paiement
+      setShowConfirmation(true); // Affiche le composant de confirmation
+      if (onPaymentComplete) {
+        onPaymentComplete();
       }
-    };
-
-
+    } catch (error) {
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -252,7 +232,8 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
                     <div className="flex justify-between text-sm text-green-600">
                       <span>Réduction</span>
                       <span>
-                        -{((calculerSousTotal() * reduction) / 100).toFixed(2)} €
+                        -{((calculerSousTotal() * reduction) / 100).toFixed(2)}{" "}
+                        €
                       </span>
                     </div>
                   )}
@@ -330,7 +311,9 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
                     <button
                       className="p-2 hover:bg-gray-100 rounded-full"
                       onClick={() =>
-                        setArticles(articles.map((a) => ({ ...a, quantite: 1 })))
+                        setArticles(
+                          articles.map((a) => ({ ...a, quantite: 1 }))
+                        )
                       }
                     >
                       <RefreshCw className="h-4 w-4 text-[#30A08B]" />
@@ -342,72 +325,58 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
           </div>
         )}
       </div>
-  
       {/* Bouton Commander (fixe en bas sur mobile, dans le flux sur desktop) */}
       <div className="container mx-auto px-4 py-4">
-      
-      {showConfirmation && <OrderConfirmation />}
-  
-
-
-
-<div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white p-3 shadow-lg">
-        <button
-          onClick={handlePayment}
-          disabled={loading || paymentStatus === 'success'}
-        className="w-full bg-[#30A08B] disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold hover:bg-[#30A08B]/90 flex items-center justify-center space-x-2">
-          {loading ? (
-          <div className="flex items-center space-x-2 fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="animate-spin z-1 rounded-full h-5 w-5 border-b-2 border-white "></div>
-            <span>Traitement en cours...</span>
+        {showConfirmation && <OrderConfirmation />}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white p-3 shadow-lg">
+          <button
+            onClick={handlePayment}
+            disabled={loading || paymentStatus === "success"}
+            className="w-full bg-[#30A08B] disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold hover:bg-[#30A08B]/90 flex items-center justify-center space-x-2"
+          >
+            {loading ? (
+              <div className="flex items-center space-x-2 fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="animate-spin z-1 rounded-full h-5 w-5 border-b-2 border-white "></div>
+                <span>Traitement en cours...</span>
+              </div>
+            ) : (
+              <>
+                <CreditCard className="h-5 w-5" />
+                <span>
+                  {paymentStatus === "success"
+                    ? "Commande validée"
+                    : `Passer la commande ${calculerSousTotal()} F CFA`}
+                </span>
+              </>
+            )}
+          </button>
+        </div>
+        <div className="hidden lg:block">
+          <div className="container mx-auto px-4 py-4">
+            <button
+              onClick={handlePayment}
+              disabled={loading || paymentStatus === "success"}
+              className="w-full bg-[#30A08B] disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold hover:bg-[#30A08B]/90 flex items-center justify-center space-x-2"
+            >
+              {loading ? (
+                <div className="flex items-center space-x-2 fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                  <div className="animate-spin z-1 rounded-full h-5 w-5 border-b-2 border-white "></div>
+                  <span>Traitement en cours...</span>
+                </div>
+              ) : (
+                <>
+                  <CreditCard className="h-5 w-5" />
+                  <span className="text-white">
+                    {paymentStatus === "success"
+                      ? "Commande validée"
+                      : `Passer la commande ${calculerSousTotal()} F CFA`}
+                  </span>
+                </>
+              )}
+            </button>
           </div>
-        ): (
-          <>
-            <CreditCard className="h-5 w-5" />
-            <span>
-              {paymentStatus === 'success' 
-                ? 'Commande validée'
-                : `Passer la commande ${calculerSousTotal()} F CFA`
-              }
-            </span>
-          </>
-        )}
-        </button>
-      </div>
-
-      <div className="hidden lg:block">
-        <div className="container mx-auto px-4 py-4">
-        <button
-          onClick={handlePayment}
-          disabled={loading || paymentStatus === 'success'}
-        className="w-full bg-[#30A08B] disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold hover:bg-[#30A08B]/90 flex items-center justify-center space-x-2">
-          {loading ? (
-          <div className="flex items-center space-x-2 fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="animate-spin z-1 rounded-full h-5 w-5 border-b-2 border-white "></div>
-            <span>Traitement en cours...</span>
-          </div>
-        ): (
-          <>
-            <CreditCard className="h-5 w-5" />
-            <span className="text-white">
-              {paymentStatus === 'success' 
-                ? 'Commande validée'
-                : `Passer la commande ${calculerSousTotal()} F CFA`
-              }
-            </span>
-          </>
-        )}
-        </button>
         </div>
       </div>
-
-
-
-
-    </div>
-
-
-      
     </div>
   );
 };
