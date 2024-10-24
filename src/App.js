@@ -119,7 +119,6 @@ function App() {
       <div className="App">
         <BrowserRouter>
           <Routes>
-            {/* <Route path='/Connexion' element={<Connexion />} />  */}
             <Route path="/" element={<Home />} />
             <Route path="/Connexion" element={<Connexion />} />
             <Route path="/Inscription" element={<Inscription />} />
