@@ -7,6 +7,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import ProduitPage from "../produit/ProduitPage";
 import SliderPage from "../slider/SliderPage";
+import CategorieMobile from "./CategorieMobile";
 
 const products = [
   {
@@ -129,6 +130,8 @@ const Home = ({isOpen}) => {
                 <span className="text-lg">→</span>
               </div>
             </section>
+
+            <CategorieMobile/>
 
             {/* Featured Products */}
             <section>
