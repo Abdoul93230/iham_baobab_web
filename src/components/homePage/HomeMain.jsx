@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-
+import { useNavigate } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import "swiper/css";
@@ -40,13 +40,7 @@ const products = [
   },
 ];
 
-const categories = [
-  { id: 1, name: "Homme", icon: "🏠" },
-  { id: 2, name: "Électronique", icon: "📱" },
-  { id: 3, name: "Beauté", icon: "💄" },
-  { id: 4, name: "Cuisine & Ustensiles", icon: "🍳" },
-  { id: 5, name: "Électroménager", icon: "🔌" },
-];
+
 
 const carouselImages = [
   "https://media.istockphoto.com/id/1357529194/fr/photo/rendu-3d-dun-salon-de-style-moderne-avec-chemin%C3%A9e.jpg?s=612x612&w=0&k=20&c=KZBiX2zyVuyoKRuzM95892W7Fr0Rb2vX9qUAN1phS10=",
@@ -56,6 +50,16 @@ const carouselImages = [
 
 const Home = ({isOpen}) => {
   const swiperRef = useRef(null);
+  const navigation = useNavigate()
+
+  const categories = [
+    { id: 1, name: "Homme", icon: "🏠", onClick: () => navigation("/Homme")},
+    { id: 2, name: "Électronique", icon: "📱", onClick: () =>  navigation("/Homme")},
+    { id: 3, name: "Beauté", icon: "💄", onClick: () =>  navigation("/Homme") },
+    { id: 4, name: "Cuisine & Ustensiles", icon: "🍳", onClick: () =>  navigation("/Homme")},
+    { id: 5, name: "Électroménager", icon: "🔌", onClick: () =>  navigation("/Homme")},
+    { id: 6, name: "Voir plus", icon: "➡️", onClick: () =>  navigation("/Voir-plus")},
+  ];
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -77,7 +81,8 @@ const Home = ({isOpen}) => {
             <ul>
               {categories.map((category) => (
                 <li key={category.id} className="mb-2">
-                  <button className="w-full text-left py-2 px-4 rounded hover:bg-[#FFE9CC] transition-colors duration-200 flex items-center space-x-2">
+                  <button onClick={category.onClick} 
+                  className="w-full text-left py-2 px-4 rounded hover:bg-[#FFE9CC] transition-colors duration-200 flex items-center space-x-2">
                     <span>{category.icon}</span>
                     <span>{category.name}</span>
                   </button>
@@ -142,18 +147,23 @@ const Home = ({isOpen}) => {
                 {products.map((product) => (
                   <div
                     key={product.id}
-                    className="bg-white rounded-lg overflow-hidden transition-transform duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
+                    className="flex flex-col rounded-lg group overflow-hidden transition-all duration-300 transform shadow-lg transition-transform duration-300 hover:-translate-y-1 cursor-pointer relative"
                   >
-                    <div className="relative">
+                    <div className="relative flex-grow">
                       <img
                         src={product.image}
+                       
                         alt={product.name}
-                        className="w-full h-48 object-cover transition-transform duration-200"
+                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                       <span className="absolute top-2 right-2 bg-[#30A08B] text-white text-xs font-bold px-2 rounded-full">
                         Nouveau
                       </span>
+                    
+                      <div onClick={() => navigation("/Produit détail")} className="absolute inset-0 bg-gradient-to-b from-transparent to-[#30A08B] opacity-30 group-hover:scale-105 transition-transform duration-300"></div>
+
                     </div>
+                    
                     <div className="p-4">
                       <h3 className="font-semibold text-lg mb-2">
                         {product.name}
@@ -161,7 +171,7 @@ const Home = ({isOpen}) => {
                       <p className="text-[#B17236] font-bold text-lg">
                         {product.price}
                       </p>
-                      <button className="mt-2 w-full bg-[#30A08B] text-white py-2 rounded-md hover:bg-[#2a8f7d] transition-colors duration-200 text-sm md:text-base shadow-md hover:shadow-lg">
+                      <button className="mt-2 w-full bg-[#30A08B] text-white py-2 rounded-md hover:bg-[#B2905F] transition-colors duration-200 text-sm md:text-base shadow-md hover:shadow-lg">
                         Ajouter au panier
                       </button>
                     </div>

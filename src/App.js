@@ -23,14 +23,20 @@ import ForgetPassword from './components/forgetPassword/ForgetPassword';
 import Panier from './pages/Panier';
 import BellPage from './pages/BellPage';
 import ResusCommand from './pages/ResusCommand';
+import Homme from './pages/Homme';
+import Voir from './pages/Voir';
+import Nouveau from './pages/Nouveau';
+import Promotion from './pages/Promotion';
+import LikeProduit from './pages/LikeProduit';
+
 
 function App() {
   return (
     <div className="App">
        <BrowserRouter>
        <Routes>
-        {/* <Route path='/Connexion' element={<Connexion />} />  */}
         <Route path='/' element={<Connexion />} /> 
+        {/* <Route path='/Connexion' element={<Connexion />} />  */}
         <Route path='/Inscription' element={<Inscription />} /> 
         <Route path='/Home' element={<Home />} /> 
         <Route path='/Forget Password' element={<ForgetPassword />} /> 
@@ -51,8 +57,12 @@ function App() {
         <Route path='/Suivre la commande' element={<SuiviCommand/> } /> 
         <Route path='/Notification header' element={<BellPage/> } /> 
         <Route path='/Commande réisus' element={<ResusCommand/> } /> 
+        <Route path='/Homme' element={<Homme/> } /> 
+        <Route path='/Voir-plus' element={<Voir/> } /> 
+        <Route path='/Nouveau produit' element={<Nouveau/> } /> 
+        <Route path='/Produit promotions' element={<Promotion/> } /> 
+        <Route path='/Like produit' element={<LikeProduit/> } /> 
        </Routes>
-       
        </BrowserRouter>
 
     </div>

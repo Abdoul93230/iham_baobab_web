@@ -98,7 +98,7 @@ const SliderPage = () => {
       >
         {products.map((product) => (
       <SwiperSlide key={product.id} className="flex justify-center border cursor-pointer overflow-hidden rounded-lg">
-        <div className='absolute z-2 right-3 top-2 bg-[#62aca2bb] p-2 rounded-full h-5 text-sm  text-white justify-center items-center flex'>-10%</div>
+        <div className='absolute z-2 right-3 top-2 bg-[#62aca2bb] py-1 rounded-full h-5 text-sm px-2   text-xs font-bold  text-white justify-center items-center flex'>-10%</div>
       <div className="flex flex-col w-full h-auto transition-transform transform hover:scale-105">
         <img src={product.image} alt={product.name} className="w-full h-32 object-center " />
         <div className="mt-auto text-center shadow-sm bg-white">
