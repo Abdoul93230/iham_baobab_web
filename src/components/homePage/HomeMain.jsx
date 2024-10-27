@@ -150,7 +150,7 @@ const Home = ({isOpen}) => {
             {/* Featured Products */}
             <section>
               <h2 className="text-2xl font-bold mb-4 text-[#30A08B]">
-                Produits vedettes
+                Produits vedettess
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {getRandomElementss(DATA_Products,4).map((product) => (
