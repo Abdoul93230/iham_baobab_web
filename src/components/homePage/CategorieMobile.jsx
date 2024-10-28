@@ -1,7 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const CategorieMobile = () => {
+  const navigation = useNavigate()
   const [isHovering, setIsHovering] = useState(false);
   const categoriesRef = useRef(null);
 
@@ -57,6 +59,7 @@ const CategorieMobile = () => {
   {categories.map((category) => (
     <div
       key={category.id}
+      onClick={() => navigation("/Homme")}
       className={`
        flex justify-between items-center border rounded-lg space-x-5 p-2
         transition-transform duration-300 ease-out

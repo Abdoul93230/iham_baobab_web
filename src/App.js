@@ -23,6 +23,12 @@ import ForgetPassword from "./components/forgetPassword/ForgetPassword";
 import Panier from "./pages/Panier";
 import BellPage from "./pages/BellPage";
 import ResusCommand from "./pages/ResusCommand";
+import Homme from "./pages/Homme";
+import Voir from "./pages/Voir";
+import Nouveau from "./pages/Nouveau";
+import Promotion from "./pages/Promotion";
+import LikeProduit from "./pages/LikeProduit";
+
 import axios from "axios";
 import io from "socket.io-client";
 import { Provider } from "react-redux";
@@ -223,6 +229,11 @@ function App() {
                 acces === "oui" ? <ResusCommand /> : <Connexion chg={changeA} />
               }
             />
+            <Route path="/Homme" element={<Homme />} />
+            <Route path="/Voir-plus" element={<Voir />} />
+            <Route path="/Nouveau produit" element={<Nouveau />} />
+            <Route path="/Produit promotions" element={<Promotion />} />
+            <Route path="/Like produit" element={<LikeProduit />} />
           </Routes>
         </BrowserRouter>
       </div>

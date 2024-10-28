@@ -139,18 +139,25 @@ function ProduitSimilaires() {
               className="w-full h-full object-cover"
               alt={`Article similaire ${article.id}`}
             />
-            <div className="absolute top-2 right-2 bg-white bg-opacity-80 p-1 shadow-md rounded">
-              <p className="text-xs font-semibold text-gray-700">
-                {article.label}
+            {!article.label? (
+              <></>
+            ): (
+                <div className="absolute top-2 right-2 bg-[#62aca2bb] p-1 shadow-md rounded">
+              <p className="text-xs font-bold text-white">
+                -10%
               </p>
             </div>
-            <div className="absolute bottom-2 cursor-pointer right-2 bg-[#30A08B] bg-opacity-50 p-2 rounded-full flex items-center border">
+            )}
+          
+            <div className="absolute z-1 bottom-2 cursor-pointer right-2 bg-[#30A08B] bg-opacity-50 p-2 rounded-full flex items-center border">
               <LucideShoppingCart
                 size={20}
                 color="#B17236"
                 className="hover:animate-bounce"
               />
             </div>
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#30A08B] opacity-15 group-hover:scale-105 transition-transform duration-300"></div>
+
           </div>
           <p className="text-xs ms-1 font-semibold text-gray-700 mt-1">
             {article.name}
