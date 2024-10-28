@@ -25,9 +25,7 @@ const ConfidentialitePage = () => {
           </div>
         ))}
       </div>
-      <div className='mt-4'>
-        <button onClick={() => navigation(-1)} className='btn border border-secondary text-[#30A08B]'>Retour</button>
-      </div>
+    
     </div>
   );
 };

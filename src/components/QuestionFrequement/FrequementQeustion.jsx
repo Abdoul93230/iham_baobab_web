@@ -21,10 +21,7 @@ const FrequementQeustion = () => {
           </div>
         ))}
       </div>
-      <div className='mt-4' onClick={() => navigate(-1)}>
-        <button className='btn border-secondary text-[#30A08B]'>Retour </button>
-
-      </div>
+   
     </div>
   );
 };

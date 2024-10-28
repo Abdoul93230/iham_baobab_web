@@ -37,6 +37,7 @@ function ProduitDetailMain() {
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
   const [rating, setRating] = useState(0);
+  const [isOpenCountry, setIsOpenCountry] = useState(false);
 
   const handleMouseEnter = () => {
     setIsZoomed(true);
@@ -306,6 +307,8 @@ function ProduitDetailMain() {
             >
               <span className="text-lg">→</span>
             </div>
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#30A08B] opacity-10 group-hover:scale-105 transition-transform duration-300"></div>
+
           </div>
 
           <div className="flex lg:flex-1">
@@ -421,7 +424,7 @@ function ProduitDetailMain() {
               </div>
               {isCountryOpen && (
                 <div className="fixed inset-0 p-3 z-10 flex items-center justify-center bg-black bg-opacity-50">
-                  <CountryPage />
+                  <CountryPage isOpen={isOpenCountry} onClose={() => setIsOpenCountry(false)} />
                 </div>
               )}
             </div>

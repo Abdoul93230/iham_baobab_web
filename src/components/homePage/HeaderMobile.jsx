@@ -63,7 +63,7 @@ const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
       bgColor: 'from-red-400 to-red-600',
       countBg: 'bg-emerald-500',
       label: 'Wishlist',
-      onClick: () => navigate("/Wishlist"),
+      onClick: () => navigate("/Like produit"),
     },
     {
       icon: ShoppingCart,
