@@ -126,7 +126,7 @@ const Home = ({isOpen}) => {
                 if(category.name =="all"){
                   return null;
                 }
-                return <li onClick={() =>  navigation("/Homme")} key={category.id} className="mb-2">
+                return <li key={category._id} onClick={() =>  navigation(`/Categorie/${category.name}`)} className="mb-2">
                   <button className="w-full text-left py-2 px-4 rounded hover:bg-[#FFE9CC] transition-colors duration-200 flex items-center space-x-2">
                     {/* <span>{category.icon}</span> */}
 
@@ -205,7 +205,7 @@ const Home = ({isOpen}) => {
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {getRandomElementss(DATA_Products,4).map((product) => (
                   <div
-                    key={product.id}
+                    key={product._id}
                     className="bg-white rounded-lg overflow-hidden transition-transform duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
                   >
                     <div className="relative">
@@ -218,7 +218,7 @@ const Home = ({isOpen}) => {
                         Nouveau
                       </span>
                     
-                      <div onClick={() => navigation("/Produit détail")} className="absolute inset-0 bg-gradient-to-b from-transparent to-[#30A08B] opacity-30 group-hover:scale-105 transition-transform duration-300"></div>
+                      <div onClick={() => navigation(`/ProduitDétail/${product._id}`)} className="absolute inset-0 bg-gradient-to-b from-transparent to-[#30A08B] opacity-30 group-hover:scale-105 transition-transform duration-300"></div>
 
                     </div>
                     

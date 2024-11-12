@@ -9,6 +9,9 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, toast } from "react-toastify";
 import { useLocation } from "react-router-dom";
 import LoadingIndicator from "../../pages/LoadingIndicator";
+import Alert from "../../pages/Alert";
+
+
 import axios from "axios";
 
 const BackendUrl = process.env.REACT_APP_Backend_Url;
@@ -16,32 +19,7 @@ const BackendUrl = process.env.REACT_APP_Backend_Url;
 const Connexion = ({chg}) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loginMethod, setLoginMethod] = useState("email");
-  const navigation = useNavigate();
-
-  const handleAlert = (message) => {
-    toast.success(`${message} !`, {
-      position: toast.POSITION.TOP_RIGHT,
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-    });
-  };
-
-  const handleAlertwar = (message) => {
-    toast.warn(`${message} !`, {
-      position: toast.POSITION.TOP_RIGHT,
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-    });
-  };
-  
+  const [alert, setAlert] = useState({ visible: false, type: "", message: "ds" });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -49,7 +27,45 @@ const Connexion = ({chg}) => {
   const location = useLocation();
   const regexMail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const regexPhone = /^[0-9]{8,}$/;
+  const navigation = useNavigate();
+ 
+ 
+ 
+  const showAlert = (type, message) => {
+    setAlert({ visible: true, type, message });
+    setTimeout(() => {
+      setAlert({ visible: false, type: "", message: "" });
+    }, 5000); // 3 secondes
+  };
+  
+  const handleSuccess = (message) => {
+    showAlert("success", message);
+  };
 
+  const handleWarning = (message) => {
+    showAlert("warn", message);
+  };
+  
+  
+  
+
+  const navigateBasedOnLocation = () => {
+    const location = new URLSearchParams(window.location.search);
+    const destinations = {
+      fromCart: "/NotificationHeader",
+      fromProfile: "/Profile",
+      fromMore: "/More",
+      fromMessages: "/Messages",
+    };
+
+    for (const [key, path] of Object.entries(destinations)) {
+      if (location.get(key)) {
+        navigation(`${path}?${key}=true`);
+        return;
+      }
+    }
+    navigation("/Home");
+  };
 
   const login = async(e)=>{
     e.preventDefault();
@@ -58,7 +74,7 @@ const Connexion = ({chg}) => {
     // Fonction pour gérer les erreurs
     const handleError = (message) => {
       setIsloading(false);
-      alert(message);
+      handleWarning(message);
     };
 
 
@@ -103,36 +119,13 @@ const Connexion = ({chg}) => {
       });
 
       if (response.status === 200) {
-        handleAlert(response.data.message);
+        handleSuccess(response.data.message);
         setIsloading(false);
         chg("oui");
         setEmail('')
         setPassword('')
         setPhoneNumber('')
-        console.log(response.data)
-        const fromCartParam = new URLSearchParams(location.search).get(
-          "fromCart"
-        );
-        const fromCartProfile = new URLSearchParams(location.search).get(
-          "fromProfile"
-        );
-        const fromCartMore = new URLSearchParams(location.search).get(
-          "fromMore"
-        );
-        const fromCartMessages = new URLSearchParams(location.search).get(
-          "fromMessages"
-        );
-        if (fromCartParam) {
-          navigation("/Cart?fromCart=true");
-        } else if (fromCartProfile) {
-          navigation("/Profile");
-        } else if (fromCartMore) {
-          navigation("/More");
-        } else if (fromCartMessages) {
-          navigation("/Messages");
-        } else {
-          navigation("/Home");
-        }
+        navigateBasedOnLocation()
         localStorage.setItem(`userEcomme`, JSON.stringify(response.data));
       } else {
         handleError(response.data.message);
@@ -150,6 +143,11 @@ const Connexion = ({chg}) => {
        
 
   }
+
+
+
+
+
 
 
   if(isloading){
@@ -367,6 +365,9 @@ const Connexion = ({chg}) => {
           </span>
         </p>
       </div>
+      {alert.visible && (
+        <Alert type={alert.type} message={alert.message} onClose={() => setAlert({ visible: false })} />
+      )}
     </div>
   );
 };

@@ -68,7 +68,8 @@ const comments = [
     ],
   },
 ];
-function CommentaireProduit() {
+function CommentaireProduit({coments}) {
+  // console.log(coments)
   const [showModal, setShowModal] = useState(false);
   const swiperRef = useRef(null);
 

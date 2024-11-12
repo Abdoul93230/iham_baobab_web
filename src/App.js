@@ -127,7 +127,10 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/Connexion" element={<Connexion />} />
-            <Route path="/Inscription" element={<Inscription />} />
+            <Route
+              path="/Inscription"
+              element={<Inscription chg={changeA} />}
+            />
             <Route path="/Home" element={<Home />} />
             <Route path="/Forget Password" element={<ForgetPassword />} />
             <Route path="/ProduitDétail/:id" element={<ProduitDetail />} />
@@ -140,7 +143,7 @@ function App() {
             <Route
               path="/Compte"
               element={
-                acces === "oui" ? <Compte /> : <Connexion chg={changeA} n />
+                acces === "oui" ? <Compte /> : <Connexion chg={changeA} />
               }
             />
             <Route
@@ -218,7 +221,7 @@ function App() {
               }
             />
             <Route
-              path="/Notification header"
+              path="/NotificationHeader"
               element={
                 acces === "oui" ? <BellPage /> : <Connexion chg={changeA} />
               }
@@ -229,11 +232,17 @@ function App() {
                 acces === "oui" ? <ResusCommand /> : <Connexion chg={changeA} />
               }
             />
-            <Route path="/Homme" element={<Homme />} />
+            <Route path="/Categorie/:name" element={<Homme />} />
+            <Route path="/Categorie/:name/:type" element={<Homme />} />
             <Route path="/Voir-plus" element={<Voir />} />
             <Route path="/Nouveau produit" element={<Nouveau />} />
             <Route path="/Produit promotions" element={<Promotion />} />
-            <Route path="/Like produit" element={<LikeProduit />} />
+            <Route
+              path="/Like produit"
+              element={
+                acces === "oui" ? <LikeProduit /> : <Connexion chg={changeA} />
+              }
+            />
           </Routes>
         </BrowserRouter>
       </div>

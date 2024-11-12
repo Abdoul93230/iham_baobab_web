@@ -8,6 +8,7 @@ import logo from '../../image/logo.png';
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoadingIndicator from '../../pages/LoadingIndicator';
+import Alert from '../../pages/Alert';
 import axios from 'axios';
 const BackendUrl = process.env.REACT_APP_Backend_Url;
 
@@ -16,6 +17,7 @@ const BackendUrl = process.env.REACT_APP_Backend_Url;
 function Inscription({chg}) {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [alert, setAlert] = useState({ visible: false, type: "", message: "ds" });
     const navigation = useNavigate();
     
 
@@ -30,34 +32,70 @@ function Inscription({chg}) {
     const regexPhone = /^[0-9]{8,}$/;
     const location = useLocation();
     
-    const handleAlert = (message) => {
-        toast.success(`${message} !`, {
-          position: toast.POSITION.TOP_RIGHT,
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
-      };
+    // const handleAlert = (message) => {
+    //     toast.success(`${message} !`, {
+    //       position: toast.POSITION.TOP_RIGHT,
+    //       autoClose: 3000,
+    //       hideProgressBar: false,
+    //       closeOnClick: true,
+    //       pauseOnHover: true,
+    //       draggable: true,
+    //       progress: undefined,
+    //     });
+    //   };
     
-      const handleAlertwar = (message) => {
-        toast.warn(`${message} !`, {
-          position: toast.POSITION.TOP_RIGHT,
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
-      };
+    //   const handleAlertwar = (message) => {
+    //     toast.warn(`${message} !`, {
+    //       position: toast.POSITION.TOP_RIGHT,
+    //       autoClose: 3000,
+    //       hideProgressBar: false,
+    //       closeOnClick: true,
+    //       pauseOnHover: true,
+    //       draggable: true,
+    //       progress: undefined,
+    //     });
+    //   };
 
       const validateEmail = (email) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
       };
+
+      const showAlert = (type, message) => {
+        setAlert({ visible: true, type, message });
+        setTimeout(() => {
+          setAlert({ visible: false, type: "", message: "" });
+        }, 5000); // 3 secondes
+      };
+      
+      const handleAlert = (message) => {
+        showAlert("success", message);
+      };
+    
+      const handleAlertwar = (message) => {
+        showAlert("warn", message);
+      };
+
+
+
+      const navigateBasedOnLocation = () => {
+        const location = new URLSearchParams(window.location.search);
+        const destinations = {
+          fromCart: "/NotificationHeader",
+          fromProfile: "/Profile",
+          fromMore: "/More",
+          fromMessages: "/Messages",
+        };
+    
+        for (const [key, path] of Object.entries(destinations)) {
+          if (location.get(key)) {
+            navigation(`${path}?${key}=true`);
+            return;
+          }
+        }
+        navigation("/Home");
+      };
+
 
 
 
@@ -166,29 +204,7 @@ function Inscription({chg}) {
                     handleAlert(user.data.message);
                     setIsloading(false);
                     chg("oui");
-                    const fromCartParam = new URLSearchParams(location.search).get(
-                      "fromCart"
-                    );
-                    const fromCartProfile = new URLSearchParams(
-                      location.search
-                    ).get("fromProfile");
-                    const fromCartMore = new URLSearchParams(location.search).get(
-                      "fromMore"
-                    );
-                    const fromCartMessages = new URLSearchParams(
-                      location.search
-                    ).get("fromMessages");
-                    if (fromCartParam) {
-                      navigue("/Panier?fromCart=true");
-                    } else if (fromCartProfile) {
-                      navigue("/Profile");
-                    } else if (fromCartMore) {
-                      navigue("/More");
-                    } else if (fromCartMessages) {
-                      navigue("/Messages");
-                    } else {
-                      navigue("/Home");
-                    }
+                    navigateBasedOnLocation()
                     localStorage.setItem(`userEcomme`, JSON.stringify(user.data));
                   } else {
                     handleAlertwar(user.data.message);
@@ -197,7 +213,6 @@ function Inscription({chg}) {
                 .catch((error) => {
                   setIsloading(false);
                   if (error.response.status === 400){
-    
                     handleAlertwar(error.response.data.message);
                     console.log('non1')
                   }
@@ -452,6 +467,9 @@ function Inscription({chg}) {
                     </span>
                 </p>
             </div>
+            {alert.visible && (
+        <Alert type={alert.type} message={alert.message} onClose={() => setAlert({ visible: false })} />
+      )}
         </div>
     );
 }

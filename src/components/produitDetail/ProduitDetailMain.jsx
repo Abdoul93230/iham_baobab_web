@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   MapPin,
   Truck,
@@ -18,9 +18,15 @@ import {
   FaWhatsapp,
   FaStar,
 } from "react-icons/fa";
+import { Helmet } from "react-helmet";
 import ProduitSimilaires from "./ProduitSimilaires";
 import CommentaireProduit from "./CommentaireProduit";
 import CountryPage from "./CountryPage";
+import axios from "axios";
+import { useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
+
+
 
 function ProduitDetailMain() {
   const swiperRef = useRef(null);
@@ -38,7 +44,19 @@ function ProduitDetailMain() {
   const [commentText, setCommentText] = useState("");
   const [rating, setRating] = useState(0);
   const [isOpenCountry, setIsOpenCountry] = useState(false);
+  const [Allcommente, setAllCommente] = useState([]);
 
+  // const [allTypes, setAllTypes] = useState([]);
+  // const [allCategories, setAllCategories] = useState([]);
+  // const [allProducts, setAllProducts] = useState([]);
+  const BackendUrl = process.env.REACT_APP_Backend_Url;
+  const DATA_Products = useSelector((state) => state.products.data);
+  const DATA_Types = useSelector((state) => state.products.types);
+  const DATA_Categories = useSelector((state) => state.products.categories);
+  const DATA_Pubs = useSelector((state) => state.products.products_Pubs);
+
+  const params = useParams()
+  const produit = DATA_Products.find(item => item._id ===params.id) 
   const handleMouseEnter = () => {
     setIsZoomed(true);
   };
@@ -102,18 +120,9 @@ function ProduitDetailMain() {
   };
 
   const images = [
-    "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
-    "https://ae-pic-a1.aliexpress-media.com/kf/Seb6097b909364b93a597ec439dd486c3i.jpg_480x480.jpg_.webp",
-    "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
-
-    "https://ae-pic-a1.aliexpress-media.com/kf/Seb6097b909364b93a597ec439dd486c3i.jpg_480x480.jpg_.webp",
-    "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
-
-    "https://ae-pic-a1.aliexpress-media.com/kf/Seb6097b909364b93a597ec439dd486c3i.jpg_480x480.jpg_.webp",
-    "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
-
-    "https://ae-pic-a1.aliexpress-media.com/kf/Seb6097b909364b93a597ec439dd486c3i.jpg_480x480.jpg_.webp",
-    // Ajoute d'autres images si nécessaire...
+    DATA_Products.find(item => item._id ===params.id)?.image1,
+    DATA_Products.find(item => item._id ===params.id)?.image2,
+    DATA_Products.find(item => item._id ===params.id)?.image3,
   ];
 
   const handlePrev = () => {
@@ -135,18 +144,7 @@ function ProduitDetailMain() {
     { size: "43", cm: "26.5CM" },
     // Ajoutez d'autres tailles si nécessaire
   ];
-  const imageColorMap = [
-    {
-      image:
-        "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
-      color: "White",
-    },
-    {
-      image:
-        "https://ae-pic-a1.aliexpress-media.com/kf/Seb6097b909364b93a597ec439dd486c3i.jpg_480x480.jpg_.webp",
-      color: "Black",
-    },
-  ];
+  const imageColorMap = DATA_Products.find(item => item._id ===params.id)?.pictures || [];
 
   const decreaseQuantity = () => setQuantity((prev) => Math.max(1, prev - 1));
   const increaseQuantity = () => setQuantity((prev) => Math.min(5, prev + 1));
@@ -251,8 +249,37 @@ function ProduitDetailMain() {
     }
   };
 
+
+
+useEffect(()=>{
+  axios
+  .get(`${BackendUrl}/getAllCommenteProduitById/${params.id}`)
+  .then((coments) => {
+    setAllCommente(coments.data);
+    // console.log(coments.data);
+  })
+  .catch((error) => {
+    console.log(error);
+  });
+
+},[params.id])
+
+
+
+
   return (
     <div className="container mx-auto p-4" ref={swiperRef}>
+
+        <Helmet>
+          <title>{produit?.name}</title>
+          {/* <link rel="icon" href="/chemin/vers/votre/nouveau/favicon.ico" /> */}
+          <link rel="icon" type="image" href={produit?.image1} />
+          <link rel="apple-touch-icon" href={produit?.image1} />
+          <meta property="og:title" content={produit?.name} />
+          <meta property="og:description" content={produit?.description} />
+          <meta property="og:image" content={produit?.image1} />
+        </Helmet>
+
       <div className="flex flex-col lg:flex-row gap-2">
         <div
           className="w-full lg:w-auto h-40 lg:h-96"
@@ -339,9 +366,7 @@ function ProduitDetailMain() {
                 </div>
                 <p className="text-xs text-gray-600">Prix hors taxe</p>
                 <p className="font-bold text-xs">
-                  Baskets décontractées respirantes pour hommes, chaussures de
-                  course légères, chaussures de sport souples pour hommes,
-                  blanc, été, grande taille 35-45, nouveau
+                  {produit.name}
                 </p>
               </div>
 
@@ -368,7 +393,7 @@ function ProduitDetailMain() {
                   >
                     <img
                       className="w-full h-full object-cover cursor-pointer"
-                      src={item.image}
+                      src={item}
                       alt={`Image ${index + 1}`}
                       onClick={() => {
                         setActiveImageIndex(index);
@@ -608,22 +633,22 @@ function ProduitDetailMain() {
           Produit Détail
         </h2>
 
-        <p className="text-gray-700 leading-relaxed">
-          <span className="font-bold">Lorem ipsum:</span> dolor sit amet
-          consectetur adipisicing elit. Provident nobis praesentium illo,
-          maiores eaque, numquam totam odit aperiam rem soluta tenetur pariatur
-          deleniti exercitationem! Aliquid ex hic magnam vitae eligendi? Cum non
-          blanditiis vel corrupti veniam unde atque, ut incidunt.
+        <p className="text-gray-700 leading-relaxed"
+        dangerouslySetInnerHTML={{
+          __html: produit?.description,
+        }}
+        >
+          
         </p>
 
-        <p className="text-gray-700 leading-relaxed mt-4">
+        {/* <p className="text-gray-700 leading-relaxed mt-4">
           <span className="font-bold">Lorem ipsum:</span> dolor sit amet
           consectetur, adipisicing elit. Omnis eius neque ratione fugit. Nulla
           quasi aperiam beatae odio fugiat, ipsum sequi ullam accusamus.
-        </p>
+        </p> */}
       </div>
       <ProduitSimilaires />
-      <CommentaireProduit />
+      <CommentaireProduit coments={Allcommente}/>
       
     </div>
   );
