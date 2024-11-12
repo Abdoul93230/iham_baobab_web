@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { X, ChevronUp, ChevronDown, Sparkles, Bell, Heart, ShoppingCart } from 'lucide-react';
-
+import { useSelector } from 'react-redux';
+import { useNavigate } from "react-router-dom";
 const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
   const [openSection, setOpenSection] = useState(null);
   const [hoveredItem, setHoveredItem] = useState(null);
+  const navigation = useNavigate()
+  const DATA_Types = useSelector((state) => state.products.types);
+  const DATA_Categories = useSelector((state) => state.products.categories);
 
   const toggleSection = (sectionId) => {
     setOpenSection(openSection === sectionId ? null : sectionId);
@@ -16,11 +20,12 @@ const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
     {
       id: 1,
       question: "Catégories",
-      answers: [
-        "Électronique",
-        "Mode",
-        "Maison & jardin"
-      ]
+      // answers: [
+      //   "Électronique",
+      //   "Mode",
+      //   "Maison & jardin"
+      // ]
+      answers: DATA_Categories.filter(item=>item.name!=="all").map(item=>item.name)
     },
     {
       id: 2,
@@ -32,6 +37,14 @@ const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
         "Mes addresses",
         "Faire une Suggestions",
         "Se déconnecter"
+      ],
+      links:[
+        "/Compte",
+        "/Commande",
+        "/Inviter les amis",
+        "/Livraison",
+        "/Suggestion",
+        "/Se déconnecter",
       ]
     },
     {
@@ -45,6 +58,15 @@ const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
         "Avis de confidentialité",
         "Question fréquemment possées",
         "Information Legal"
+      ],
+      links:[
+        "/Centre d'aide",
+        "/Livraison",
+        "/Paement",
+        "/Paramètre de notification",
+        "/Avis de confidentialité",
+        "/Question Fréquement possées",
+        "/Legal information",
       ]
     }
   ];
@@ -99,15 +121,16 @@ const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
       {/* Contenu principal avec défilement */}
       <div className="relative flex flex-col space-y-4 p-4 overflow-y-auto h-[calc(100vh-180px)]">
         {/* Boutons fixes */}
-        {['Promotions', 'Nouveautés'].map((item, idx) => (
+        {[{name:'Promotions',link:"/Produit promotions"}, {name:'Nouveautés',link:"/Nouveau produit"}].map((item, idx) => (
           <button 
-            key={item}
+            key={idx}
+            onClick={ ()=>navigation(item.link)}
             className="group relative w-full p-3 bg-white/10 backdrop-blur-md rounded-lg shadow-lg transform hover:scale-105 hover:translate-y-[-4px] transition-all duration-500"
             style={{ animationDelay: `${idx * 150}ms` }}
           >
             <div className="absolute inset-0 bg-gradient-to-r from-[#30A08B]/50 to-[#B2905F]/50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <span className="relative text-white text-lg font-medium group-hover:tracking-wider transition-all duration-500">
-              {item}
+              {item.name}
             </span>
           </button>
         ))}
@@ -153,7 +176,15 @@ const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
                     key={index}
                     onMouseEnter={() => setHoveredItem(`${section.id}-${index}`)}
                     onMouseLeave={() => setHoveredItem(null)}
-                    onClick={() => handleItemClick(answer)}
+                    onClick={() => {handleItemClick(answer);
+                      if(section.question ==="Catégories"){
+                        navigation(`/Categorie/${answer}`)
+                      }else if(section.question ==="Compte"){
+                        navigation(`${section.links[index]}`)
+                      }else if(section.question ==="Plus"){
+                        navigation(`${section.links[index]}`)
+                      }
+                    }}
                     className="relative w-full p-3 text-start transition-all duration-500 hover:pl-6"
                     style={{
                       animation: 'slideInRight 0.5s ease-out forwards',
