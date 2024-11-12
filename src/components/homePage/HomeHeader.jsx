@@ -236,7 +236,7 @@ function HomeHeader() {
         <Menu className="w-8 h-8" />
       </button>
       <button className="bg-green-500 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
-        <div className="relative text-amber-800 hover:text-amber-900" aria-label="Notifications" onClick={() => navigate("/Notification header")}>
+        <div className="relative text-amber-800 hover:text-amber-900" aria-label="Notifications" onClick={() => navigate("/NotificationHeader")}>
         <Bell className="h-6 w-6" />
         <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-4 h-4 text-xs text-white flex items-center justify-center">3</span>
       </div>
@@ -328,7 +328,7 @@ function HomeHeader() {
               {activeDropdown === 'help' && renderDropdownContent('help')}
             </div>
 
-            <button onClick={() => navigate("/Notification header")} className="relative text-amber-800 hover:text-amber-900" aria-label="Notifications">
+            <button onClick={() => navigate("/NotificationHeader")} className="relative text-amber-800 hover:text-amber-900" aria-label="Notifications">
               {/* Je veux que tu me créer un contenu pour mon panier si une fois je clique sur cette button  */}
               <Bell className="h-6 w-6" />
 

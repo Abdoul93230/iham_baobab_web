@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Search,
   ShoppingCart,
@@ -12,7 +12,8 @@ import {
 } from "lucide-react";
 import {FaWhatsapp, FaInstagram, FaTwitter, FaFacebook, FaLinkedin} from "react-icons/fa"
 import LogoText from "../../image/LogoText.png";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 const comments = [
   {
     id: 1,
@@ -36,6 +37,68 @@ const DetailHomme = ({setCartCount}) => {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [likedProducts, setLikedProducts] = useState(new Set());
+  const [ptAll, setPtAll] = useState([]);
+  const params = useParams();
+  const navigation = useNavigate();
+  ////////////////////////////////recuperation des donnees /////////////////////////////////////////////////////
+  const DATA_Products = useSelector((state) => state.products.data);
+  const DATA_Types = useSelector((state) => state.products.types);
+  const DATA_Categories = useSelector((state) => state.products.categories);
+  const DATA_Commentes = useSelector(
+    (state) => state.products.products_Commentes
+  );
+  const DATA_Products_pubs = useSelector(
+    (state) => state.products.products_Pubs
+  );
+  ////////////////////////////////recuperation des donnees ////////////////////////////////////////////////////
+
+  //////////////////////////////// la clef de la categorie //////////////////////////////////////////////////
+  const ClefCate = DATA_Categories
+      ? DATA_Categories.find((item) => item.name === params?.name)
+      : null;
+  //////////////////////////////// la clef de la categorie //////////////////////////////////////////////////
+
+  // la clef du type //////////////////////////////////////////////////
+  const ClefTypes = DATA_Types
+  ? DATA_Types.find((item) => item.name === params?.type)
+  : null;
+
+
+////////////////////////////// categorie comments
+
+const typeesInCategory = DATA_Types.filter(type=>type.clefCategories ===ClefCate._id)
+
+const filterComments = DATA_Commentes.filter(comments=>typeesInCategory.some(type=>type._id===comments.clefType)) || [];
+
+// console.log( filterComments)
+
+useEffect(()=>{
+  window.scrollTo(0, 0);
+  if (params.type) {
+    setPtAll(
+      DATA_Products.filter((item) =>
+        DATA_Types.some(
+          (type) => type.name === params.type && item.ClefType === type._id
+        )
+      )
+    );
+  } else {
+    setPtAll(
+      DATA_Products.filter((item) =>
+        DATA_Types.some(
+          (type) =>
+            type.clefCategories === ClefCate?._id &&
+            item.ClefType === type._id
+        )
+      )
+    );
+   
+  }
+},[params.name,params.type,activeCategory])
+
+ 
+
+
 
   const categories = [
     { id: "all", name: "Tous les produits" },
@@ -102,10 +165,10 @@ const DetailHomme = ({setCartCount}) => {
   };
   const getFilteredProducts = () => {
     if (activeCategory === "all") {
-      return products;
+      return ptAll;
     }
-    return products.filter(
-      product => product.category.toLowerCase() === activeCategory.toLowerCase()
+    return ptAll.filter(
+      product => product.ClefType === activeCategory
     );
   };
 
@@ -128,23 +191,39 @@ const DetailHomme = ({setCartCount}) => {
     setTimeout(() => setIsAnimating(false), 300); 
   };
   const filteredProducts = getFilteredProducts();
+
+  const formatDate = (dateString) => {
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
  
-      const CommentCard = ({ comment }) => (
+      const CommentCard = ({ comment,product }) => (
         <div className="p-2 border rounded-md" ref={swiperRef}>
           <div className="flex items-center mb-2">
-            <div className="w-10 h-10 bg-pink-100 rounded-full mr-2"></div>
+            <div 
+              style={{
+                textAlign: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 'bold'
+              }}
+            className="w-10 h-10 bg-pink-100 rounded-full mr-2">
+              {comment.userName?.split(' ').map((word)=>word.charAt(0)).join("")}
+            </div>
             <div className="flex">
-              {[...Array(5)].map((_, i) => (
+              {[...Array(comment.etoil)].map((_, i) => (
                 <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
               ))}
             </div>
           </div>
           <p className="text-gray-600 mb-2">
-            Color: {comment.color} | Shoe Size: {comment.size}
+            {/* Color: {comment.color} | Shoe Size: {comment.size} */}
+            {comment.userName?comment.userName:""}
           </p>
-          <p className="text-gray-800 mb-4">{comment.review}</p>
+          <p className="text-gray-800 mb-4">{comment.description}</p>
           <div className="grid grid-cols-6 gap-2 mb-4">
-            {comment.images.map((image, index) => (
+            {[product.image1,product.image2,product.image3].map((image, index) => (
               <div
                 key={index}
                 className="bg-gray-200 h-22 border overflow-hidden rounded-md"
@@ -155,7 +234,7 @@ const DetailHomme = ({setCartCount}) => {
           </div>
           <div className="flex justify-between items-center text-sm text-gray-500">
             <span>
-              {comment.name} | {comment.date}
+              {product.name.slice(0,20)}... | {formatDate(comment.date)}
             </span>
             <div className="flex text-nowrap cursor-pointer items-center">
               <svg
@@ -203,12 +282,27 @@ const DetailHomme = ({setCartCount}) => {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex space-x-4 lg:space-x-8">
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => handleCategoryClick(category.id)}
+
+            <button
+                  
+                  onClick={() => handleCategoryClick("all")}
                   className={`text-white-900  hover:text-[#30A08B] transition-colors text-sm lg:text-base ${
-                    activeCategory === category.id
+                    activeCategory === "all"
+                      ? "font-bold text-[#30A08B]"
+                      : "text-[#B17236]"
+                  }`}
+                >
+                  {"Tous les produits"}
+                </button>
+
+              {DATA_Types?.filter(
+              (para) => para.clefCategories === ClefCate?._id
+            ).map((category) => (
+                <button
+                  key={category._id}
+                  onClick={() => handleCategoryClick(category._id)}
+                  className={`text-white-900  hover:text-[#30A08B] transition-colors text-sm lg:text-base ${
+                    activeCategory === category._id
                       ? "font-bold text-[#30A08B]"
                       : "text-[#B17236]"
                   }`}
@@ -216,6 +310,7 @@ const DetailHomme = ({setCartCount}) => {
                   {category.name}
                 </button>
               ))}
+              
             </nav>
 
             {/* Actions */}
@@ -264,11 +359,23 @@ const DetailHomme = ({setCartCount}) => {
         {isMenuOpen && (
           <div className="md:hidden bg-white border-t">
             <div className="px-4 py-2 space-y-1">
-              {categories.map((category) => (
-                <button
-                  key={category.id}
+            <button
+                  
                   onClick={() => {
-                    setActiveCategory(category.id);
+                    handleCategoryClick("all")
+                    setIsMenuOpen(false);
+                  }}
+                  className="block w-full text-left px-3 py-2 text-base hover:bg-gray-50 hover:text-[#30A08B] transition-colors"
+                >
+                  {"Tous les produits"}
+                </button>
+              {DATA_Types?.filter(
+              (para) => para.clefCategories === ClefCate?._id
+            ).map((category) => (
+                <button
+                  key={category._id}
+                  onClick={() => {
+                    setActiveCategory(category._id);
                     setIsMenuOpen(false);
                   }}
                   className="block w-full text-left px-3 py-2 text-base hover:bg-gray-50 hover:text-[#30A08B] transition-colors"
@@ -333,59 +440,69 @@ const DetailHomme = ({setCartCount}) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
       {filteredProducts.map((product) => (
         <div
-          key={product.id}
+          key={product._id}
+          
           className="bg-white rounded-lg shadow-md overflow-hidden group flex flex-col transform hover:-translate-y-1 transition-all duration-300"
         >
           <div className="relative flex-grow">
             <img
-              src={product.image}
+            onClick={() => navigation(`/ProduitDétail/${product._id}`)}
+              src={product.image1}
               alt={product.name}
               className="w-full h-48 sm:h-56 md:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
             />
        <button
       className={`absolute top-4 right-4 p-2 bg-white rounded-full shadow-md transition-colors duration-300 
-        ${likedProducts.has(product.id) ? 'bg-red-500 cursor-not-allowed' : 'hover:bg-gray-100'}`}
-      onClick={() => !likedProducts.has(product.id) && handleClick(product.id)}
-      disabled={likedProducts.has(product.id)}
-      title={likedProducts.has(product.id) ? "Déjà liké" : "Liker ce produit"}
+        ${likedProducts.has(product._id) ? 'bg-red-500 cursor-not-allowed' : 'hover:bg-gray-100'}`}
+      onClick={() => !likedProducts.has(product._id) && handleClick(product._id)}
+      disabled={likedProducts.has(product._id)}
+      title={likedProducts.has(product._id) ? "Déjà liké" : "Liker ce produit"}
     >
       <Heart
         className={`w-5 h-5 transition-transform duration-300 
-          ${likedProducts.has(product.id) ? 'text-[#62aca2bb] scale-110' : 'text-[#B17236]'}
+          ${likedProducts.has(product._id) ? 'text-[#62aca2bb] scale-110' : 'text-[#B17236]'}
           ${isAnimating ? 'scale-100' : 'scale-100'}`}
       />
     </button>
-            {product.isOnSale && (
-              <span className="absolute top-2 left-2 bg-[#62aca2bb] text-white text-xs font-bold py-1 px-2 rounded-full">
-                -10%
-              </span>
-            )}
+            
+
+            {product.prixPromo > 0 && (
+              
+                   <span className="absolute top-2 left-2 bg-[#62aca2bb] text-white text-xs font-bold py-1 px-2 rounded-full">
+                    - {Math.round(
+                        ((product.prix - product.prixPromo) / product.prix) * 100
+                      )}{" "}%
+                 </span>
+                )}
+
           </div>
           <div className="p-4">
             <h3 className="text-base md:text-lg font-medium mb-2 text-gray-800">
-              {product.name}
+              {product.name.slice(0,30)}...
             </h3>
             <div className="flex items-start justify-between mb-4">
               <div>
-                {product.isOnSale ? (
+                {product.prixPromo >0 ? (
                   <>
                     <p className="text-lg md:text-xl font-bold text-[#B17236] line-through">
-                      F {product.price.toLocaleString()}
+                      F {product.prix.toLocaleString()}
                     </p>
                     <p className="text-lg md:text-xl font-bold text-[#30A08B]">
-                      F {product.salePrice.toLocaleString()}
+                      F {product.prixPromo.toLocaleString()}
                     </p>
                   </>
                 ) : (
                   <p className="text-lg md:text-xl font-bold text-[#B17236]">
-                    F {product.price.toLocaleString()}
+                    F {product.prix.toLocaleString()}
                   </p>
                 )}
               </div>
               <div className="flex items-center">
                 <span className="text-[#B2905F]">★</span>
                 <span className="ml-1 text-sm text-gray-600">
-                  {product.rating} ({product.reviews})
+                  {4.8} ({
+                    DATA_Commentes.filter(item=>item.clefProduct === product._id).length
+                  })
                 </span>
               </div>
             </div>
@@ -398,6 +515,29 @@ const DetailHomme = ({setCartCount}) => {
           </div>
         </div>
       ))}
+
+{
+  filteredProducts?.length <= 0 ? (
+    <div
+      style={{
+        textAlign: 'center',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontWeight: 'bold',
+        width: '100%',
+        
+        color: '#333',
+        fontSize: '1.2em'
+      }}
+    >
+      Aucun produit correspondant trouvé pour ce type. Veuillez essayer un autre type.
+    </div>
+  ) : null
+}
+
+
+
     </div>
 
 
@@ -418,8 +558,8 @@ const DetailHomme = ({setCartCount}) => {
           </div>
           <div className="overflow-y-auto flex-grow p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {comments.map((comment) => (
-                <CommentCard key={comment.id} comment={comment} />
+              {filterComments?.map((comment) => (
+                <CommentCard key={comment._id} product={DATA_Products?.find(item=>item._id=== comment.clefProduct)} comment={comment} />
               ))}
             </div>
           </div>
