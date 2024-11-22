@@ -43,18 +43,16 @@ const products = [
   },
 ];
 
-
-
 const carouselImages = [
   "https://media.istockphoto.com/id/1357529194/fr/photo/rendu-3d-dun-salon-de-style-moderne-avec-chemin%C3%A9e.jpg?s=612x612&w=0&k=20&c=KZBiX2zyVuyoKRuzM95892W7Fr0Rb2vX9qUAN1phS10=",
   "https://media.istockphoto.com/id/1040810144/photo/unknown-woman-cutting-a-paprika.jpg?s=612x612&w=0&k=20&c=e6t5CL5zrpioK3uJ-TPkEpbWhbKvZPW8cC-y26HtBr8=",
   // Ajoute d'autres images ici
 ];
 
-const Home = ({isOpen}) => {
+const Home = ({ isOpen }) => {
   const BackendUrl = process.env.REACT_APP_Backend_Url;
   const swiperRef = useRef(null);
-  const navigation = useNavigate()
+  const navigation = useNavigate();
 
   const [allTypes, setAllTypes] = useState([]);
   const [allCategories, setAllCategories] = useState([]);
@@ -65,11 +63,9 @@ const Home = ({isOpen}) => {
   const DATA_Categories = useSelector((state) => state.products.categories);
   const DATA_Pubs = useSelector((state) => state.products.products_Pubs);
 
-  
   const clefElectronique = DATA_Categories
-  ? DATA_Categories.find((item) => item.name === "électroniques")
-  : null;
-
+    ? DATA_Categories.find((item) => item.name === "électroniques")
+    : null;
 
   function getRandomElements(array) {
     const shuffledArray = shuffle(array);
@@ -84,14 +80,33 @@ const Home = ({isOpen}) => {
     return shuffledArray.slice(0, nbr);
   }
 
-
   const categories = [
-    { id: 1, name: "Homme", icon: "🏠", onClick: () => navigation("/Homme")},
-    { id: 2, name: "Électronique", icon: "📱", onClick: () =>  navigation("/Homme")},
-    { id: 3, name: "Beauté", icon: "💄", onClick: () =>  navigation("/Homme") },
-    { id: 4, name: "Cuisine & Ustensiles", icon: "🍳", onClick: () =>  navigation("/Homme")},
-    { id: 5, name: "Électroménager", icon: "🔌", onClick: () =>  navigation("/Homme")},
-    { id: 6, name: "Voir plus", icon: "➡️", onClick: () =>  navigation("/Voir-plus")},
+    { id: 1, name: "Homme", icon: "🏠", onClick: () => navigation("/Homme") },
+    {
+      id: 2,
+      name: "Électronique",
+      icon: "📱",
+      onClick: () => navigation("/Homme"),
+    },
+    { id: 3, name: "Beauté", icon: "💄", onClick: () => navigation("/Homme") },
+    {
+      id: 4,
+      name: "Cuisine & Ustensiles",
+      icon: "🍳",
+      onClick: () => navigation("/Homme"),
+    },
+    {
+      id: 5,
+      name: "Électroménager",
+      icon: "🔌",
+      onClick: () => navigation("/Homme"),
+    },
+    {
+      id: 6,
+      name: "Voir plus",
+      icon: "➡️",
+      onClick: () => navigation("/Voir-plus"),
+    },
   ];
 
   return (
@@ -122,31 +137,44 @@ const Home = ({isOpen}) => {
               </li>
               ))} */}
 
-{DATA_Categories.map((category) => {
-                if(category.name =="all"){
+              {DATA_Categories.map((category) => {
+                if (category.name == "all") {
                   return null;
                 }
-                return <li key={category._id} onClick={() =>  navigation(`/Categorie/${category.name}`)} className="mb-2">
-                  <button className="w-full text-left py-2 px-4 rounded hover:bg-[#FFE9CC] transition-colors duration-200 flex items-center space-x-2">
-                    {/* <span>{category.icon}</span> */}
+                return (
+                  <li
+                    key={category._id}
+                    onClick={() => navigation(`/Categorie/${category.name}`)}
+                    className="mb-2"
+                  >
+                    <button className="w-full text-left py-2 px-4 rounded hover:bg-[#FFE9CC] transition-colors duration-200 flex items-center space-x-2">
+                      {/* <span>{category.icon}</span> */}
 
-                    <img src={category?.image} alt="loading"
-                    style={{width:30,height:30,objectFit:"contain",borderRadius:"50%"}}
-                     />
-                    <span>{category?.name}</span>
-                  </button>
-                </li>
+                      <img
+                        src={category?.image}
+                        alt="loading"
+                        style={{
+                          width: 30,
+                          height: 30,
+                          objectFit: "contain",
+                          borderRadius: "50%",
+                        }}
+                      />
+                      <span>{category?.name}</span>
+                    </button>
+                  </li>
+                );
               })}
-              <li className="mb-2" onClick={() =>  navigation("/Voir-plus")}>
-                  <button className="w-full text-left py-2 px-4 rounded hover:bg-[#FFE9CC] transition-colors duration-200 flex items-center space-x-2">
-                    <span>➡️</span>
+              <li className="mb-2" onClick={() => navigation("/Voir-plus")}>
+                <button className="w-full text-left py-2 px-4 rounded hover:bg-[#FFE9CC] transition-colors duration-200 flex items-center space-x-2">
+                  <span>➡️</span>
 
-                    {/* <img src={category?.image} alt="loading"
+                  {/* <img src={category?.image} alt="loading"
                     style={{width:30,height:30,objectFit:"contain",borderRadius:"50%"}}
                      /> */}
-                    <span>Voir plus</span>
-                  </button>
-                </li>
+                  <span>Voir plus</span>
+                </button>
+              </li>
               <div className="container py-20">
                 <div className="card w-100 h-50 overflow-hidden">
                   {carouselImages.map((image, index) => {
@@ -175,8 +203,26 @@ const Home = ({isOpen}) => {
                     <img
                       src={param.image}
                       alt={`Slide ${index + 1}`}
-                      className="w-full h-[400px]"
+                      className="w-full h-[400px] "
                     />
+                    {/* <div className="w-full h-[400px]">
+                      <div
+                        style={{
+                          backgroundImage: `url(${param.image})`,
+                          backgroundSize: "cover",
+                          backgroundRepeat: "no-repeat",
+                          backgroundPosition: "center",
+                          height: "100%", // Ajustez la hauteur selon vos besoins
+                          width: "100%", // Ajustez la largeur selon vos besoins
+                          // display: "flex",
+                          // alignItems: "center",
+                          // justifyContent: "center",
+                          // color: "#ff9696", // Couleur du texte, ajustez selon vos besoins
+                          // // border:'2px solid crimson',
+                          // borderRadius:'20px'
+                        }}
+                      ></div>
+                    </div> */}
                   </SwiperSlide>
                 ))}
               </Swiper>
@@ -195,7 +241,7 @@ const Home = ({isOpen}) => {
               </div>
             </section>
 
-            <CategorieMobile/>
+            <CategorieMobile />
 
             {/* Featured Products */}
             <section>
@@ -203,7 +249,7 @@ const Home = ({isOpen}) => {
                 Produits vedettess
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {getRandomElementss(DATA_Products,4).map((product) => (
+                {getRandomElementss(DATA_Products, 4).map((product) => (
                   <div
                     key={product._id}
                     className="bg-white rounded-lg overflow-hidden transition-transform duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
@@ -217,11 +263,15 @@ const Home = ({isOpen}) => {
                       <span className="absolute top-2 right-2 bg-[#30A08B] text-white text-xs font-bold px-2 rounded-full">
                         Nouveau
                       </span>
-                    
-                      <div onClick={() => navigation(`/ProduitDétail/${product._id}`)} className="absolute inset-0 bg-gradient-to-b from-transparent to-[#30A08B] opacity-30 group-hover:scale-105 transition-transform duration-300"></div>
 
+                      <div
+                        onClick={() =>
+                          navigation(`/ProduitDétail/${product._id}`)
+                        }
+                        className="absolute inset-0 bg-gradient-to-b from-transparent to-[#30A08B] opacity-30 group-hover:scale-105 transition-transform duration-300"
+                      ></div>
                     </div>
-                    
+
                     <div className="p-4">
                       <h3 className="font-semibold text-lg mb-2">
                         {product.name.slice(0, 20)}...
@@ -253,9 +303,30 @@ const Home = ({isOpen}) => {
             </div>
           ))}
         </div>
-
-
-
+        <ProduitPage
+          products={getRandomElementsSix(
+            DATA_Products?.filter((item) =>
+              DATA_Types.some(
+                (type) =>
+                  type.clefCategories === clefElectronique?._id &&
+                  item.ClefType === type._id
+              )
+            )
+          )}
+          name={"électroniques"}
+        />
+        <SliderPage
+          products={getRandomElements(
+            DATA_Products.filter((item) =>
+              DATA_Types.some(
+                (type) =>
+                  type.clefCategories === clefElectronique?._id &&
+                  item.ClefType === type._id
+              )
+            )
+          )}
+          name={"électroniques"}
+        />
         {DATA_Categories.map((param, index) => {
           if (
             // getRandomElements(
@@ -305,12 +376,6 @@ const Home = ({isOpen}) => {
             );
           else return null;
         })}
-
-
-
-
-
-
         {/* <ProduitPage name={"📱 Électroniques"} />
         <SliderPage />
         <ProduitPage name={"💄 Beauté"} />

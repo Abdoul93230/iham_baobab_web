@@ -320,18 +320,18 @@ useEffect(()=>{
                   <User className="w-5 h-5 lg:w-6 lg:h-6" />
                 </button> */}
                 <button className=" transition-colors rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
-      <div className="relative text-amber-800 hover:text-[#30A08B]" aria-label="Notifications" onClick={() => navigate("/Notification header")}>
+      <div className="relative text-amber-800 hover:text-[#30A08B]" aria-label="Notifications" onClick={() => navigate("/NotificationHeader")}>
         <Bell className="h-6 w-6" />
         <span className="absolute -top-1 -right-1  bg-[#30A08B] rounded-full w-4 h-4 text-xs text-white flex items-center justify-center">0</span>
       </div>
       </button>
-                <button className="transition-colors rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
+                <button onClick={() => navigate("/Like produit")} className="transition-colors rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
                   <div className="relative text-amber-800 hover:text-[#30A08B]">
                   <Heart className="h-6 w-6" />
                     <span className="absolute -top-2 -right-1 bg-[#30A08B] text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">0</span>
                   </div>
                 </button>
-                <button className="transition-colors rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
+                <button onClick={() => navigate("/Panier")} className="transition-colors rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
                   <ShoppingCart className="w-5 h-5 lg:w-6 lg:h-6 text-amber-800 hover:text-[#30A08B] transition-colors" />
                   {/* {cartCount > 0 && ( */}
                     <span className="absolute -top-2 -right-1 bg-[#30A08B] text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">

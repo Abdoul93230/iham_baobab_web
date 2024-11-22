@@ -25,8 +25,8 @@ import CountryPage from "./CountryPage";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-
-
+import { shuffle } from "lodash";
+import Alert from "../../pages/Alert";
 
 function ProduitDetailMain() {
   const swiperRef = useRef(null);
@@ -45,6 +45,16 @@ function ProduitDetailMain() {
   const [rating, setRating] = useState(0);
   const [isOpenCountry, setIsOpenCountry] = useState(false);
   const [Allcommente, setAllCommente] = useState([]);
+  const [categorie, setCategorie] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [productsAutres, setProductsAutres] = useState([]);
+  const [alert, setAlert] = useState({
+    visible: false,
+    type: "",
+    message: "ds",
+  });
+
+  const user = JSON.parse(localStorage.getItem("userEcomme"));
 
   // const [allTypes, setAllTypes] = useState([]);
   // const [allCategories, setAllCategories] = useState([]);
@@ -55,8 +65,10 @@ function ProduitDetailMain() {
   const DATA_Categories = useSelector((state) => state.products.categories);
   const DATA_Pubs = useSelector((state) => state.products.products_Pubs);
 
-  const params = useParams()
-  const produit = DATA_Products.find(item => item._id ===params.id) 
+  const params = useParams();
+  const produit = DATA_Products.find((item) => item._id === params.id);
+  // console.log(produit);
+  // console.log(DATA_Types);
   const handleMouseEnter = () => {
     setIsZoomed(true);
   };
@@ -65,7 +77,7 @@ function ProduitDetailMain() {
     setIsZoomed(false);
   };
   const handleWheel = (e) => {
-    e.preventDefault();
+    // e.preventDefault();
     const img = e.currentTarget.querySelector("img");
 
     // Applique le défilement vertical et horizontal
@@ -120,9 +132,9 @@ function ProduitDetailMain() {
   };
 
   const images = [
-    DATA_Products.find(item => item._id ===params.id)?.image1,
-    DATA_Products.find(item => item._id ===params.id)?.image2,
-    DATA_Products.find(item => item._id ===params.id)?.image3,
+    DATA_Products.find((item) => item._id === params.id)?.image1,
+    DATA_Products.find((item) => item._id === params.id)?.image2,
+    DATA_Products.find((item) => item._id === params.id)?.image3,
   ];
 
   const handlePrev = () => {
@@ -144,7 +156,8 @@ function ProduitDetailMain() {
     { size: "43", cm: "26.5CM" },
     // Ajoutez d'autres tailles si nécessaire
   ];
-  const imageColorMap = DATA_Products.find(item => item._id ===params.id)?.pictures || [];
+  const imageColorMap =
+    DATA_Products.find((item) => item._id === params.id)?.pictures || [];
 
   const decreaseQuantity = () => setQuantity((prev) => Math.max(1, prev - 1));
   const increaseQuantity = () => setQuantity((prev) => Math.min(5, prev + 1));
@@ -240,45 +253,127 @@ function ProduitDetailMain() {
     );
   };
 
-  const handleCommentSubmit = (e) => {
-    e.preventDefault();
-    if (commentText) {
-      setComments([...comments, { text: commentText, rating }]);
-      setCommentText("");
-      setRating(0);
+  useEffect(() => {
+    axios
+      .get(`${BackendUrl}/getAllCommenteProduitById/${params.id}`)
+      .then((coments) => {
+        setAllCommente(coments.data);
+        // console.log(coments.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, [params.id]);
+
+  // Déclare une fonction pour sélectionner des commentaires aléatoires
+  const selectRandomComments = (comments, maxCount) => {
+    // Vérifie si le nombre de commentaires disponibles est inférieur ou égal à maxCount
+    if (comments.length <= maxCount) {
+      return comments; // Retourne tous les commentaires disponibles
     }
+
+    const shuffled = comments.sort(() => 0.5 - Math.random()); // Mélange les commentaires de manière aléatoire
+    return shuffled.slice(0, maxCount); // Sélectionne les premiers maxCount commentaires
   };
 
+  // Utilise la fonction selectRandomComments pour obtenir une liste de commentaires aléatoires
+  const randomComments = selectRandomComments(Allcommente, 20);
 
+  useEffect(() => {
+    // Filtrer les produits basés sur la condition donnée
+    const filteredProducts = DATA_Products.filter(
+      (item) => item.ClefType === produit?.ClefType
+    );
+    const type = DATA_Types.find((item) => item._id === produit?.ClefType);
+    const categorie = DATA_Categories.find(
+      (item) => item._id === type?.clefCategories
+    );
 
-useEffect(()=>{
-  axios
-  .get(`${BackendUrl}/getAllCommenteProduitById/${params.id}`)
-  .then((coments) => {
-    setAllCommente(coments.data);
-    // console.log(coments.data);
-  })
-  .catch((error) => {
-    console.log(error);
-  });
+    setCategorie(categorie);
 
-},[params.id])
+    // Obtenir les éléments aléatoires à partir du tableau filtré
+    const getRandomElements = (array, nbr) => {
+      const shuffledArray = shuffle(array);
+      return shuffledArray.slice(0, nbr);
+    };
 
+    // Définir les produits aléatoires dans l'état
+    setProducts(getRandomElements(filteredProducts, 12));
+    setProductsAutres(getRandomElements(DATA_Products, 12));
+  }, [DATA_Products, produit]);
 
+  const showAlert = (type, message) => {
+    setAlert({ visible: true, type, message });
+    setTimeout(() => {
+      setAlert({ visible: false, type: "", message: "" });
+    }, 5000); // 3 secondes
+  };
 
+  const handleSuccess = (message) => {
+    showAlert("success", message);
+  };
+
+  const handleWarning = (message) => {
+    showAlert("warn", message);
+  };
+
+  const envoyer = (e) => {
+    e.preventDefault();
+    const regexNumber = /^[0-5]$/;
+    if (commentText.trim().length < 3) {
+      handleWarning("votre commentaire doit contenire au moin 3 carracteres.");
+      return;
+    }
+    if (rating === 0) {
+      handleWarning("veuiller noter ce produit s'il vous plait.");
+      return;
+    }
+    if (!regexNumber.test(rating.toString())) {
+      handleWarning("forma non valid de 1 a 5 s'il vous plait!");
+      return;
+    }
+    axios
+      .post(`${BackendUrl}/createCommenteProduit`, {
+        description: commentText,
+        clefProduct: produit?._id,
+        clefType: produit?.ClefType,
+        etoil: rating,
+        userName: user.name,
+      })
+      .then((resp) => {
+        handleSuccess(resp.data.message);
+        setIsCommentOpen(false);
+        setCommentText("");
+        setRating(0);
+
+        axios
+          .get(`${BackendUrl}/getAllCommenteProduitById/${params.id}`)
+          .then((coments) => {
+            setAllCommente(coments.data);
+            // console.log(coments.data);
+          })
+          .catch((error) => {
+            handleWarning(error.response.data);
+            console.log(error);
+          });
+      })
+      .catch((error) => {
+        handleWarning(error.response.data);
+        console.log(error);
+      });
+  };
 
   return (
     <div className="container mx-auto p-4" ref={swiperRef}>
-
-        <Helmet>
-          <title>{produit?.name}</title>
-          {/* <link rel="icon" href="/chemin/vers/votre/nouveau/favicon.ico" /> */}
-          <link rel="icon" type="image" href={produit?.image1} />
-          <link rel="apple-touch-icon" href={produit?.image1} />
-          <meta property="og:title" content={produit?.name} />
-          <meta property="og:description" content={produit?.description} />
-          <meta property="og:image" content={produit?.image1} />
-        </Helmet>
+      <Helmet>
+        <title>{produit?.name}</title>
+        {/* <link rel="icon" href="/chemin/vers/votre/nouveau/favicon.ico" /> */}
+        <link rel="icon" type="image" href={produit?.image1} />
+        <link rel="apple-touch-icon" href={produit?.image1} />
+        <meta property="og:title" content={produit?.name} />
+        <meta property="og:description" content={produit?.description} />
+        <meta property="og:image" content={produit?.image1} />
+      </Helmet>
 
       <div className="flex flex-col lg:flex-row gap-2">
         <div
@@ -335,7 +430,6 @@ useEffect(()=>{
               <span className="text-lg">→</span>
             </div>
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#30A08B] opacity-10 group-hover:scale-105 transition-transform duration-300"></div>
-
           </div>
 
           <div className="flex lg:flex-1">
@@ -365,9 +459,7 @@ useEffect(()=>{
                   <p className="text-sm text-gray-600">2+ pièces, extra -5%</p>
                 </div>
                 <p className="text-xs text-gray-600">Prix hors taxe</p>
-                <p className="font-bold text-xs">
-                  {produit.name}
-                </p>
+                <p className="font-bold text-xs">{produit?.name}</p>
               </div>
 
               <div className="flex py-2 p-2 items-center">
@@ -449,7 +541,10 @@ useEffect(()=>{
               </div>
               {isCountryOpen && (
                 <div className="fixed inset-0 p-3 z-10 flex items-center justify-center bg-black bg-opacity-50">
-                  <CountryPage isOpen={isOpenCountry} onClose={() => setIsOpenCountry(false)} />
+                  <CountryPage
+                    isOpen={isOpenCountry}
+                    onClose={() => setIsOpenCountry(false)}
+                  />
                 </div>
               )}
             </div>
@@ -527,55 +622,63 @@ useEffect(()=>{
               </button>
               <span className="text-sm">Boutique</span>
             </div>
+            {user ? (
+              <>
+                <div className="flex flex-col items-center">
+                  <button
+                    className="p-2 flex items-center"
+                    onClick={() => setIsCommentOpen(true)}
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                  </button>
 
-            <div className="flex flex-col items-center">
-              <button
-                className="p-2 flex items-center"
-                onClick={() => setIsCommentOpen(true)}
-              >
-                <MessageCircle className="w-5 h-5" />
-              </button>
-              <span className="text-sm">Commenter</span>
-              {isCommentOpen && (
-                <div className="fixed inset-0 p-3 z-10 flex items-center justify-center bg-black bg-opacity-50">
-                  <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-                    <h2
-                      className="text-xl font-bold mb-4 text-center"
-                      style={{ color: "#30A08B" }}
-                    >
-                      Ajouter un commentaire
-                    </h2>
-                    <StarRating rating={rating} setRating={setRating} />
-                    <form
-                      onSubmit={handleCommentSubmit}
-                      className="flex flex-col mb-4"
-                    >
-                      <textarea
-                        className="w-full p-2 border border-gray-300 rounded mt-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                        rows="3"
-                        value={commentText}
-                        onChange={(e) => setCommentText(e.target.value)}
-                        placeholder="Écrire un commentaire..."
-                        style={{ borderColor: "#B2905F" }}
-                      />
-                      <button
-                        type="submit"
-                        className="mt-2 bg-[#B17236] text-white p-2 rounded hover:bg-[#B2905F] transition-colors"
-                      >
-                        Envoyer
-                      </button>
-                    </form>
-                    <button
-                      onClick={() => setIsCommentOpen(false)}
-                      className="mt-4 w-full bg-red-500 text-white p-2 rounded flex items-center justify-center hover:bg-red-600 transition-colors"
-                    >
-                      <X className="mr-2" />
-                      Fermer
-                    </button>
-                  </div>
+                  <span className="text-sm">Commenter</span>
+
+                  {isCommentOpen && (
+                    <div className="fixed inset-0 p-3 z-10 flex items-center justify-center bg-black bg-opacity-50">
+                      <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+                        <h2
+                          className="text-xl font-bold mb-4 text-center"
+                          style={{ color: "#30A08B" }}
+                        >
+                          Ajouter un commentaire
+                        </h2>
+                        <StarRating rating={rating} setRating={setRating} />
+                        <form onSubmit={envoyer} className="flex flex-col mb-4">
+                          <textarea
+                            className="w-full p-2 border border-gray-300 rounded mt-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            rows="3"
+                            value={commentText}
+                            onChange={(e) => setCommentText(e.target.value)}
+                            placeholder="Écrire un commentaire..."
+                            style={{ borderColor: "#B2905F" }}
+                          />
+                          <button
+                            type="submit"
+                            className="mt-2 bg-[#B17236] text-white p-2 rounded hover:bg-[#B2905F] transition-colors"
+                          >
+                            Envoyer
+                          </button>
+                        </form>
+                        <button
+                          onClick={() => {
+                            setIsCommentOpen(false);
+                            setRating(0);
+                            setCommentText("");
+                          }}
+                          className="mt-4 w-full bg-red-500 text-white p-2 rounded flex items-center justify-center hover:bg-red-600 transition-colors"
+                        >
+                          <X className="mr-2" />
+                          Fermer
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            ) : (
+              <></>
+            )}
 
             <div className="flex flex-col items-center">
               <button className="p-2" onClick={handleShareClick}>
@@ -625,7 +728,7 @@ useEffect(()=>{
           </div>
         </div>
       </div>
-      <ProduitSimilaires />
+      <ProduitSimilaires titre={"Articles similaires"} produits={products} />
       <div className="py-3">
         <div className="border-t border-gray-300 mb-4" />
 
@@ -633,13 +736,12 @@ useEffect(()=>{
           Produit Détail
         </h2>
 
-        <p className="text-gray-700 leading-relaxed"
-        dangerouslySetInnerHTML={{
-          __html: produit?.description,
-        }}
-        >
-          
-        </p>
+        <p
+          className="text-gray-700 leading-relaxed"
+          dangerouslySetInnerHTML={{
+            __html: produit?.description,
+          }}
+        ></p>
 
         {/* <p className="text-gray-700 leading-relaxed mt-4">
           <span className="font-bold">Lorem ipsum:</span> dolor sit amet
@@ -647,9 +749,21 @@ useEffect(()=>{
           quasi aperiam beatae odio fugiat, ipsum sequi ullam accusamus.
         </p> */}
       </div>
-      <ProduitSimilaires />
-      <CommentaireProduit coments={Allcommente}/>
-      
+      <ProduitSimilaires titre={"Autres Articles"} produits={productsAutres} />
+      <CommentaireProduit
+        name={produit?.name}
+        img={[produit?.image1, produit?.image2, produit?.image3]}
+        coments={Allcommente}
+        categorie={categorie}
+      />
+
+      {alert.visible && (
+        <Alert
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert({ visible: false })}
+        />
+      )}
     </div>
   );
 }
