@@ -7,12 +7,13 @@ import { Plus, Sparkles, Trash2, Menu, User, ChevronDown,
   } from "lucide-react";
 import LogoText from "../../image/LogoText.png";
 import HeaderMobile from "./HeaderMobile";
+import { useSelector } from "react-redux";
 // import './style.css'
 
 
 function HomeHeader() {
   const navigate = useNavigate();
-
+  const DATA_Categories = useSelector((state) => state.products.categories);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -97,19 +98,30 @@ function HomeHeader() {
         return (
           <div className="absolute z-30 left-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden backdrop-blur-sm backdrop-saturate-150 transition-all duration-300">
           <div className="py-2">
-            {categories.map((category, index) => (
-              <React.Fragment key={category.label}>
-                <CategoryButton icon={category.icon} label={category.label} onClick={category.onClick} />
-                {index < categories.length - 1 && (
+            {DATA_Categories?.map((category, index) => {
+               if(category.name ==="all"){
+                return null;
+              }
+              return <div key={category._id}>
+               <button onClick={() =>  navigate(`/Categorie/${category.name}`)} className="w-full flex items-center px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#30A08B]/10 hover:to-transparent group transition-all duration-200">
+              {/* <Icon className="w-5 h-5 text-[#30A08B] group-hover:scale-110 transition-transform duration-200" /> */}
+              <img src={category?.image} alt="loading"
+                    style={{width:30,height:30,objectFit:"contain",borderRadius:"50%"}}
+                     />
+              <span className="ml-3 text-sm font-medium group-hover:text-[#30A08B]">{category.name}</span>
+              <ChevronRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 text-[#30A08B] transform translate-x-0 group-hover:translate-x-1 transition-all duration-200" />
+            </button>
+            {index < DATA_Categories?.length - 1 && (
                   <div className="mx-4 border-b border-gray-100" />
                 )}
-              </React.Fragment>
-            ))}
+              </div>
+      
+    })}
           </div>
           
           {/* Footer avec dégradé */}
           <div className="bg-gradient-to-b from-[#30A08B]/5 to-[#30A08B]/10 px-4 py-3">
-            <button className="w-full text-center text-sm font-medium text-[#30A08B] hover:text-[#2a907d] transition-colors">
+            <button onClick={() =>  navigate("/Voir-plus")} className="w-full text-center text-sm font-medium text-[#30A08B] hover:text-[#2a907d] transition-colors">
               Découvrir toutes les catégories
             </button>
           </div>
