@@ -28,6 +28,11 @@ import Voir from './pages/Voir';
 import Nouveau from './pages/Nouveau';
 import Promotion from './pages/Promotion';
 import LikeProduit from './pages/LikeProduit';
+import Boutique from './pages/Boutique';
+import Messagerie from './pages/Messagerie';
+import OrderConfirmationPaiement from './pages/OrderConfirmationPaiement';
+import BoutiquierProfile from './components/boutiquePage/BoutiquierProfile';
+
 
 
 function App() {
@@ -39,7 +44,7 @@ function App() {
         {/* <Route path='/Connexion' element={<Connexion />} />  */}
         <Route path='/Inscription' element={<Inscription />} /> 
         <Route path='/Home' element={<Home />} /> 
-        <Route path='/Forget Password' element={<ForgetPassword />} /> 
+        <Route path='/Forget Password' element={<ForgetPassword />} />
         <Route path='/Home' element={<Home/> } /> 
         <Route path='/Produit détail' element={<ProduitDetail/> } /> 
         <Route path='/Suggestion' element={<Suggestion/> } /> 
@@ -62,6 +67,10 @@ function App() {
         <Route path='/Nouveau produit' element={<Nouveau/> } /> 
         <Route path='/Produit promotions' element={<Promotion/> } /> 
         <Route path='/Like produit' element={<LikeProduit/> } /> 
+        <Route path='/Boutique' element={<Boutique/> } /> 
+        <Route path='/Messagerie' element={<Messagerie/> } /> 
+        <Route path='/OrderConfirmation' element={<OrderConfirmationPaiement/> } /> 
+        <Route path="/Profile d'un boutiquier" element={<BoutiquierProfile/> } /> 
        </Routes>
        </BrowserRouter>
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, ChevronUp, ChevronDown, Sparkles, Bell, Heart, ShoppingCart } from 'lucide-react';
+import { X, ChevronUp, ChevronDown, Sparkles, Bell, Heart, ShoppingCart, MessageCircle } from 'lucide-react';
 
 const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
   const [openSection, setOpenSection] = useState(null);
@@ -72,8 +72,25 @@ const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
       countBg: 'bg-emerald-600',
       label: 'Panier',
       onClick: () => navigate("/Panier"),
-    }
+    },
+    {
+      icon: MessageCircle,
+      count: 3,
+      bgColor: 'bg-green-500',
+      countBg: 'bg-emerald-600',
+      label: 'Panier',
+      onClick: () => navigate("/Panier"),
+    },
   ];
+
+  <button className="bg-green-500 w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
+  <div className="relative text-amber-800 " aria-label="Messages" onClick={() => navigate("/Notification header")}>
+    <MessageCircle className="h-5 w-5 md:h-6 md:w-6" />
+    <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-3 h-3 md:w-4 md:h-4 text-[10px] md:text-xs text-white flex items-center justify-center">
+      3
+    </span>
+  </div>
+</button>
 
   return (
     <div className="md:hidden animate-fadeIn fixed inset-0 bg-white bg-opacity-20 z-50">

@@ -334,10 +334,11 @@ const DetailHomme = ({setCartCount}) => {
       {filteredProducts.map((product) => (
         <div
           key={product.id}
-          className="bg-white rounded-lg shadow-md overflow-hidden group flex flex-col transform hover:-translate-y-1 transition-all duration-300"
+          className="bg-white rounded-lg shadow-md overflow-hidden group flex flex-col transform hover:-translate-y-1 transition-all duration-300 cursor-pointer"
         >
           <div className="relative flex-grow">
             <img
+            onClick={() => navigate('/Produit détail')}
               src={product.image}
               alt={product.name}
               className="w-full h-48 sm:h-56 md:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
@@ -389,11 +390,16 @@ const DetailHomme = ({setCartCount}) => {
                 </span>
               </div>
             </div>
+
+          
             <button
               onClick={() => setCartCount((prev) => prev + 1)}
-              className="w-full bg-[#30A08B] text-white py-2 rounded-md hover:bg-[#B2905F] transition-colors text-sm md:text-base"
+              className="mt-2 flex justify-around items-center w-full bg-[#30A08B] text-white py-2
+                       rounded-full hover:bg-opacity-90 transition transition-colors duration-200 text-sm md:text-base shadow-md hover:shadow-lg"
             >
               Ajouter au panier
+              <ShoppingCart size={16} />
+
             </button>
           </div>
         </div>
@@ -472,10 +478,10 @@ const DetailHomme = ({setCartCount}) => {
             </div>
 
             {/* Customer Service Section */}
-            <div>
+            <div className="max-w-2xl">
               <h4 className="text-lg font-bold mb-4">Service client</h4>
-              <ul className="space-y-2 text-sm md:text-base">
-                <li className="hover:text-[#B2905F] cursor-pointer transition-colors">
+              <ul className="space-y-2  text-sm md:text-base">
+                <li className="hover:text-[#B2905F]  cursor-pointer transition-colors">
                   Contact
                 </li>
                 <li className="hover:text-[#B2905F] cursor-pointer transition-colors">
@@ -531,7 +537,7 @@ const DetailHomme = ({setCartCount}) => {
 
           {/* Bottom Text */}
           <div className="mt-8 text-center text-sm md:text-base">
-            <p>
+            <p  style={{ background: 'linear-gradient(90deg, #B17236, #3A3A3A)', WebkitBackgroundClip: 'text', color: 'transparent' }}>
               &copy; {new Date().getFullYear()} IHAM Baobab Tous droits
               réservés.
             </p>

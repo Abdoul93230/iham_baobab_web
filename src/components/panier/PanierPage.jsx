@@ -10,9 +10,11 @@ import {
   Check,
   AlertCircle,
 } from "lucide-react";
-import OrderConfirmation from "./OrderConfirmation";
+
+import { useNavigate } from "react-router-dom";
 
 const PanierPage = ({ total = 0, onPaymentComplete }) => {
+  const navigation = useNavigate();
   const [articles, setArticles] = useState([]);
   const [codePromo, setCodePromo] = useState("");
   const [reduction, setReduction] = useState(0);
@@ -83,25 +85,10 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
     return (totalAvecReduction + fraisExpedition).toFixed(2);
   };
   // pour les button passer la commande
-
-  const [loading, setLoading] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState(null);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-
   const handlePayment = async () => {
     try {
-      setLoading(true);
-      // Simuler un appel API de paiement
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Simuler un succès de paiement
-      setShowConfirmation(true); // Affiche le composant de confirmation
-      if (onPaymentComplete) {
-        onPaymentComplete();
-      }
     } catch (error) {
     } finally {
-      setLoading(false);
     }
   };
 
@@ -147,7 +134,7 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
                           className="w-full h-full object-fit-cover rounded-lg"
                         />
                         {article.enPromo && (
-                          <div className="absolute top-2 right-2 bg-[#30A08B] text-white px-2 py-1 text-xs rounded-md">
+                          <div className="absolute top-2 right-2 bg-[#62aca2bb] text-white px-2 py-1 text-xs rounded-md font-bold">
                             Promo
                           </div>
                         )}
@@ -183,7 +170,7 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
                               <Minus className="h-4 w-4 text-[#30A08B]" />
                             </button>
                             <input
-                              className="w-16 text-center border rounded-md p-1 focus:ring-2 focus:ring-[#30A08B] focus:border-transparent"
+                              className="w-30 text-center border rounded-md p-2 focus:ring-2 focus:ring-[#30A08B] focus:border-transparent"
                               type="number"
                               min="1"
                               value={article.quantite}
@@ -214,10 +201,7 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
                 </div>
               ))}
             </div>
-
-            {/* Résumé de la commande */}
             <div className="lg:sticky lg:top-20 space-y-4 h-fit">
-              {/* Résumé */}
               <div className="bg-white rounded-lg shadow-sm p-4 mb-4 space-y-4">
                 <h2 className="text-lg font-bold text-[#30A08B]">
                   Résumé de la commande
@@ -327,14 +311,15 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
       </div>
       {/* Bouton Commander (fixe en bas sur mobile, dans le flux sur desktop) */}
       <div className="container mx-auto px-4 py-4">
-        {showConfirmation && <OrderConfirmation />}
         <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white p-3 shadow-lg">
           <button
-            onClick={handlePayment}
-            disabled={loading || paymentStatus === "success"}
+            onClick={() => navigation("/OrderConfirmation")}
+            // onClick={handlePayment}
+            // disabled={loading || paymentStatus === "success"}
             className="w-full bg-[#30A08B] disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold hover:bg-[#30A08B]/90 flex items-center justify-center space-x-2"
           >
-            {loading ? (
+            Passer la commande ${calculerSousTotal()} F CFA
+            {/* {loading ? (
               <div className="flex items-center space-x-2 fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                 <div className="animate-spin z-1 rounded-full h-5 w-5 border-b-2 border-white "></div>
                 <span>Traitement en cours...</span>
@@ -348,17 +333,19 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
                     : `Passer la commande ${calculerSousTotal()} F CFA`}
                 </span>
               </>
-            )}
+            )} */}
           </button>
         </div>
         <div className="hidden lg:block">
           <div className="container mx-auto px-4 py-4">
             <button
-              onClick={handlePayment}
-              disabled={loading || paymentStatus === "success"}
+              onClick={() => navigation("/OrderConfirmation")}
+              // onClick={handlePayment}
+              // disabled={loading || paymentStatus === "success"}
               className="w-full bg-[#30A08B] disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold hover:bg-[#30A08B]/90 flex items-center justify-center space-x-2"
             >
-              {loading ? (
+              Passer la commande {calculerSousTotal()} F CFA
+              {/* {loading ? (
                 <div className="flex items-center space-x-2 fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                   <div className="animate-spin z-1 rounded-full h-5 w-5 border-b-2 border-white "></div>
                   <span>Traitement en cours...</span>
@@ -372,7 +359,7 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
                       : `Passer la commande ${calculerSousTotal()} F CFA`}
                   </span>
                 </>
-              )}
+              )} */}
             </button>
           </div>
         </div>

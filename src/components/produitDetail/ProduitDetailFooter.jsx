@@ -66,18 +66,10 @@ const HomeProductsFooter = () => {
         {/* Réseaux sociaux et copyright */}
         <div className="mt-8 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center space-x-4 mb-4 md:mb-0">
-            <span href="#" className="hover:text-gray-300"><FacebookIcon className="h-6 w-6" /></span>
-            <span href="#" className="hover:text-gray-300"><XIcon className="h-6 w-6" /></span>
-            <span href="#" className="hover:text-gray-300"><InstagramIcon className="h-6 w-6" /></span>
-            <span href="#" className="hover:text-gray-300"><LinkedInIcon className="h-6 w-6" /></span>
-               {/* <div className='w-96 h-20'>
-
-  <img
-    src={LogoText}
-    alt="Logo IHAM Baobab"
-    className="w-full h-full object-cover transition-transform duration-300 transform hover:scale-105"
-    />
-    </div> */}
+            <span href="#" className="hover:text-gray-300 cursor-pointer"><FacebookIcon className="h-6 w-6" /></span>
+            <span href="#" className="hover:text-gray-300 cursor-pointer"><XIcon className="h-6 w-6" /></span>
+            <span href="#" className="hover:text-gray-300 cursor-pointer"><InstagramIcon className="h-6 w-6" /></span>
+            <span href="#" className="hover:text-gray-300 cursor-pointer"><LinkedInIcon className="h-6 w-6" /></span>
     </div>
      
   

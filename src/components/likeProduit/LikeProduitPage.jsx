@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, Trash2, Share2, Filter, SortDesc, ShoppingCart, ArrowUpRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const LikeProduitPage = () => {
+  const navigation = useNavigate()
   const [likedProducts, setLikedProducts] = useState([
     {
       id: 1,
@@ -194,10 +196,20 @@ const LikeProduitPage = () => {
                 <p className="text-gray-500 mt-2 text-sm line-clamp-2">{product.description}</p>
                 
                 <div className="mt-4 flex justify-between items-center">
-                  <span className="text-xl font-bold text-[#B17236]">{product.price} €</span>
+                  <span className="text-xl font-bold text-[#B17236]">{product.price} FCFA</span>
                   <button 
+                  
                     className="flex items-center gap-1 text-sm text-[#30A08B] hover:underline group"
-                    onClick={() => showToast('Redirection vers le produit...')}
+                    onClick={() => {
+                      showToast('Redirection vers le produit...')
+                      setTimeout(() => {
+                        navigation("/Produit détail")
+                        
+                      }, 1000);
+                    }
+                      
+                    }
+                    
                   >
                     Voir détails
                     <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
@@ -209,17 +221,29 @@ const LikeProduitPage = () => {
         </div>
       </div>
 
+
+      {/*  */}
+
+
       {/* Message si liste vide avec animation */}
       {likedProducts.length === 0 && (
         <div className="container mx-auto px-4 py-16 text-center">
           <div className="transform transition-all duration-500 hover:scale-110">
-            <Heart className="w-20 h-20 mx-auto text-[#30A08B] animate-bounce" />
+            <Heart className="w-20 h-20 mx-auto text-[#30A08B] animate-pulse" />
           </div>
           <h2 className="mt-6 text-2xl font-semibold text-gray-600">Aucun produit dans vos favoris</h2>
           <p className="mt-2 text-gray-500">Découvrez notre collection et commencez à créer votre liste de favoris</p>
           <button 
             className="mt-6 px-6 py-3 bg-gradient-to-r from-[#30A08B] to-[#B2905F] text-white rounded-lg hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300"
-            onClick={() => showToast('Redirection vers la boutique...')}
+            onClick={() => {
+              showToast('Redirection vers la boutique...')
+            setTimeout(() => {
+              navigation("/Boutique")
+            }, 1000);
+            }
+
+            }
+              
           >
             Explorer les produits
           </button>

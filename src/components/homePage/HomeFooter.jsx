@@ -133,11 +133,11 @@ function HomeFooter() {
         <div className="mt-8 border-t border-gray-200 pt-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex justify-center items-center">
-                     <p className="text-sm mb-4 md:mb-0">
+                     <p className="text-sm mb-4 md:mb-0" style={{ background: 'linear-gradient(90deg, #B17236, #FAFAFA)', WebkitBackgroundClip: 'text', color: 'transparent' }}>
               &copy; {new Date().getFullYear()} IHAM Baobab. Tous droits
               réservés.
             </p>
-            <li className="flex justify-center">
+            <li className="flex justify-center mb-4">
   <img
     src={LogoText}
     alt="Logo IHAM Baobab"
@@ -147,27 +147,48 @@ function HomeFooter() {
             </div>
      
             <div className="flex space-x-4">
-              <img
-                src={MasterCard}
-                alt="Master Card"
-                className="h-10 w-22 cursor-pointer object-contain "
-              />
-              <img
-                src={VisaCard}
-                alt="MasterCard"
-                className="h-10 w-22 cursor-pointer object-contain "
-              />
-              <img
-                src={DomicileCard}
-                alt="Domicile Card"
-                className="h-10 w-22 cursor-pointer object-contain "
-              />
-              <img
-                src={MobileMoney}
-                alt="Mobile Money"
-                className="h-10 w-22 cursor-pointer object-contain "
-              />
-            </div>
+        <img 
+          src={MasterCard}
+          alt="Payment Method" 
+          className="h-8"
+          style={{
+            borderColor: '#30A08B',
+            borderWidth: '2px'
+          }}
+          />
+        <img 
+          src={VisaCard}
+          alt="Payment Method" 
+          className="h-8"
+          style={{
+            borderColor: '#B2905F',
+            borderWidth: '2px'
+          }}
+          />
+        <img 
+          src={DomicileCard}
+          alt="Payment Method" 
+          className="h-8"
+          style={{
+            borderColor: '#B17236',
+            borderWidth: '2px'
+          }}
+          />
+        <img 
+          src={MobileMoney}
+          alt="Payment Method" 
+          className="h-8"
+          style={{
+            borderColor: '#B17236',
+            borderWidth: '2px'
+          }}
+          />
+
+
+
+
+
+      </div>
           </div>
         </div>
       </div>

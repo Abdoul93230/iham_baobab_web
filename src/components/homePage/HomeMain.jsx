@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
@@ -8,33 +8,34 @@ import "swiper/css/pagination";
 import ProduitPage from "../produit/ProduitPage";
 import SliderPage from "../slider/SliderPage";
 import CategorieMobile from "./CategorieMobile";
+import { ShoppingCart } from "lucide-react";
 
 const products = [
   {
     id: 1,
     name: "Produit 1",
-    price: "19,99 €",
+    price: "19,99",
     image:
       "https://cc-prod.scene7.com/is/image/CCProdAuthor/product-photography_P1_900x420?$pjpeg$&jpegSize=200&wid=900",
   },
   {
     id: 2,
     name: "Produit 2",
-    price: "29,99 €",
+    price: "29,99",
     image:
       "https://www.codeur.com/blog/wp-content/uploads/2019/06/photo-produit-ecommerce.jpg",
   },
   {
     id: 3,
     name: "Produit 3",
-    price: "39,99 €",
+    price: "39,99",
     image:
       "https://www.fontainebleau-blog.com/wp-content/uploads/2020/02/comment-reussir-belles-photos-de-paysage-660x248.jpg",
   },
   {
     id: 4,
     name: "Produit 4",
-    price: "49,99 €",
+    price: "49,99",
     image:
       "https://img.freepik.com/photos-premium/photo-appareil-photo-noir-objectif-long-trepied-montagne-arriere-plan_978521-558.jpg?w=360",
   },
@@ -169,10 +170,15 @@ const Home = ({isOpen}) => {
                         {product.name}
                       </h3>
                       <p className="text-[#B17236] font-bold text-lg">
-                        {product.price}
+                        {product.price} FCFA
                       </p>
-                      <button className="mt-2 w-full bg-[#30A08B] text-white py-2 rounded-md hover:bg-[#B2905F] transition-colors duration-200 text-sm md:text-base shadow-md hover:shadow-lg">
+                      <button
+                      //  onClick={() => handleAddToCart(product)}
+                       className="mt-2 flex justify-around items-center w-full bg-[#30A08B] text-white py-2
+                       rounded-full hover:bg-opacity-90 transition transition-colors duration-200 text-sm md:text-base shadow-md hover:shadow-lg">
                         Ajouter au panier
+
+                        <ShoppingCart size={16} />
                       </button>
                     </div>
                   </div>

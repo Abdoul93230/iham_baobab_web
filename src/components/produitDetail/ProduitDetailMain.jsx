@@ -21,8 +21,10 @@ import {
 import ProduitSimilaires from "./ProduitSimilaires";
 import CommentaireProduit from "./CommentaireProduit";
 import CountryPage from "./CountryPage";
+import { useNavigate } from "react-router-dom";
 
 function ProduitDetailMain() {
+  const navigation = useNavigate()
   const swiperRef = useRef(null);
   const [isZoomed, setIsZoomed] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -148,8 +150,8 @@ function ProduitDetailMain() {
     },
   ];
 
-  const decreaseQuantity = () => setQuantity((prev) => Math.max(1, prev - 1));
-  const increaseQuantity = () => setQuantity((prev) => Math.min(5, prev + 1));
+  const decreaseQuantity = () => setQuantity((prev) => prev - 1);
+  const increaseQuantity = () => setQuantity((prev) => prev + 1);
 
   // Pour les like
   const handleLike = () => {
@@ -472,7 +474,7 @@ function ProduitDetailMain() {
                       Math.max(1, Math.min(parseInt(e.target.value) || 1))
                     )
                   }
-                  className="w-16 text-center border rounded-md p-1 border-gray-300"
+                  className="w-30 text-center border rounded-md p-1 border-gray-300"
                 />
                 <button
                   onClick={increaseQuantity}
@@ -497,7 +499,7 @@ function ProduitDetailMain() {
           </div>
           <div className="flex justify-between px-6 py-4 border-t">
             <div className="flex flex-col items-center">
-              <button className="p-2">
+              <button className="p-2" onClick={() => navigation("/Boutique")}>
                 <Store className="w-5 h-5" />
               </button>
               <span className="text-sm">Boutique</span>

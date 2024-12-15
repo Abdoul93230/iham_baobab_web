@@ -42,3 +42,299 @@
     -->
   </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 
+import React, { useState } from 'react'
+import { 
+  ShoppingCart, 
+  Heart, 
+  Search, 
+  Menu, 
+  X, 
+  Filter, 
+  ChevronDown, 
+  Star 
+} from 'lucide-react'
+
+export default function BoutiqueWebsite() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('Tout');
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  const categories = [
+    'Tout', 'Vêtements', 'Accessoires', 'Artisanat', 'Bijoux'
+  ];
+
+  const products = [
+    {
+      id: 1,
+      name: "Robe Traditionelle Malgache",
+      description: "Élégante robe inspirée des traditions",
+      price: 129.99,
+      image: "https://ae-pic-a1.aliexpress-media.com/kf/S9c181b39441e4e2295aa9d1305d5dac7A.jpg_480x480.jpg_.webp",
+      category: "Vêtements",
+      rating: 4.7
+    },
+    {
+      id: 2,
+      name: "Sac Tressé Artisanal",
+      description: "Fait main avec des matériaux locaux",
+      price: 89.50,
+      image: "/api/placeholder/300/400",
+      category: "Accessoires",
+      rating: 4.9
+    },
+    {
+      id: 3,
+      name: "Collier en Argent",
+      description: "Inspiration des motifs traditionnels",
+      price: 75.00,
+      image: "/api/placeholder/300/400",
+      category: "Bijoux",
+      rating: 4.5
+    },
+    {
+      id: 4,
+      name: "Écharpe en Soie",
+      description: "Légèreté et élégance",
+      price: 59.99,
+      image: "/api/placeholder/300/400",
+      category: "Accessoires",
+      rating: 4.8
+    }
+  ];
+
+  const filteredProducts = selectedCategory === 'Tout' 
+    ? products 
+    : products.filter(p => p.category === selectedCategory);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation */}
+      <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-50">
+        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <button 
+              className="md:hidden"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X /> : <Menu />}
+            </button>
+            <h1 className="text-2xl font-bold text-[#30A08B]">Ma Boutique</h1>
+          </div>
+          
+          <div className="hidden md:flex space-x-6 items-center">
+            <a href="#" className="text-gray-800 hover:text-[#30A08B]">Accueil</a>
+            <a href="#" className="text-gray-800 hover:text-[#30A08B]">Produits</a>
+            <a href="#" className="text-gray-800 hover:text-[#30A08B]">À Propos</a>
+            <a href="#" className="text-gray-800 hover:text-[#30A08B]">Contact</a>
+          </div>
+          
+          <div className="flex items-center space-x-4">
+            <div className="relative hidden md:block">
+              <input 
+                type="text" 
+                placeholder="Rechercher..." 
+                className="pl-10 pr-4 py-2 rounded-full border focus:outline-none focus:ring-2 focus:ring-[#30A08B]"
+              />
+              <Search className="absolute left-3 top-3 text-gray-400" />
+            </div>
+            <button className="relative">
+              <ShoppingCart className="text-[#B17236]" />
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2">
+                2
+              </span>
+            </button>
+            <button>
+              <Heart className="text-[#B2905F]" />
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden bg-white absolute top-full left-0 right-0 shadow-lg">
+            <div className="flex flex-col p-4 space-y-4">
+              <a href="#" className="text-gray-800 hover:text-[#30A08B]">Accueil</a>
+              <a href="#" className="text-gray-800 hover:text-[#30A08B]">Produits</a>
+              <a href="#" className="text-gray-800 hover:text-[#30A08B]">À Propos</a>
+              <a href="#" className="text-gray-800 hover:text-[#30A08B]">Contact</a>
+              <div className="relative">
+                <input 
+                  type="text" 
+                  placeholder="Rechercher..." 
+                  className="w-full pl-10 pr-4 py-2 rounded-full border focus:outline-none focus:ring-2 focus:ring-[#30A08B]"
+                />
+                <Search className="absolute left-3 top-3 text-gray-400" />
+              </div>
+            </div>
+          </div>
+        )}
+      </nav>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 pt-24 pb-10">
+        {/* Hero Section */}
+        <section className="bg-[#30A08B] text-white rounded-2xl p-8 mb-10 flex flex-col md:flex-row items-center">
+          <div className="md:w-1/2 mb-6 md:mb-0">
+            <h2 className="text-3xl font-bold mb-4">Découvrez l'Artisanat Malgache</h2>
+            <p className="mb-6">Chaque pièce raconte une histoire, chaque détail est une célébration de notre patrimoine.</p>
+            <button className="bg-[#B17236] text-white px-6 py-3 rounded-full hover:bg-opacity-90 transition">
+              Voir la Collection
+            </button>
+          </div>
+          <div className="md:w-1/2 flex justify-center">
+            <img 
+              src="https://ae-pic-a1.aliexpress-media.com/kf/S9c181b39441e4e2295aa9d1305d5dac7A.jpg_480x480.jpg_.webp" 
+              alt="Collection Artisanale" 
+              className="rounded-xl shadow-lg"
+            />
+          </div>
+        </section>
+
+        {/* Product Filtering */}
+        <section>
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-2xl font-semibold text-[#30A08B]">Nos Produits</h3>
+            <div className="hidden md:flex space-x-2">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  className={`px-4 py-2 rounded-full ${
+                    selectedCategory === category 
+                      ? 'bg-[#30A08B] text-white' 
+                      : 'bg-gray-200 text-gray-800'
+                  }`}
+                  onClick={() => setSelectedCategory(category)}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+            <button 
+              className="md:hidden flex items-center space-x-2 bg-[#30A08B] text-white px-4 py-2 rounded-full"
+              onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
+            >
+              <Filter />
+              <span>Filtres</span>
+            </button>
+          </div>
+
+          {/* Mobile Category Filter */}
+          {isMobileFilterOpen && (
+            <div className="md:hidden mb-6 flex space-x-2 overflow-x-auto">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  className={`px-4 py-2 rounded-full text-sm flex-shrink-0 ${
+                    selectedCategory === category 
+                      ? 'bg-[#30A08B] text-white' 
+                      : 'bg-gray-200 text-gray-800'
+                  }`}
+                  onClick={() => {
+                    setSelectedCategory(category);
+                    setIsMobileFilterOpen(false);
+                  }}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Product Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {filteredProducts.map((product) => (
+              <div 
+                key={product.id} 
+                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+              >
+                <div className="relative">
+                  <img 
+                    src={product.image} 
+                    alt={product.name} 
+                    className="w-full h-48 md:h-64 object-cover"
+                  />
+                  <button className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md">
+                    <Heart className="text-[#B2905F]" size={20} />
+                  </button>
+                </div>
+                <div className="p-4">
+                  <h4 className="font-semibold text-lg">{product.name}</h4>
+                  <p className="text-gray-500 text-sm mb-2">{product.description}</p>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star 
+                          key={i} 
+                          size={16} 
+                          className={i < Math.floor(product.rating) ? 'text-yellow-500' : 'text-gray-300'}
+                          fill={i < Math.floor(product.rating) ? '#FFC107' : 'none'}
+                        />
+                      ))}
+                      <span className="text-sm text-gray-500 ml-2">
+                        ({product.rating})
+                      </span>
+                    </div>
+                    <span className="text-[#B17236] font-bold">{product.price} €</span>
+                  </div>
+                  <button className="w-full mt-4 bg-[#30A08B] text-white py-2 rounded-full hover:bg-opacity-90 transition">
+                    Ajouter au Panier
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-[#B17236] text-white py-10">
+        <div className="container mx-auto px-4 grid md:grid-cols-4 gap-8">
+          <div>
+            <h4 className="text-xl font-bold mb-4">Ma Boutique</h4>
+            <p>Artisanat authentique, tradition malgache.</p>
+          </div>
+          <div>
+            <h4 className="text-xl font-bold mb-4">Navigation</h4>
+            <ul className="space-y-2">
+              <li><a href="#" className="hover:text-[#30A08B]">Accueil</a></li>
+              <li><a href="#" className="hover:text-[#30A08B]">Produits</a></li>
+              <li><a href="#" className="hover:text-[#30A08B]">À Propos</a></li>
+              <li><a href="#" className="hover:text-[#30A08B]">Contact</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-xl font-bold mb-4">Contactez-nous</h4>
+            <p>+261 34 XX XX XX</p>
+            <p>contact@maboutique.mg</p>
+          </div>
+          <div>
+            <h4 className="text-xl font-bold mb-4">Suivez-nous</h4>
+            <div className="flex space-x-4">
+              {/* Social media icons placeholder */}
+              <a href="#" className="hover:text-[#30A08B]">Facebook</a>
+              <a href="#" className="hover:text-[#30A08B]">Instagram</a>
+            </div>
+          </div>
+        </div>
+        <div className="text-center mt-8 border-t border-white/20 pt-4">
+          © 2024 Ma Boutique. Tous droits réservés.
+        </div>
+      </footer>
+    </div>
+  )
+} -->

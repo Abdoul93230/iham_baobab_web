@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart } from "lucide-react";
+import { Heart, ShoppingCart } from "lucide-react";
 const products = [
   {
     id: 1,
@@ -95,10 +95,10 @@ const handleLikeClick = (e, productId) => {
                 </span>
               )}
               <button
-                className={`absolute top-100 mt-3 right-4 p-2 rounded-full shadow-md transition-colors duration-300
+                className={`absolute z-2 p-2 rounded-full top-3 right-3 shadow-md transition-colors duration-300
                   ${likedProducts.has(product.id) 
                     ? 'transition-transform duration-300 hover:scale-105 cursor-not-allowed' 
-                    : 'bg-white hover:bg-gray-100'}`}
+                    : 'bg-white hover:bg-gray-500'}`}
                 onClick={(e) => handleLikeClick(e, product.id)}
                 disabled={likedProducts.has(product.id)}
                 title={likedProducts.has(product.id) ? "Déjà liké" : "Liker ce produit"}
@@ -110,10 +110,11 @@ const handleLikeClick = (e, productId) => {
                       : 'text-[#B17236] scale-100'}`}
                 />
               </button>
+
               <div
                 onClick={() => navigation("/Produit détail")}
-                className="absolute inset-0 bg-gradient-to-b from-transparent to-[#30A08B] opacity-30 group-hover:scale-105 transition-transform duration-300"
-              ></div>
+                className="absolute inset-0 bg-gradient-to-b from-transparent to-[#30A08B] opacity-15 group-hover:scale-105 transition-transform duration-300"
+              />
             </div>
             <div className="p-4 flex flex-col">
               <h4 className="font-bold text-lg">{product.name}</h4>
@@ -160,10 +161,14 @@ const handleLikeClick = (e, productId) => {
                     e.stopPropagation();
                     handleAddToCart(product);
                   }}
-                  className="w-full bg-[#30A08B] text-white py-2 rounded-md hover:bg-[#B2905F] transition-colors duration-200"
+                  className="mt-2 flex justify-around items-center w-full bg-[#30A08B] text-white py-2
+                       rounded-full hover:bg-opacity-90 transition transition-colors duration-200 text-sm md:text-base shadow-md hover:shadow-lg"
                 >
                   Ajouter au panier
+                  <ShoppingCart size={16} />
                 </button>
+
+   
               </div>
             </div>
           </div>

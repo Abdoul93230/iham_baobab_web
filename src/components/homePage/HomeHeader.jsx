@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Sparkles, Trash2, Menu, User, ChevronDown,
+import {Sparkles, Menu, User, ChevronDown,
   ChevronRight, Home, Smartphone, UtensilsCrossed, Plug, MoreHorizontal,
-  ChevronUp, ShoppingCart, Camera, Search, Heart, Bell, Globe, Truck, Gift, Phone, X, FolderIcon, Package, LogOut,
-  HelpCircle, CreditCard, Shield, Info
+  ShoppingCart, Camera, Search, Heart, Bell, Globe, Truck, Gift, Phone, X, Package, LogOut,
+  HelpCircle, CreditCard, Shield, Info,
+  MessageCircle
   } from "lucide-react";
 import LogoText from "../../image/LogoText.png";
 import HeaderMobile from "./HeaderMobile";
@@ -231,29 +232,57 @@ function HomeHeader() {
   </span>
 
   {isMenuOpen && (
-    <div className="absolute top-0  flex space-x-4 p-1 bg-white border border-gray-200 rounded-full shadow-xl transition-all duration-500 ease-out">
-      <button onClick={() => setIsMobileMenuOpen(true)} className="bg-green-900 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
-        <Menu className="w-8 h-8" />
+    <div className="absolute md:right-4 lg:right-8 mt-2 flex space-x-1 md:space-x-3 p-1 bg-white border border-gray-200 rounded-full shadow-xl transition-all duration-500 ease-out">
+      {/* Menu Button - Hidden on larger screens */}
+      <button 
+        onClick={() => setIsMobileMenuOpen(true)} 
+        className="sm:hidden bg-green-900 w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl"
+      >
+        <Menu className="w-6 h-6 md:w-8 md:h-8" />
       </button>
-      <button className="bg-green-500 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
+   
+      {/* Notification Button */}
+      <button className="bg-green-500 w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
         <div className="relative text-amber-800 hover:text-amber-900" aria-label="Notifications" onClick={() => navigate("/Notification header")}>
-        <Bell className="h-6 w-6" />
-        <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-4 h-4 text-xs text-white flex items-center justify-center">3</span>
-      </div>
+          <Bell className="h-5 w-5 md:h-6 md:w-6" />
+          <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-3 h-3 md:w-4 md:h-4 text-[10px] md:text-xs text-white flex items-center justify-center">
+            3
+          </span>
+        </div>
       </button>
-      <button className="bg-red-500 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
+   
+      {/* Wishlist Button */}
+      <button className="bg-red-500 w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
         <div className="relative text-amber-800 hover:text-amber-900" aria-label="Wishlist" onClick={() => navigate("/Like produit")}>
-          <Heart className="h-6 w-6" />
-          <span className="absolute -top-1 -right-1 bg-emerald-500 rounded-full w-4 h-4 text-xs text-white flex items-center justify-center">5</span>
+          <Heart className="h-5 w-5 md:h-6 md:w-6" />
+          <span className="absolute -top-1 -right-1 bg-emerald-500 rounded-full w-3 h-3 md:w-4 md:h-4 text-[10px] md:text-xs text-white flex items-center justify-center">
+            5
+          </span>
         </div>
       </button>
-      <button className="bg-blue-500 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
+
+      {/* Shopping Cart Button */}
+      <button className="bg-blue-500 w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
         <div onClick={() => navigate("/Panier")} className="relative">
-            <div className="bg-emerald-600 rounded-full z-10 w-5 h-5 flex items-center justify-center text-white text-xs font-bold absolute -top-2 -right-2"> 10 </div>
-            <ShoppingCart className="h-6 w-6 text-amber-800 hover:text-amber-900 cursor-pointer transition-transform transform hover:scale-110" aria-label="Panier" />
+          <div className="bg-emerald-600 rounded-full z-10 w-4 h-4 md:w-5 md:h-5 flex items-center justify-center text-white text-[10px] md:text-xs font-bold absolute -top-2 -right-2">
+            10
+          </div>
+          <ShoppingCart className="h-5 w-5 md:h-6 md:w-6 text-amber-800 hover:text-amber-900 cursor-pointer transition-transform transform hover:scale-110" aria-label="Panier" />
         </div>
       </button>
-    </div>
+
+      {/* Message Button */}
+      <button className="bg-green-500 w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
+        <div className="relative text-amber-800 hover:text-amber-900" aria-label="Messages" onClick={() => navigate("/Messagerie")}>
+          <MessageCircle className="h-5 w-5 md:h-6 md:w-6" />
+          <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-3 h-3 md:w-4 md:h-4 text-[10px] md:text-xs text-white flex items-center justify-center">
+            3
+          </span>
+        </div>
+      </button>
+</div>
+
+
   )}
 </div>
 
@@ -348,6 +377,11 @@ function HomeHeader() {
         <div onClick={() => navigate("/Panier")} className="relative">
             <div className="bg-emerald-600 rounded-full z-10 w-5 h-5 flex items-center justify-center text-white text-xs font-bold absolute -top-2 -right-2"> 2 </div>
             <ShoppingCart className="h-6 w-6 text-amber-800 hover:text-amber-900 cursor-pointer transition-transform transform hover:scale-110" aria-label="Panier" />
+        </div>
+        <div onClick={() => navigate("/Messagerie")} className="relative">
+            <div className="bg-emerald-600 rounded-full z-10 w-5 h-5 flex items-center justify-center text-white text-xs font-bold absolute -top-2 -right-2"> 2 </div>
+            <MessageCircle className="h-6 w-6 text-amber-800 hover:text-amber-900 cursor-pointer transition-transform transform hover:scale-110" aria-label="messages" />
+
         </div>
 
         {isCartOpen && (

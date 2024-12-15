@@ -99,7 +99,7 @@ function Inscription() {
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="text-gray-400 hover:text-gray-500 focus:outline-none focus:text-gray-500"
                                 >
-                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    {showPassword ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
                                 </button>
                             </div>
                         </div>
@@ -127,7 +127,7 @@ function Inscription() {
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                     className="text-gray-400 hover:text-gray-500 focus:outline-none focus:text-gray-500"
                                 >
-                                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    {showConfirmPassword ? <Eye className="h-5 w-5" />: <EyeOff className="h-5 w-5" />}
                                 </button>
                             </div>
                         </div>
