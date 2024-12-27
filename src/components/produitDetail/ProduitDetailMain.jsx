@@ -714,7 +714,7 @@ function ProduitDetailMain() {
               ) : (
                 <div className="bg-[#30A08B] rounded-md p-2 h-[30px] flex justify-start items-center w-full">
                   <span className="text-start text-white font-bold text-lg">
-                    Nouveau
+                    Nouveaus
                   </span>
                 </div>
               )}
