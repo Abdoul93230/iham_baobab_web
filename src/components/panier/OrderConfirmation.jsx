@@ -321,21 +321,17 @@ const OrderConfirmation = ({ onClose }) => {
           // Vérifier si une commande en attente existe déjà
           const existingOrder = localStorage.getItem('pendingOrder');
           let commandeId;
-          let transactionId;
 
           if (existingOrder) {
-            // Utiliser la commande existante
+            // Utiliser la commande existante mais générer un nouveau transactionId
             const orderData = JSON.parse(existingOrder);
             commandeId = orderData.commandeId;
-            transactionId = orderData.transactionId;
           } else {
             // Créer une nouvelle commande
-            transactionId = generateUniqueID();
             const commandeData = {
               clefUser: userId,
               nbrProduits: produits,
               prix: orderTotal,
-              reference: transactionId,
               statusPayment: "en attente",
               ...(orderCodeP?.isValide && {
                 codePro: true,
@@ -345,14 +341,22 @@ const OrderConfirmation = ({ onClose }) => {
             
             const response = await axios.post(`${BackendUrl}/createCommande`, commandeData);
             commandeId = response.data._id; // Supposant que votre API renvoie l'ID de la commande créée
-
-            // Sauvegarder les informations de la commande
-            localStorage.setItem('pendingOrder', JSON.stringify({
-              commandeId,
-              transactionId,
-              timestamp: new Date().getTime()
-            }));
           }
+
+          // Générer un nouveau transactionId à chaque tentative
+          const transactionId = generateUniqueID();
+
+          // Mettre à jour la référence de la commande avec le nouveau transactionId
+          await axios.put(`${BackendUrl}/updateCommandeReference/${commandeId}`, {
+            reference: transactionId
+          });
+
+          // Sauvegarder les informations de la commande avec le nouveau transactionId
+          localStorage.setItem('pendingOrder', JSON.stringify({
+            commandeId,
+            transactionId,
+            timestamp: new Date().getTime()
+          }));
 
           // Stocker les informations de paiement
           localStorage.setItem('paymentInfo', JSON.stringify({
