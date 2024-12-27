@@ -326,13 +326,30 @@ const OrderConfirmation = ({ onClose }) => {
             // Utiliser la commande existante mais générer un nouveau transactionId
             const orderData = JSON.parse(existingOrder);
             commandeId = orderData.commandeId;
+            
+            // Générer un nouveau transactionId
+            const transactionId = generateUniqueID();
+            
+            // Mettre à jour la commande avec le nouveau transactionId
+            await axios.put(`${BackendUrl}/updateCommande/${commandeId}`, {
+              reference: transactionId
+            });
+
+            // Sauvegarder les informations de la commande avec le nouveau transactionId
+            localStorage.setItem('pendingOrder', JSON.stringify({
+              commandeId,
+              transactionId,
+              timestamp: new Date().getTime()
+            }));
           } else {
-            // Créer une nouvelle commande
+            // Créer une nouvelle commande avec le transactionId
+            const transactionId = generateUniqueID();
             const commandeData = {
               clefUser: userId,
               nbrProduits: produits,
               prix: orderTotal,
               statusPayment: "en attente",
+              reference: transactionId,
               ...(orderCodeP?.isValide && {
                 codePro: true,
                 idCodePro: orderCodeP._id
@@ -340,28 +357,20 @@ const OrderConfirmation = ({ onClose }) => {
             };
             
             const response = await axios.post(`${BackendUrl}/createCommande`, commandeData);
-            commandeId = response.data._id; // Supposant que votre API renvoie l'ID de la commande créée
+            commandeId = response.data._id;
+
+            // Sauvegarder les informations de la commande
+            localStorage.setItem('pendingOrder', JSON.stringify({
+              commandeId,
+              transactionId,
+              timestamp: new Date().getTime()
+            }));
           }
-
-          // Générer un nouveau transactionId à chaque tentative
-          const transactionId = generateUniqueID();
-
-          // Mettre à jour la référence de la commande avec le nouveau transactionId
-          await axios.put(`${BackendUrl}/updateCommandeReference/${commandeId}`, {
-            reference: transactionId
-          });
-
-          // Sauvegarder les informations de la commande avec le nouveau transactionId
-          localStorage.setItem('pendingOrder', JSON.stringify({
-            commandeId,
-            transactionId,
-            timestamp: new Date().getTime()
-          }));
 
           // Stocker les informations de paiement
           localStorage.setItem('paymentInfo', JSON.stringify({
             amount: orderTotal,
-            transactionId
+            transactionId: JSON.parse(localStorage.getItem('pendingOrder')).transactionId
           }));
 
           // Rediriger vers la page de paiement
