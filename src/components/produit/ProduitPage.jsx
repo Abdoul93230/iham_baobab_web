@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart } from "lucide-react";
+import { Heart, ShoppingCart } from "lucide-react";
 const productss = [
   {
     id: 1,
@@ -109,11 +109,11 @@ const ProduitPage = ({ name, products }) => {
                   </span>
                 )}
                 <button
-                  className={`absolute top-100 mt-3 right-4 p-2 rounded-full shadow-md transition-colors duration-300
+                  className={`absolute z-2 p-2 rounded-full top-3 right-3 shadow-md transition-colors duration-300
                   ${
                     likedProducts.has(+index + 1)
                       ? "transition-transform duration-300 hover:scale-105 cursor-not-allowed"
-                      : "bg-white hover:bg-gray-100"
+                      : "bg-white hover:bg-gray-500"
                   }`}
                   onClick={(e) => handleLikeClick(e, +index + 1)}
                   disabled={likedProducts.has(+index + 1)}
@@ -200,9 +200,11 @@ const ProduitPage = ({ name, products }) => {
                       e.stopPropagation();
                       handleAddToCart(product);
                     }}
-                    className="w-full bg-[#30A08B] text-white py-2 rounded-md hover:bg-[#B2905F] transition-colors duration-200"
+                    className="mt-2 flex justify-around items-center w-full bg-[#30A08B] text-white py-2
+                       rounded-full hover:bg-opacity-90 transition transition-colors duration-200 text-sm md:text-base shadow-md hover:shadow-lg"
                   >
                     Ajouter au panier
+                    <ShoppingCart size={16} />
                   </button>
                 </div>
               </div>

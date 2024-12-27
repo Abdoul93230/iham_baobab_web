@@ -17,28 +17,26 @@ function HomeFooter() {
     <footer className="bg-gradient-to-r mt-4 from-[#30A08B] to-[#B2905F] text-white py-8">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-        <div>
-  <h3 className="text-lg font-bold mb-4">À propos</h3>
-  <ul className="space-y-2">
-    <li>
-      <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
-        Qui sommes-nous
-      </button>
-    </li>
-    <li>
-      <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
-        Nos magasins
-      </button>
-    </li>
-    <li>
-      <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
-        IHAM Baobab Anniversery {new Date().getFullYear()}
-      </button>
-    </li>
-
-  </ul>
-</div>
-
+          <div>
+            <h3 className="text-lg font-bold mb-4">À propos</h3>
+            <ul className="space-y-2">
+              <li>
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
+                  Qui sommes-nous
+                </button>
+              </li>
+              <li>
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
+                  Nos magasins
+                </button>
+              </li>
+              <li>
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
+                  IHAM Baobab Anniversery {new Date().getFullYear()}
+                </button>
+              </li>
+            </ul>
+          </div>
 
           <div>
             <h3 className="text-lg font-bold mb-4">Service client</h3>
@@ -50,22 +48,22 @@ function HomeFooter() {
               </li>
               <li>
                 <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
-                  Devenir vendeure  
+                  Devenir vendeure
                 </button>
               </li>
               <li>
                 <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
-                  expedier votre commande 
+                  expedier votre commande
                 </button>
               </li>
               <li>
                 <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
-                  Par tout au Niger 
+                  Par tout au Niger
                 </button>
               </li>
               <li>
                 <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
-                 Retourner une commande 
+                  Retourner une commande
                 </button>
               </li>
             </ul>
@@ -133,39 +131,62 @@ function HomeFooter() {
         <div className="mt-8 border-t border-gray-200 pt-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex justify-center items-center">
-                     <p className="text-sm mb-4 md:mb-0">
-              &copy; {new Date().getFullYear()} IHAM Baobab. Tous droits
-              réservés.
-            </p>
-            <li className="flex justify-center">
-  <img
-    src={LogoText}
-    alt="Logo IHAM Baobab"
-    className="max-w-full h-auto max-h-20 transition-transform duration-300 transform hover:scale-105"
-  />
-</li>
+              <p
+                className="text-sm mb-4 md:mb-0"
+                style={{
+                  background: "linear-gradient(90deg, #B17236, #FAFAFA)",
+                  WebkitBackgroundClip: "text",
+                  color: "transparent",
+                }}
+              >
+                &copy; {new Date().getFullYear()} IHAM Baobab. Tous droits
+                réservés.
+              </p>
+              <li className="flex justify-center  mb-4">
+                <img
+                  src={LogoText}
+                  alt="Logo IHAM Baobab"
+                  className="max-w-full h-auto max-h-20 transition-transform duration-300 transform hover:scale-105"
+                />
+              </li>
             </div>
-     
+
             <div className="flex space-x-4">
               <img
                 src={MasterCard}
-                alt="Master Card"
-                className="h-10 w-22 cursor-pointer object-contain "
+                alt="Payment Method"
+                className="h-8"
+                style={{
+                  borderColor: "#30A08B",
+                  borderWidth: "2px",
+                }}
               />
               <img
                 src={VisaCard}
-                alt="MasterCard"
-                className="h-10 w-22 cursor-pointer object-contain "
+                alt="Payment Method"
+                className="h-8"
+                style={{
+                  borderColor: "#B2905F",
+                  borderWidth: "2px",
+                }}
               />
               <img
                 src={DomicileCard}
-                alt="Domicile Card"
-                className="h-10 w-22 cursor-pointer object-contain "
+                alt="Payment Method"
+                className="h-8"
+                style={{
+                  borderColor: "#B17236",
+                  borderWidth: "2px",
+                }}
               />
               <img
                 src={MobileMoney}
-                alt="Mobile Money"
-                className="h-10 w-22 cursor-pointer object-contain "
+                alt="Payment Method"
+                className="h-8"
+                style={{
+                  borderColor: "#B17236",
+                  borderWidth: "2px",
+                }}
               />
             </div>
           </div>

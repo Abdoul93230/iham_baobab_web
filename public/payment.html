@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page de Paiement</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: transparent;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .payment-container {
+      background-color: transparent;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 400px;
+    }
+  </style>
+</head>
+<body>
+  <div class="payment-container">
+    <div>
+      <button
+        type="button"
+        id="checkout-button"
+        class="ipaymoney-button"
+        data-environement="live"
+        data-key="pk_f83a240bd0df4393b35a819925863e16"
+        data-redirect-url="https://ihambaobab.onrender.com/success"
+        data-cancel-url="https://ihambaobab.onrender.com/error"
+        data-callback-url="https://secoure.onrender.com/payment_callback"
+      >
+        CheckOut
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Récupérer les informations de paiement du localStorage
+    const paymentInfo = JSON.parse(localStorage.getItem('paymentInfo'));
+    
+    if (!paymentInfo) {
+      window.location.href = '/'; // Rediriger si pas d'infos
+      throw new Error('Informations de paiement non trouvées');
+    }
+
+    // Configurer le bouton iPay
+    const button = document.querySelector('.ipaymoney-button');
+    button.setAttribute('data-amount', paymentInfo.amount);
+    button.setAttribute('data-transaction-id', paymentInfo.transactionId);
+
+    // Nettoyer le localStorage après configuration
+    localStorage.removeItem('paymentInfo');
+  </script>
+
+  <script src="https://i-pay.money/checkout.js"></script>
+</body>
+</html>

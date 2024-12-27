@@ -10,6 +10,10 @@ import {
   Store,
   MessageCircle,
   X,
+  ZoomIn,
+  ZoomOut,
+  ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
 import {
   FaInstagram,
@@ -27,8 +31,10 @@ import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { shuffle } from "lodash";
 import Alert from "../../pages/Alert";
+import { useNavigate } from "react-router-dom";
 
 function ProduitDetailMain() {
+  const navigation = useNavigate();
   const swiperRef = useRef(null);
   const [isZoomed, setIsZoomed] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -37,6 +43,7 @@ function ProduitDetailMain() {
   const [quantity, setQuantity] = useState(0);
   const [liked, setLiked] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen1, setIsModalOpen1] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isCommentOpen, setIsCommentOpen] = useState(false);
   const [isCountryOpen, setIsCountryOpen] = useState(false);
@@ -48,6 +55,33 @@ function ProduitDetailMain() {
   const [categorie, setCategorie] = useState(null);
   const [products, setProducts] = useState([]);
   const [productsAutres, setProductsAutres] = useState([]);
+  const [produitsL, setProduitsL] = useState(0);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const imageRef = useRef(null);
+  const containerRef = useRef(null);
+
+  const westAfricanCountries = [
+    "benin",
+    "burkina Faso",
+    "cap-Vert",
+    "côte d'Ivoire",
+    "gambie",
+    "ghana",
+    "guinee",
+    "guinee-Bissau",
+    "liberia",
+    "mali",
+    "niger",
+    "nigeria",
+    "senegal",
+    "sierra Leone",
+    "togo",
+  ];
+
+  const [regionClient, setRegionClient] = useState(null);
+  const [pays, setPays] = useState(null);
   const [alert, setAlert] = useState({
     visible: false,
     type: "",
@@ -67,6 +101,8 @@ function ProduitDetailMain() {
 
   const params = useParams();
   const produit = DATA_Products.find((item) => item._id === params.id);
+
+  const [selectedVariant, setSelectedVariant] = useState(produit?.variants[0]);
   // console.log(produit);
   // console.log(DATA_Types);
   const handleMouseEnter = () => {
@@ -131,36 +167,93 @@ function ProduitDetailMain() {
     },
   };
 
+  useEffect(() => {
+    setSelectedSize(null);
+    setSelectedVariant(produit?.variants[0]);
+    setSelectedSizeImage(null);
+    setQuantity(1);
+    setLiked(false);
+  }, [params.id]);
+
   const images = [
     DATA_Products.find((item) => item._id === params.id)?.image1,
     DATA_Products.find((item) => item._id === params.id)?.image2,
     DATA_Products.find((item) => item._id === params.id)?.image3,
   ];
 
-  const handlePrev = () => {
-    setActiveImageIndex((prevIndex) =>
-      prevIndex > 0 ? prevIndex - 1 : images.length - 1
-    );
+  // const handlePrev = () => {
+  //   setActiveImageIndex((prevIndex) =>
+  //     prevIndex > 0 ? prevIndex - 1 : images.length - 1
+  //   );
+  // };
+
+  // const handleNext = () => {
+  //   setActiveImageIndex((prevIndex) =>
+  //     prevIndex < images.length - 1 ? prevIndex + 1 : 0
+  //   );
+  // };
+
+  // Récupérer toutes les images disponibles
+  const getAllImages = () => {
+    const baseImages = images || [];
+    const variantImages = Array.isArray(produit?.variants)
+      ? produit.variants.map((variant) => variant?.imageUrl).filter(Boolean)
+      : [];
+    return [...baseImages, ...variantImages];
   };
 
+  // Gestion du changement de variante
+  const handleVariantChange = (variant) => {
+    setSelectedVariant(variant);
+    setSelectedSize(null);
+
+    const images = getAllImages();
+    const variantImageIndex = images.findIndex(
+      (img) => img === variant.imageUrl
+    );
+    if (variantImageIndex !== -1) {
+      setActiveImageIndex(variantImageIndex);
+    }
+  };
+
+  // Nouvelle méthode de navigation entre les images
   const handleNext = () => {
-    setActiveImageIndex((prevIndex) =>
-      prevIndex < images.length - 1 ? prevIndex + 1 : 0
-    );
+    setActiveImageIndex((prev) => (prev + 1) % getAllImages().length);
+    setZoomLevel(1);
   };
-  const sizes = [
-    { size: "39", cm: "24.5CM" },
-    { size: "40", cm: "25.0CM" },
-    { size: "41", cm: "25.5CM" },
-    { size: "42", cm: "26.0CM" },
-    { size: "43", cm: "26.5CM" },
-    // Ajoutez d'autres tailles si nécessaire
-  ];
-  const imageColorMap =
-    DATA_Products.find((item) => item._id === params.id)?.pictures || [];
 
-  const decreaseQuantity = () => setQuantity((prev) => Math.max(1, prev - 1));
-  const increaseQuantity = () => setQuantity((prev) => Math.min(5, prev + 1));
+  const handlePrev = () => {
+    setActiveImageIndex(
+      (prev) => (prev - 1 + getAllImages().length) % getAllImages().length
+    );
+    setZoomLevel(1);
+  };
+
+  // Gestion du zoom dans la modal
+  const handleZoomIn = () => {
+    setZoomLevel((prev) => Math.min(prev * 1.5, 3));
+  };
+
+  const handleZoomOut = () => {
+    setZoomLevel((prev) => Math.max(prev / 1.5, 1));
+  };
+
+  // const sizes = [
+  //   { size: "39", cm: "24.5CM" },
+  //   { size: "40", cm: "25.0CM" },
+  //   { size: "41", cm: "25.5CM" },
+  //   { size: "42", cm: "26.0CM" },
+  //   { size: "43", cm: "26.5CM" },
+  //   // Ajoutez d'autres tailles si nécessaire
+  // ];
+  // const imageColorMap =
+  //   DATA_Products.find((item) => item._id === params.id)?.pictures || [];
+
+  // const decreaseQuantity = () => setQuantity((prev) => Math.max(1, prev - 1));
+  // const increaseQuantity = () => setQuantity((prev) => Math.min(5, prev + 1));
+
+  const decreaseQuantity = () => setQuantity((prev) => prev - 1);
+  const increaseQuantity = () => setQuantity((prev) => prev + 1);
 
   // Pour les like
   const handleLike = () => {
@@ -185,21 +278,21 @@ function ProduitDetailMain() {
           </h2>
           <div className="flex justify-around mb-4">
             <a
-              href="https://www.facebook.com/sharer/sharer.php?u=YOUR_URL"
+              href="https://www.facebook.com/sharer/sharer.php?u=https://ihambaobab.onrender.com/"
               target="_blank"
               rel="noopener noreferrer"
             >
               <FaFacebook className="w-8 h-8 text-blue-600 hover:scale-110 transition-transform" />
             </a>
             <a
-              href="https://wa.me/?text=YOUR_URL"
+              href="https://wa.me/?text=https://ihambaobab.onrender.com/"
               target="_blank"
               rel="noopener noreferrer"
             >
               <FaWhatsapp className="w-8 h-8 text-green-500 hover:scale-110 transition-transform" />
             </a>
             <a
-              href="https://www.linkedin.com/shareArticle?mini=true&url=YOUR_URL"
+              href="https://www.linkedin.com/shareArticle?mini=true&url=https://ihambaobab.onrender.com/"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -363,6 +456,174 @@ function ProduitDetailMain() {
       });
   };
 
+  // Préparer les variantes d'images couleur
+  const imageColorMap = produit?.variants.map((variant) => variant.imageUrl);
+
+  // Calculer le prix et la remise
+  const originalPrice = produit?.prix;
+  const discountedPrice = produit?.prixf;
+  const discountPercentage = Math.round(
+    ((originalPrice - discountedPrice) / originalPrice) * 100
+  );
+
+  // Préparer les tailles à partir des variants
+  const sizes = produit?.variants.flatMap((variant) =>
+    variant.sizes.map((size) => ({
+      size: size,
+      cm: "42", // Vous devrez ajuster cette logique selon vos données
+    }))
+  );
+
+  const addToCart = () => {
+    // Vérification des variantes de couleur
+    if (produit?.variants && produit.variants.length >= 2 && !selectedVariant) {
+      handleWarning(
+        `Veuillez choisir un modèle parmi les ${produit.variants.length}`
+      );
+      return;
+    }
+
+    // Vérification des tailles
+    const hasMultipleSizes = produit?.variants?.some(
+      (variant) => variant.sizes && variant.sizes.length >= 2
+    );
+
+    if (hasMultipleSizes && !selectedSize) {
+      handleWarning(`Veuillez choisir une taille parmi les disponibles`);
+      return;
+    }
+
+    // Récupérer les produits existants dans le panier
+    const existingProducts = JSON.parse(localStorage.getItem("panier")) || [];
+
+    // Vérifier si le produit existe déjà dans le panier
+    const existingProductIndex = existingProducts.findIndex((p) => {
+      // Si le produit n'a pas de variantes, on compare simplement l'ID
+      if (!produit.variants || produit.variants.length === 0) {
+        return p?._id === produit?._id;
+      }
+
+      // Si le produit a des variantes, on compare l'ID, la couleur et la taille
+      return (
+        p?._id === produit?._id &&
+        p.colors[0] === selectedVariant?.color &&
+        p.sizes[0] === selectedSize
+      );
+    });
+
+    if (existingProductIndex !== -1) {
+      // Produit existant : incrémenter la quantité
+      const updatedProducts = existingProducts.map((p, index) =>
+        index === existingProductIndex ? { ...p, quantity: p.quantity + 1 } : p
+      );
+
+      localStorage.setItem("panier", JSON.stringify(updatedProducts));
+      handleSuccess(
+        "La quantité du produit a été incrémentée dans le panier !"
+      );
+    } else {
+      // Nouveau produit à ajouter
+      const newProduct = {
+        ...produit,
+        colors: selectedVariant ? [selectedVariant.color] : [],
+        sizes: selectedSize ? [selectedSize] : [],
+        quantity: quantity,
+        _id: produit?._id,
+        imageUrl: selectedVariant ? selectedVariant.imageUrl : produit?.image1,
+        price: originalPrice,
+        prixPromo: discountedPrice,
+      };
+
+      const updatedProducts = [...existingProducts, newProduct];
+      localStorage.setItem("panier", JSON.stringify(updatedProducts));
+      handleSuccess("Produit ajouté au panier !");
+    }
+
+    // Mettre à jour la longueur du panier
+    const local = localStorage.getItem("panier");
+    if (local) {
+      setProduitsL(JSON.parse(local));
+    } else {
+      setProduitsL(0);
+    }
+  };
+
+  // Gestion du zoom avec la molette de souris
+  const handleImageWheel = (e) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    const newZoomLevel = Math.min(Math.max(zoomLevel + delta, 1), 5);
+    setZoomLevel(newZoomLevel);
+  };
+
+  // Gestion du début du drag
+  const handleMouseDown = (e) => {
+    if (zoomLevel > 1) {
+      setIsDragging(true);
+      const startX = e.clientX - imagePosition.x;
+      const startY = e.clientY - imagePosition.y;
+
+      const handleMouseMove = (moveEvent) => {
+        if (!imageRef.current || !containerRef.current) return;
+
+        const newX = moveEvent.clientX - startX;
+        const newY = moveEvent.clientY - startY;
+
+        // Limiter le mouvement aux dimensions de l'image
+        const imgRect = imageRef.current.getBoundingClientRect();
+        const containerRect = containerRef.current.getBoundingClientRect();
+
+        const maxMoveX = (imgRect.width * zoomLevel - containerRect.width) / 2;
+        const maxMoveY =
+          (imgRect.height * zoomLevel - containerRect.height) / 2;
+
+        const boundedX = Math.min(Math.max(newX, -maxMoveX), maxMoveX);
+        const boundedY = Math.min(Math.max(newY, -maxMoveY), maxMoveY);
+
+        setImagePosition({ x: boundedX, y: boundedY });
+      };
+
+      const handleMouseUp = () => {
+        setIsDragging(false);
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+      };
+
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    }
+  };
+
+  // Navigation entre les images dans la modal
+  const navigateModal = (direction) => {
+    const images = getAllImages();
+    const newIndex =
+      direction === "next"
+        ? (activeImageIndex + 1) % images.length
+        : (activeImageIndex - 1 + images.length) % images.length;
+
+    setActiveImageIndex(newIndex);
+    setZoomLevel(1);
+    setImagePosition({ x: 0, y: 0 });
+  };
+
+  useEffect(() => {
+    const detecterRegion = async () => {
+      try {
+        const response = await axios.get("https://ipapi.co/json/");
+        const region = response.data.region;
+        const pays = response.data.country_name;
+        setRegionClient(region.toLowerCase());
+        setPays(pays.toLowerCase());
+        console.log(pays);
+      } catch (error) {
+        console.error("Erreur de détection de région", error);
+      }
+    };
+
+    detecterRegion();
+  }, []);
+
   return (
     <div className="container mx-auto p-4" ref={swiperRef}>
       <Helmet>
@@ -376,12 +637,13 @@ function ProduitDetailMain() {
       </Helmet>
 
       <div className="flex flex-col lg:flex-row gap-2">
+        {/* Galerie de miniatures */}
         <div
           className="w-full lg:w-auto h-40 lg:h-96"
           style={styles.scrollbarHide}
         >
           <div className="flex w-[90px] lg:flex-col gap-2">
-            {images.map((image, index) => (
+            {getAllImages().map((image, index) => (
               <div
                 key={index}
                 className={`w-[80px] h-[80px] cursor-pointer rounded flex-shrink-0 overflow-hidden transition-all duration-200 ${
@@ -390,10 +652,10 @@ function ProduitDetailMain() {
                     : "border border-gray-300"
                 }`}
                 onMouseEnter={() => setActiveImageIndex(index)}
-                onClick={() => setActiveImageIndex(index)} // Ajout du clic pour changer l'image active
+                onClick={() => setActiveImageIndex(index)}
               >
                 <img
-                  className="w-full h-full object-cover transition-transform duration-200 transform hover:scale-105" // Utilisation de w-full et h-full
+                  className="w-full h-full object-cover transition-transform duration-200 transform hover:scale-105"
                   src={image}
                   alt={`Product ${index + 1}`}
                 />
@@ -402,6 +664,7 @@ function ProduitDetailMain() {
           </div>
         </div>
 
+        {/* Visualisateur d'image principal */}
         <div className="flex-grow flex flex-col lg:flex-row gap-4">
           <div
             className="lg:h-96 border-[#ccc] border flex lg:flex-1 cursor-pointer rounded-md overflow-hidden col-12"
@@ -410,46 +673,67 @@ function ProduitDetailMain() {
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onMouseMove={handleMouseMove}
+            onClick={() => setIsModalOpen1(true)}
           >
             <img
-              className="w-full h-auto object-cover "
-              src={images[activeImageIndex]}
+              className="w-full h-auto object-cover"
+              src={getAllImages()[activeImageIndex]}
               alt=""
               style={styles.zoomImage}
             />
             <div
               className="absolute z-1 top-1/2 left-4 transform -translate-y-1/2 w-10 h-10 bg-[#30A08B] text-white rounded-full p-2 cursor-pointer flex items-center justify-center"
-              onClick={handlePrev}
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePrev();
+              }}
             >
               <span className="text-lg">←</span>
             </div>
             <div
               className="absolute z-1 top-1/2 right-4 transform -translate-y-1/2 w-10 h-10 bg-[#30A08B] text-white rounded-full p-2 cursor-pointer flex items-center justify-center"
-              onClick={handleNext}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleNext();
+              }}
             >
               <span className="text-lg">→</span>
             </div>
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#30A08B] opacity-10 group-hover:scale-105 transition-transform duration-300"></div>
           </div>
 
+          {/* Section des informations de produit */}
           <div className="flex lg:flex-1">
             <div className="border-[#ccc] p-2 border cursor-pointer rounded-md overflow-hidden w-full">
-              <div className="bg-[#F9394F] rounded-md p-2 h-[30px] flex justify-start items-center w-full">
-                <span className="text-start text-white font-bold text-lg">
-                  Offre Limitée
-                </span>
-              </div>
+              {discountedPrice > 0 ? (
+                <div className="bg-[#F9394F] rounded-md p-2 h-[30px] flex justify-start items-center w-full">
+                  <span className="text-start text-white font-bold text-lg">
+                    Offre Limitée
+                  </span>
+                </div>
+              ) : (
+                <div className="bg-[#30A08B] rounded-md p-2 h-[30px] flex justify-start items-center w-full">
+                  <span className="text-start text-white font-bold text-lg">
+                    Nouveau
+                  </span>
+                </div>
+              )}
 
               <div className="p-2">
-                <h1 className="text-lg font-bold">
-                  XOF 7,482{" "}
-                  <span className="line-through text-red-500">XOF 17,817</span>{" "}
-                  -58%
-                </h1>
+                {discountedPrice > 0 ? (
+                  <h1 className="text-lg font-bold">
+                    XOF {discountedPrice}{" "}
+                    <span className="line-through text-red-500">
+                      XOF {originalPrice}
+                    </span>{" "}
+                    -{discountPercentage}%
+                  </h1>
+                ) : (
+                  <span className="text-lg font-bold">XOF {originalPrice}</span>
+                )}
+
                 <div className="my-2 w-full flex items-center">
                   <div className="w-24 mr-2">
-                    {" "}
-                    {/* Espacement ajouté ici */}
                     <img
                       src={require("./logoPromo.png")}
                       alt="Promotion"
@@ -460,70 +744,174 @@ function ProduitDetailMain() {
                 </div>
                 <p className="text-xs text-gray-600">Prix hors taxe</p>
                 <p className="font-bold text-xs">{produit?.name}</p>
-              </div>
-
-              <div className="flex py-2 p-2 items-center">
-                <p className="text-xs font-bold mr-1">Couleur:</p>
-                <p className="text-xs font-bold mr-1">
-                  {selectedSizeImage
-                    ? `${selectedSizeImage.color}`
-                    : "Sélectionnez la couleur"}
-                </p>
-              </div>
-
-              {/* Section des images */}
-              <div className="flex space-x-2 p-2">
-                {imageColorMap.map((item, index) => (
-                  <div
-                    className={`w-[70px] h-[70px] rounded-md overflow-hidden transition-all duration-200 
-              ${
-                activeImageIndex === index
-                  ? "border-2 border-solid border-[#30A08B]"
-                  : "border border-gray-300"
-              }`}
-                    key={index}
-                  >
-                    <img
-                      className="w-full h-full object-cover cursor-pointer"
-                      src={item}
-                      alt={`Image ${index + 1}`}
-                      onClick={() => {
-                        setActiveImageIndex(index);
-                        setSelectedSizeImage(item);
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-              <div className="flex flex-col p-1">
-                <div className="flex py-2 items-center">
-                  <p className="text-xs font-bold mr-1">Taille de chaussure:</p>
-                  <p className="text-xs font-bold mr-1">
-                    {selectedSize
-                      ? `${selectedSize.size} (${selectedSize.cm})`
-                      : "Sélectionnez une taille"}
+                {produit?.shipping?.weight ? (
+                  <p className="font-bold text-xs">
+                    Poids : {produit?.shipping?.weight} kg
                   </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {sizes.map((size, index) => (
-                    <div
-                      key={index}
-                      className={`w-24 h-[46px] flex items-center justify-center cursor-pointer rounded-md transition-all duration-200 
-              ${
-                selectedSize && selectedSize.size === size.size
-                  ? "border-2 border-[#30A08B]"
-                  : "border border-gray-300"
-              }`}
-                      onClick={() => setSelectedSize(size)}
-                    >
-                      <p className="text-sm font-bold">{`${size.size} (${size.cm})`}</p>
-                    </div>
-                  ))}
-                </div>
+                ) : (
+                  <></>
+                )}
               </div>
+
+              {produit?.variants.length > 0 ? (
+                <>
+                  <div className="flex py-2 p-2 items-center">
+                    <p className="text-xs font-bold mr-1">Couleur:</p>
+                    <p className="text-xs font-bold mr-1">
+                      {selectedVariant?.color}
+                    </p>
+                  </div>
+
+                  <div className="flex space-x-2 p-2">
+                    {produit?.variants.map((variant, index) => (
+                      <div
+                        className={`w-[70px] h-[70px] rounded-md overflow-hidden transition-all duration-200 
+                      ${
+                        selectedVariant?.color === variant?.color
+                          ? "border-2 border-solid border-[#30A08B]"
+                          : "border border-gray-300"
+                      }`}
+                        key={index}
+                      >
+                        <img
+                          className="w-full h-full object-cover cursor-pointer"
+                          src={variant.imageUrl}
+                          alt={`Image ${variant.color}`}
+                          onClick={() => handleVariantChange(variant)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : null}
+
+              {produit?.variants.length > 0 ? (
+                <div className="flex flex-col p-1">
+                  <div className="flex py-2 items-center">
+                    <p className="text-xs font-bold mr-1">Taille du Produit:</p>
+                    <p className="text-xs font-bold mr-1">
+                      {selectedSize
+                        ? `${selectedSize}`
+                        : "Sélectionnez une taille"}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedVariant?.sizes.map((size, index) => (
+                      <div
+                        key={index}
+                        className={`w-24 h-[46px] flex items-center justify-center cursor-pointer rounded-md transition-all duration-200 
+                      ${
+                        selectedSize === size
+                          ? "border-2 border-[#30A08B]"
+                          : "border border-gray-300"
+                      }`}
+                        onClick={() => setSelectedSize(size)}
+                      >
+                        <p className="text-sm font-bold">{`${size}`}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
+
+        {/* Modal de zoom */}
+        {/* Modal de zoom amélioré */}
+        {isModalOpen1 && (
+          <div
+            className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+            onClick={() => {
+              setIsModalOpen1(false);
+              setZoomLevel(1);
+              setImagePosition({ x: 0, y: 0 });
+            }}
+          >
+            <div
+              ref={containerRef}
+              className="relative w-[90%] h-[90%] flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Bouton de fermeture */}
+              <button
+                className="absolute -top-10 right-0 text-white hover:text-gray-300 transition-colors duration-300 z-50"
+                onClick={() => setIsModalOpen1(false)}
+              >
+                <X size={32} strokeWidth={2} />
+              </button>
+
+              {/* Boutons de navigation */}
+              <div className="absolute top-1/2 left-4 transform -translate-y-1/2 z-10">
+                <button
+                  className="bg-[#30A08B] hover:bg-[#228B73] backdrop-blur-sm p-2 rounded-full transition-all duration-300 shadow-lg hover:scale-110"
+                  onClick={() => navigateModal("prev")}
+                >
+                  <ChevronLeft
+                    size={24}
+                    className="text-white"
+                    strokeWidth={2}
+                  />
+                </button>
+              </div>
+
+              <div className="absolute top-1/2 right-4 transform -translate-y-1/2 z-10">
+                <button
+                  className="bg-[#30A08B] hover:bg-[#228B73] backdrop-blur-sm p-2 rounded-full transition-all duration-300 shadow-lg hover:scale-110"
+                  onClick={() => navigateModal("next")}
+                >
+                  <ChevronRight
+                    size={24}
+                    className="text-white"
+                    strokeWidth={2}
+                  />
+                </button>
+              </div>
+
+              {/* Contrôles de zoom */}
+              <div className="absolute top-4 right-4 flex space-x-2 z-10">
+                <button
+                  className="bg-[#30A08B] hover:bg-[#228B73] backdrop-blur-sm p-2 rounded-full transition-all duration-300 shadow-lg hover:scale-110"
+                  onClick={() => setZoomLevel(Math.max(zoomLevel - 0.5, 1))}
+                >
+                  <ZoomOut size={24} className="text-white" strokeWidth={2} />
+                </button>
+                <button
+                  className="bg-[#30A08B] hover:bg-[#228B73] backdrop-blur-sm p-2 rounded-full transition-all duration-300 shadow-lg hover:scale-110"
+                  onClick={() => setZoomLevel(Math.min(zoomLevel + 0.5, 5))}
+                >
+                  <ZoomIn size={24} className="text-white" strokeWidth={2} />
+                </button>
+              </div>
+
+              {/* Container de l'image avec gestion du zoom et du déplacement */}
+              <div
+                ref={containerRef}
+                className="flex items-center justify-center w-full h-full overflow-hidden"
+                onWheel={handleImageWheel}
+              >
+                <img
+                  ref={imageRef}
+                  src={getAllImages()[activeImageIndex]}
+                  alt="Zoomed Image"
+                  onMouseDown={handleMouseDown}
+                  className={`transition-transform duration-300 cursor-${
+                    zoomLevel > 1 ? "move" : "zoom-in"
+                  }`}
+                  style={{
+                    transform: `scale(${zoomLevel}) translate(${imagePosition.x}px, ${imagePosition.y}px)`,
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                    objectFit: "contain",
+                    willChange: "transform",
+                    userSelect: "none",
+                    pointerEvents: isDragging ? "none" : "auto",
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="py-2">
@@ -537,28 +925,40 @@ function ProduitDetailMain() {
                 onClick={() => setIsCountryOpen(true)}
               >
                 <MapPin className="w-5 h-5 mr-1" />
-                <span>Niger</span>
+                <span>{pays?.toLocaleUpperCase()}</span>
               </div>
+              {/* {console.log(
+                produit?.shipping?.zones?.find(
+                  (item) => item.name.toLowerCase() === pays?.toLowerCase()
+                )
+              )}
+              {console.log(produit?.shipping?.zones[0].name)} */}
               {isCountryOpen && (
                 <div className="fixed inset-0 p-3 z-10 flex items-center justify-center bg-black bg-opacity-50">
                   <CountryPage
                     isOpen={isOpenCountry}
-                    onClose={() => setIsOpenCountry(false)}
+                    setIsCountryOpen={setIsCountryOpen}
+                    onClose={() => setIsCountryOpen(false)}
+                    setPays={setPays}
                   />
                 </div>
               )}
             </div>
 
-            <div className="bg-red-50 p-4 rounded-lg mb-4">
-              <h3 className="font-semibold mb-2">L'engagement IHAM Baobab</h3>
-              <div className="flex items-start space-x-2 text-gray-600">
-                <Truck className="w-5 h-5 mt-1 flex-shrink-0" />
-                <p>
-                  Cet article ne peut pas être livré à cette adresse.
-                  Sélectionnez un autre article ou une autre adresse.
-                </p>
+            {!westAfricanCountries.includes(pays?.toLowerCase()) ? (
+              <div className="bg-red-50 p-4 rounded-lg mb-4">
+                <h3 className="font-semibold mb-2">L'engagement IHAM Baobab</h3>
+                <div className="flex items-start space-x-2 text-gray-600">
+                  <Truck className="w-5 h-5 mt-1 flex-shrink-0" />
+                  <p>
+                    Cet article ne peut pas être livré à cette adresse.
+                    Sélectionnez un autre article ou une autre adresse.
+                  </p>
+                </div>
               </div>
-            </div>
+            ) : (
+              <></>
+            )}
 
             <div className="mb-4">
               <h3 className="font-semibold mb-2 flex items-center">
@@ -587,12 +987,8 @@ function ProduitDetailMain() {
                 <input
                   type="number"
                   value={quantity}
-                  onChange={(e) =>
-                    setQuantity(
-                      Math.max(1, Math.min(parseInt(e.target.value) || 1))
-                    )
-                  }
-                  className="w-16 text-center border rounded-md p-1 border-gray-300"
+                  onChange={(e) => setQuantity(parseInt(e.target.value))}
+                  className="w-30 text-center border rounded-md p-1 border-gray-300"
                 />
                 <button
                   onClick={increaseQuantity}
@@ -610,14 +1006,17 @@ function ProduitDetailMain() {
               <button className="w-full bg-[#30A08B] hover:bg-[#228B73] text-white py-3 rounded-md mb-2 md:mb-0">
                 Acheter maintenant
               </button>
-              <button className="w-full bg-red-100 hover:bg-red-200 text-red-600 py-3 rounded-md mb-2 md:mb-0">
+              <button
+                onClick={addToCart}
+                className="w-full bg-red-100 hover:bg-red-200 text-red-600 py-3 rounded-md mb-2 md:mb-0"
+              >
                 Ajouter au panier
               </button>
             </div>
           </div>
           <div className="flex justify-between px-6 py-4 border-t">
             <div className="flex flex-col items-center">
-              <button className="p-2">
+              <button className="p-2" onClick={() => navigation("/Boutique")}>
                 <Store className="w-5 h-5" />
               </button>
               <span className="text-sm">Boutique</span>
@@ -729,6 +1128,46 @@ function ProduitDetailMain() {
         </div>
       </div>
       <ProduitSimilaires titre={"Articles similaires"} produits={products} />
+      {/* ////////////////////////////////////// */}
+      <div className="p-6 bg-[#30A08B]/80 rounded-md text-sm text-gray-800 mt-4 shadow-md border border-[#208066]">
+        <h3 className="font-bold text-white text-lg mb-4 flex items-center">
+          🏆 Programme Fidélité
+        </h3>
+        <ul className="list-disc pl-5 space-y-2 text-white">
+          <li>
+            <strong>1 XOF dépensé = 1 point</strong> - Plus vous dépensez, plus
+            vous gagnez !
+          </li>
+          <li>
+            <strong>100 points = -10% sur le prochain achat</strong> -
+            Récompensez votre fidélité rapidement.
+          </li>
+          <li>
+            <strong>Statuts :</strong> Bronze, Argent, Or - Montez en grade et
+            débloquez des avantages exclusifs !
+          </li>
+          <li>
+            <strong>Avantages exclusifs :</strong> Offres spéciales, cadeaux
+            d'anniversaire, préventes VIP, services prioritaires.
+          </li>
+          <li>
+            <strong>Inscription gratuite :</strong> Rejoignez notre communauté
+            sans frais et profitez dès aujourd'hui.
+          </li>
+        </ul>
+        <div className="mt-4 p-3 bg-white rounded-md border border-[#208066] text-gray-700">
+          🎁 <strong>Bonus spécial :</strong> Gagnez 50 points à votre première
+          commande après inscription !
+        </div>
+        <div className="mt-4 p-3 bg-white rounded-md border border-[#208066] text-gray-700">
+          🌟 <strong>Offres limitées :</strong> Profitez de promotions réservées
+          aux membres fidèles chaque mois !
+        </div>
+        <button className="mt-6 px-5 py-2 bg-[#208066] text-white font-semibold rounded-md hover:bg-[#166b59] transition">
+          S'inscrire Maintenant
+        </button>
+      </div>
+      {/* ////////////////////////////////////// */}
       <div className="py-3">
         <div className="border-t border-gray-300 mb-4" />
 

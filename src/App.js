@@ -18,6 +18,11 @@ import Service from "./pages/Service";
 import Livraison from "./pages/Livraison";
 import SuiviCommand from "./pages/SuiviCommand";
 
+import Boutique from "./pages/Boutique";
+import Messagerie from "./pages/Messagerie";
+import OrderConfirmationPaiement from "./pages/OrderConfirmationPaiement";
+import BoutiquierProfile from "./components/boutiquePage/BoutiquierProfile";
+
 import "./App.css";
 import ForgetPassword from "./components/forgetPassword/ForgetPassword";
 import Panier from "./pages/Panier";
@@ -28,7 +33,9 @@ import Voir from "./pages/Voir";
 import Nouveau from "./pages/Nouveau";
 import Promotion from "./pages/Promotion";
 import LikeProduit from "./pages/LikeProduit";
-
+import IPayPayment from "./components/payment/IPayPayment";
+import SuccessPage from './components/payment/SuccessPage';
+import ErrorPage from './components/payment/ErrorPage';
 import axios from "axios";
 import io from "socket.io-client";
 import { Provider } from "react-redux";
@@ -48,6 +55,8 @@ function App() {
   const [acces, setAcces] = useState("non");
   const [verificationComplete, setVerificationComplete] = useState(false);
   const [adminConnection, setAdminConnection] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [codeP, setCodeP] = useState(null);
 
   //////////////// verification d'hautentification de l'utilisateur
   useEffect(() => {
@@ -126,7 +135,7 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/Connexion" element={<Connexion />} />
+            <Route path="/Connexion" element={<Connexion chg={changeA} />} />
             <Route
               path="/Inscription"
               element={<Inscription chg={changeA} />}
@@ -162,6 +171,7 @@ function App() {
                 acces === "oui" ? <InviteAmi /> : <Connexion chg={changeA} />
               }
             />
+            <Route path="/payment/ipay" element={<IPayPayment />} />
             <Route
               path="/Legal information"
               element={
@@ -211,11 +221,21 @@ function App() {
             <Route
               path="/Panier"
               element={
-                acces === "oui" ? <Panier /> : <Connexion chg={changeA} />
+                // acces === "oui" ? (
+                <Panier
+                  acces={acces}
+                  total={total}
+                  setTotal={setTotal}
+                  codeP={codeP}
+                  setCodeP={setCodeP}
+                />
+                // ) : (
+                //   <Connexion chg={changeA} />
+                // )
               }
             />
             <Route
-              path="/Suivre la commande"
+              path="/Suivre la commande/:id"
               element={
                 acces === "oui" ? <SuiviCommand /> : <Connexion chg={changeA} />
               }
@@ -227,7 +247,7 @@ function App() {
               }
             />
             <Route
-              path="/Commande réisus"
+              path="/Commande réisus/:id"
               element={
                 acces === "oui" ? <ResusCommand /> : <Connexion chg={changeA} />
               }
@@ -243,6 +263,33 @@ function App() {
                 acces === "oui" ? <LikeProduit /> : <Connexion chg={changeA} />
               }
             />
+            <Route path="/Boutique" element={<Boutique />} />
+            <Route
+              path="/Messagerie"
+              element={
+                acces === "oui" ? <Messagerie /> : <Connexion chg={changeA} />
+              }
+            />
+            <Route
+              path="/OrderConfirmation"
+              element={
+                acces === "oui" ? (
+                  <OrderConfirmationPaiement
+                    total={total}
+                    codeP={codeP}
+                    setCodeP={setCodeP}
+                  />
+                ) : (
+                  <Connexion chg={changeA} />
+                )
+              }
+            />
+            <Route
+              path="/Profile d'un boutiquier"
+              element={<BoutiquierProfile />}
+            />
+            <Route path="/success" element={<SuccessPage />} />
+            <Route path="/error" element={<ErrorPage />} />
           </Routes>
         </BrowserRouter>
       </div>

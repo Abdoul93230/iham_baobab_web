@@ -1,9 +1,9 @@
-import React from 'react';
+import React from "react";
 import { Mail, Phone, MapPin } from "lucide-react";
-import FacebookIcon from '@mui/icons-material/Facebook';
-import XIcon from '@mui/icons-material/X';
-import InstagramIcon from '@mui/icons-material/Instagram';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import FacebookIcon from "@mui/icons-material/Facebook";
+import XIcon from "@mui/icons-material/X";
+import InstagramIcon from "@mui/icons-material/Instagram";
+import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import LogoText from "../../image/LogoText.png";
 const HomeProductsFooter = () => {
   return (
@@ -14,7 +14,9 @@ const HomeProductsFooter = () => {
           <div>
             <h3 className="text-xl font-bold mb-4">À propos de nous</h3>
             <p className="text-gray-300">
-              Nous sommes passionnés par la qualité et l'innovation. Notre mission est de vous offrir les meilleurs produits au meilleur prix.
+              Nous sommes passionnés par la qualité et l'innovation. Notre
+              mission est de vous offrir les meilleurs produits au meilleur
+              prix.
             </p>
           </div>
 
@@ -22,11 +24,31 @@ const HomeProductsFooter = () => {
           <div>
             <h3 className="text-xl font-bold mb-4">Liens utiles</h3>
             <ul className="space-y-2">
-              <li><button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">Accueil</button></li>
-              <li><button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">Produits</button></li>
-              <li><button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">À propos</button></li>
-              <li><button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">Contact</button></li>
-              <li><button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">FAQ</button></li>
+              <li>
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
+                  Accueil
+                </button>
+              </li>
+              <li>
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
+                  Produits
+                </button>
+              </li>
+              <li>
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
+                  À propos
+                </button>
+              </li>
+              <li>
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
+                  Contact
+                </button>
+              </li>
+              <li>
+                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
+                  FAQ
+                </button>
+              </li>
             </ul>
           </div>
 
@@ -46,17 +68,25 @@ const HomeProductsFooter = () => {
                 <Mail className="h-5 w-5 mr-2" />
                 <span>contact@example.com</span>
               </li>
- 
             </ul>
           </div>
 
           {/* Newsletter */}
           <div>
             <h3 className="text-xl font-bold mb-4">Newsletter</h3>
-            <p className="mb-4">Inscrivez-vous pour recevoir nos dernières offres</p>
+            <p className="mb-4">
+              Inscrivez-vous pour recevoir nos dernières offres
+            </p>
             <form className="flex flex-col space-y-2">
-              <input type="email" placeholder="Votre email" className="bg-gray-800 border-gray-700 p-2 rounded" />
-              <button type="submit" className="bg-gradient-to-r from-[#B17236] to-[#B2905F] hover:bg-opacity-80 p-2 rounded">
+              <input
+                type="email"
+                placeholder="Votre email"
+                className="bg-gray-800 border-gray-700 p-2 rounded"
+              />
+              <button
+                type="submit"
+                className="bg-gradient-to-r from-[#B17236] to-[#B2905F] hover:bg-opacity-80 p-2 rounded"
+              >
                 S'inscrire
               </button>
             </form>
@@ -66,21 +96,20 @@ const HomeProductsFooter = () => {
         {/* Réseaux sociaux et copyright */}
         <div className="mt-8 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center space-x-4 mb-4 md:mb-0">
-            <span href="#" className="hover:text-gray-300"><FacebookIcon className="h-6 w-6" /></span>
-            <span href="#" className="hover:text-gray-300"><XIcon className="h-6 w-6" /></span>
-            <span href="#" className="hover:text-gray-300"><InstagramIcon className="h-6 w-6" /></span>
-            <span href="#" className="hover:text-gray-300"><LinkedInIcon className="h-6 w-6" /></span>
-               {/* <div className='w-96 h-20'>
+            <span href="#" className="hover:text-gray-300 cursor-pointer">
+              <FacebookIcon className="h-6 w-6" />
+            </span>
+            <span href="#" className="hover:text-gray-300 cursor-pointer">
+              <XIcon className="h-6 w-6" />
+            </span>
+            <span href="#" className="hover:text-gray-300 cursor-pointer">
+              <InstagramIcon className="h-6 w-6" />
+            </span>
+            <span href="#" className="hover:text-gray-300 cursor-pointer">
+              <LinkedInIcon className="h-6 w-6" />
+            </span>
+          </div>
 
-  <img
-    src={LogoText}
-    alt="Logo IHAM Baobab"
-    className="w-full h-full object-cover transition-transform duration-300 transform hover:scale-105"
-    />
-    </div> */}
-    </div>
-     
-  
           <p className="text-gray-400 text-sm">
             © {new Date().getFullYear()} Ihambaobab. Tous droits réservés.
           </p>

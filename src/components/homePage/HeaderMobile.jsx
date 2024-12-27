@@ -1,11 +1,20 @@
-import React, { useState } from 'react';
-import { X, ChevronUp, ChevronDown, Sparkles, Bell, Heart, ShoppingCart } from 'lucide-react';
-import { useSelector } from 'react-redux';
+import React, { useState } from "react";
+import {
+  X,
+  ChevronUp,
+  ChevronDown,
+  Sparkles,
+  Bell,
+  Heart,
+  ShoppingCart,
+  MessageCircle,
+} from "lucide-react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
+const HeaderMobile = ({ setIsMobileMenuOpen, navigate }) => {
   const [openSection, setOpenSection] = useState(null);
   const [hoveredItem, setHoveredItem] = useState(null);
-  const navigation = useNavigate()
+  const navigation = useNavigate();
   const DATA_Types = useSelector((state) => state.products.types);
   const DATA_Categories = useSelector((state) => state.products.categories);
 
@@ -14,7 +23,7 @@ const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
   };
 
   const handleItemClick = (item) => {
-    console.log('Item clicked:', item);
+    console.log("Item clicked:", item);
   };
   const menuData = [
     {
@@ -25,7 +34,9 @@ const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
       //   "Mode",
       //   "Maison & jardin"
       // ]
-      answers: DATA_Categories.filter(item=>item.name!=="all").map(item=>item.name)
+      answers: DATA_Categories.filter((item) => item.name !== "all").map(
+        (item) => item.name
+      ),
     },
     {
       id: 2,
@@ -36,16 +47,16 @@ const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
         "Invité des amis",
         "Mes addresses",
         "Faire une Suggestions",
-        "Se déconnecter"
+        "Se déconnecter",
       ],
-      links:[
+      links: [
         "/Compte",
         "/Commande",
         "/Inviter les amis",
         "/Livraison",
         "/Suggestion",
         "/Se déconnecter",
-      ]
+      ],
     },
     {
       id: 3,
@@ -57,9 +68,9 @@ const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
         "Paramètre de notification",
         "Avis de confidentialité",
         "Question fréquemment possées",
-        "Information Legal"
+        "Information Legal",
       ],
-      links:[
+      links: [
         "/Centre d'aide",
         "/Livraison",
         "/Paement",
@@ -67,34 +78,42 @@ const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
         "/Avis de confidentialité",
         "/Question Fréquement possées",
         "/Legal information",
-      ]
-    }
+      ],
+    },
   ];
   const bottomIcons = [
     {
       icon: Bell,
       count: 3,
-      bgColor: 'from-green-400 to-green-600',
-      countBg: 'bg-red-500',
-      label: 'Notifications',
+      bgColor: "from-green-400 to-green-600",
+      countBg: "bg-red-500",
+      label: "Notifications",
       onClick: () => navigate("/Notification header"),
     },
     {
       icon: Heart,
       count: 5,
-      bgColor: 'from-red-400 to-red-600',
-      countBg: 'bg-emerald-500',
-      label: 'Wishlist',
+      bgColor: "from-red-400 to-red-600",
+      countBg: "bg-emerald-500",
+      label: "Wishlist",
       onClick: () => navigate("/Like produit"),
     },
     {
       icon: ShoppingCart,
       count: 10,
-      bgColor: 'from-blue-400 to-blue-600',
-      countBg: 'bg-emerald-600',
-      label: 'Panier',
+      bgColor: "from-blue-400 to-blue-600",
+      countBg: "bg-emerald-600",
+      label: "Panier",
       onClick: () => navigate("/Panier"),
-    }
+    },
+    {
+      icon: MessageCircle,
+      count: 3,
+      bgColor: "bg-green-500",
+      countBg: "bg-emerald-600",
+      label: "Panier",
+      onClick: () => navigate("/Panier"),
+    },
   ];
 
   return (
@@ -110,8 +129,8 @@ const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
           <Sparkles className="h-6 w-6 text-white animate-pulse" />
           <h2 className="text-white text-xl font-bold animate-bounce">Menu</h2>
         </div>
-        <button 
-          onClick={() => setIsMobileMenuOpen(false)} 
+        <button
+          onClick={() => setIsMobileMenuOpen(false)}
           className="text-white p-2 rounded-full hover:bg-white/20 transform hover:rotate-180 transition-all duration-500"
         >
           <X className="h-6 w-6" />
@@ -121,10 +140,13 @@ const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
       {/* Contenu principal avec défilement */}
       <div className="relative flex flex-col space-y-4 p-4 overflow-y-auto h-[calc(100vh-180px)]">
         {/* Boutons fixes */}
-        {[{name:'Promotions',link:"/Produit promotions"}, {name:'Nouveautés',link:"/Nouveau produit"}].map((item, idx) => (
-          <button 
+        {[
+          { name: "Promotions", link: "/Produit promotions" },
+          { name: "Nouveautés", link: "/Nouveau produit" },
+        ].map((item, idx) => (
+          <button
             key={idx}
-            onClick={ ()=>navigation(item.link)}
+            onClick={() => navigation(item.link)}
             className="group relative w-full p-3 bg-white/10 backdrop-blur-md rounded-lg shadow-lg transform hover:scale-105 hover:translate-y-[-4px] transition-all duration-500"
             style={{ animationDelay: `${idx * 150}ms` }}
           >
@@ -137,15 +159,15 @@ const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
 
         {/* Sections dépliables */}
         {menuData.map((section, sectionIndex) => (
-          <div 
-            key={section.id} 
+          <div
+            key={section.id}
             className="w-full"
-            style={{ 
-              animation: 'slideIn 0.5s ease-out forwards',
-              animationDelay: `${sectionIndex * 200}ms`
+            style={{
+              animation: "slideIn 0.5s ease-out forwards",
+              animationDelay: `${sectionIndex * 200}ms`,
             }}
           >
-            <button 
+            <button
               onClick={() => toggleSection(section.id)}
               className="relative w-full p-4 bg-[#30A08B] rounded-t-lg shadow-lg transform hover:translate-x-2 transition-all duration-500 group"
             >
@@ -154,7 +176,11 @@ const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
                 <span className="text-white font-medium group-hover:tracking-wider transition-all duration-500">
                   {section.question}
                 </span>
-                <div className={`transform transition-all duration-500 ${openSection === section.id ? 'rotate-180' : ''}`}>
+                <div
+                  className={`transform transition-all duration-500 ${
+                    openSection === section.id ? "rotate-180" : ""
+                  }`}
+                >
                   {openSection === section.id ? (
                     <ChevronUp className="text-white animate-bounce" />
                   ) : (
@@ -163,39 +189,53 @@ const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
                 </div>
               </div>
             </button>
-            
-            <div 
+
+            <div
               className={`overflow-hidden transition-all duration-700 ease-in-out transform
-                ${openSection === section.id ? 
-                  'max-h-[500px] opacity-100 translate-y-0' : 
-                  'max-h-0 opacity-0 -translate-y-4'}`}
+                ${
+                  openSection === section.id
+                    ? "max-h-[500px] opacity-100 translate-y-0"
+                    : "max-h-0 opacity-0 -translate-y-4"
+                }`}
             >
               <div className="bg-white/95 backdrop-blur-md rounded-b-lg shadow-xl">
                 {section.answers.map((answer, index) => (
                   <button
                     key={index}
-                    onMouseEnter={() => setHoveredItem(`${section.id}-${index}`)}
+                    onMouseEnter={() =>
+                      setHoveredItem(`${section.id}-${index}`)
+                    }
                     onMouseLeave={() => setHoveredItem(null)}
-                    onClick={() => {handleItemClick(answer);
-                      if(section.question ==="Catégories"){
-                        navigation(`/Categorie/${answer}`)
-                      }else if(section.question ==="Compte"){
-                        navigation(`${section.links[index]}`)
-                      }else if(section.question ==="Plus"){
-                        navigation(`${section.links[index]}`)
+                    onClick={() => {
+                      handleItemClick(answer);
+                      if (section.question === "Catégories") {
+                        navigation(`/Categorie/${answer}`);
+                      } else if (section.question === "Compte") {
+                        navigation(`${section.links[index]}`);
+                      } else if (section.question === "Plus") {
+                        navigation(`${section.links[index]}`);
                       }
                     }}
                     className="relative w-full p-3 text-start transition-all duration-500 hover:pl-6"
                     style={{
-                      animation: 'slideInRight 0.5s ease-out forwards',
-                      animationDelay: `${index * 100}ms`
+                      animation: "slideInRight 0.5s ease-out forwards",
+                      animationDelay: `${index * 100}ms`,
                     }}
                   >
-                    <div className={`absolute left-0 top-0 bottom-0 bg-gradient-to-r from-[#30A08B] to-[#B2905F] transition-all duration-500
-                      ${hoveredItem === `${section.id}-${index}` ? 'w-1' : 'w-0'}`} 
+                    <div
+                      className={`absolute left-0 top-0 bottom-0 bg-gradient-to-r from-[#30A08B] to-[#B2905F] transition-all duration-500
+                      ${
+                        hoveredItem === `${section.id}-${index}` ? "w-1" : "w-0"
+                      }`}
                     />
-                    <span className={`relative text-[#30A08B] transition-all duration-500
-                      ${hoveredItem === `${section.id}-${index}` ? 'text-[#B2905F] font-medium' : ''}`}>
+                    <span
+                      className={`relative text-[#30A08B] transition-all duration-500
+                      ${
+                        hoveredItem === `${section.id}-${index}`
+                          ? "text-[#B2905F] font-medium"
+                          : ""
+                      }`}
+                    >
                       {answer}
                     </span>
                   </button>
@@ -219,13 +259,13 @@ const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
                 hover:scale-110 hover:shadow-2xl
                 active:scale-95`}
               style={{
-                animation: 'bounceIn 0.5s ease-out forwards',
-                animationDelay: `${index * 150}ms`
+                animation: "bounceIn 0.5s ease-out forwards",
+                animationDelay: `${index * 150}ms`,
               }}
             >
               <div className="relative">
                 <item.icon className="h-6 w-6 text-white transform transition-all duration-300 group-hover:scale-110" />
-                <span 
+                <span
                   className={`absolute -top-2 -right-2 ${item.countBg} 
                     rounded-full min-w-5 h-5 px-1
                     text-xs text-white font-bold
@@ -236,9 +276,10 @@ const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
                   {item.count}
                 </span>
               </div>
-              
+
               {/* Tooltip */}
-              <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 
+              <span
+                className="absolute -top-8 left-1/2 transform -translate-x-1/2 
                 bg-black text-white text-xs py-1 px-2 rounded 
                 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
               >
@@ -247,7 +288,7 @@ const HeaderMobile = ({setIsMobileMenuOpen, navigate }) => {
             </button>
           ))}
         </div>
-        </div>
+      </div>
 
       {/* Styles et animations */}
       <style jsx>{`
