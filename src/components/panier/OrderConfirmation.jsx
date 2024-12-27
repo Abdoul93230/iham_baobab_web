@@ -319,28 +319,38 @@ const OrderConfirmation = ({ onClose }) => {
       if (["Visa", "master Card", "Mobile Money"].includes(selectedPayment)) {
         try {
           // Vérifier si une commande en attente existe déjà
-          const existingOrder = localStorage.getItem('pendingOrder');
+          const existingOrder = localStorage.getItem("pendingOrder");
           let commandeId;
 
           if (existingOrder) {
             // Utiliser la commande existante mais générer un nouveau transactionId
             const orderData = JSON.parse(existingOrder);
             commandeId = orderData.commandeId;
-            
+
+            // Obtenir la référence actuelle
+            const currentReference = orderData.transactionId;
+
             // Générer un nouveau transactionId
-            const transactionId = generateUniqueID();
-            
+            const newTransactionReference = generateUniqueID();
+
             // Mettre à jour la commande avec le nouveau transactionId
-            await axios.put(`${BackendUrl}/updateCommande/${commandeId}`, {
-              reference: transactionId
-            });
+            await axios.put(
+              `${process.env.REACT_APP_Backend_Url}/updateCommande`,
+              {
+                oldReference: currentReference,
+                newReference: newTransactionReference,
+              }
+            );
 
             // Sauvegarder les informations de la commande avec le nouveau transactionId
-            localStorage.setItem('pendingOrder', JSON.stringify({
-              commandeId,
-              transactionId,
-              timestamp: new Date().getTime()
-            }));
+            localStorage.setItem(
+              "pendingOrder",
+              JSON.stringify({
+                commandeId,
+                transactionId: newTransactionReference,
+                timestamp: new Date().getTime(),
+              })
+            );
           } else {
             // Créer une nouvelle commande avec le transactionId
             const transactionId = generateUniqueID();
@@ -352,32 +362,42 @@ const OrderConfirmation = ({ onClose }) => {
               reference: transactionId,
               ...(orderCodeP?.isValide && {
                 codePro: true,
-                idCodePro: orderCodeP._id
-              })
+                idCodePro: orderCodeP._id,
+              }),
             };
-            
-            const response = await axios.post(`${BackendUrl}/createCommande`, commandeData);
+
+            const response = await axios.post(
+              `${BackendUrl}/createCommande`,
+              commandeData
+            );
             commandeId = response.data._id;
 
             // Sauvegarder les informations de la commande
-            localStorage.setItem('pendingOrder', JSON.stringify({
-              commandeId,
-              transactionId,
-              timestamp: new Date().getTime()
-            }));
+            localStorage.setItem(
+              "pendingOrder",
+              JSON.stringify({
+                commandeId,
+                transactionId,
+                timestamp: new Date().getTime(),
+              })
+            );
           }
 
           // Stocker les informations de paiement
-          localStorage.setItem('paymentInfo', JSON.stringify({
-            amount: orderTotal,
-            transactionId: JSON.parse(localStorage.getItem('pendingOrder')).transactionId
-          }));
+          localStorage.setItem(
+            "paymentInfo",
+            JSON.stringify({
+              amount: orderTotal,
+              transactionId: JSON.parse(localStorage.getItem("pendingOrder"))
+                .transactionId,
+            })
+          );
 
           // Rediriger vers la page de paiement
-          window.location.href = '/payment.html';
+          window.location.href = "/payment.html";
         } catch (error) {
-          console.error('Erreur:', error);
-          alert('Une erreur est survenue lors de la création de la commande');
+          console.error("Erreur:", error);
+          alert("Une erreur est survenue lors de la création de la commande");
         }
       } else {
         // Paiement à la livraison
@@ -545,7 +565,7 @@ const OrderConfirmation = ({ onClose }) => {
                 ) : (
                   <button
                     type="submit"
-                    className="w-full bg-[#30A08B] text-white p-3 rounded-lg shadow-md hover:bg-opacity-90 transition duration-200"
+                    className="w-full bg-[#30A08B] text-white py-2 rounded-lg font-semibold hover:bg-[#30A08B]/90 transition duration-200"
                   >
                     Confirmer
                   </button>
