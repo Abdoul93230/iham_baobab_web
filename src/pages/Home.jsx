@@ -1,27 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import HomeMain from "../components/homePage/HomeMain";
-import HomeFooter from '../components/homePage/HomeFooter';
-import HomeHeader from '../components/homePage/HomeHeader';
-import { Menu } from 'lucide-react';
+import HomeFooter from "../components/homePage/HomeFooter";
+import HomeHeader from "../components/homePage/HomeHeader";
+import { Info, Menu } from "lucide-react";
 
 function Home() {
-  const [isOpen,setIsOpen] = useState(false)
-  const bounceIcon = () => (
-        <svg className="animate-bounce w-6 h-6 z-2 absolute border border[#000] right-3">
-        <Menu className="w-full h-full p-4" />
-      </svg>
-  )
+  const [isOpen, setIsOpen] = useState(false);
 
-  const chg = ()=>{
-    setIsOpen(!isOpen)
-  }
+  const chg = () => {
+    setIsOpen(!isOpen);
+  };
   return (
     <>
+      <button className="fixed bottom-4 right-4 p-3 z-2 rounded-full bg-[#30A08B] text-white shadow-lg hover:shadow-xl transition-all">
+        <Info className="w-6 h-6 animate-pulse ease-in duration-300" />
+      </button>
       <HomeHeader chg={chg} />
       <HomeMain isOpen={isOpen} />
       <HomeFooter />
-
-  
     </>
   );
 }

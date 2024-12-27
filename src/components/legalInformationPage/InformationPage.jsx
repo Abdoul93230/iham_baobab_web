@@ -8,7 +8,7 @@ const InformationPage = () => {
     { titre: '3. Politique de confidentialité :', description: "Chez Chagona-ne, nous respectons la confidentialité de nos utilisateurs." },
     { titre: '4. Politique de cookies :', description: "Notre site utilise des cookies pour améliorer votre expérience de navigation." },
     { titre: '5. Conditions de vente :', description: "En passant commande sur Chagona-ne.onrender.com, vous acceptez nos conditions de vente." },
-    { titre: '6. Politique de retour et de remboursement :', description: "Si vous n'êtes pas satisfait de votre achat, vous pouvez retourner le produit." },
+    { titre: '66666. Politique de retour et de remboursement :', description: "Si vous n'êtes pas satisfait de votre achat, vous pouvez retourner le produit." },
     { titre: '7. Droits d\'auteur et propriété intellectuelle :', description: "Le contenu et les images présents sur chagona-ne.onrender.com sont protégés par des droits d'auteur." },
     { titre: '8. Responsabilité :', description: "Nous ne pouvons garantir l'exhaustivité et l'exactitude des informations." },
     { titre: '9. Clause de non-responsabilité :', description: "Les informations fournies ne constituent pas un avis professionnel." },
@@ -33,10 +33,7 @@ const InformationPage = () => {
           </div>
         ))}
       </div>
-      <div className='mt-4' onClick={() => navigate(-1)}>
-        <button className='btn border-secondary text-[#30A08B]'>Retour </button>
 
-      </div>
 
     </div>
   );

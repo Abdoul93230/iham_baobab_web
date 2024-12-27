@@ -1,74 +1,76 @@
-import React, { useState,useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Star, X } from "lucide-react";
+import axios from "axios";
 
-const comments = [
-  {
-    id: 1,
-    name: "Acheteur Ihambaobab",
-    date: "20 août 2024",
-    color: "white",
-    size: "45(27.5CM)",
-    review:
-      "Pour le prix qu'ils ont, un peu plus peut être commandé. Ils sont très légers; Maille, donc ils ne font pas mal et ne transpiration pas; Taille appropriée. Apparemment, ils sont à l'aise. Espérons qu'ils résistent suffisamment.",
-    images: [
-      "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
-      "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
-    ],
-  },
-  {
-    id: 2,
-    name: "Acheteur Ihambaobab",
-    date: "20 août 2024",
-    color: "white",
-    size: "45(27.5CM)",
-    review:
-      "Pour le prix qu'ils ont, un peu plus peut être commandé. Ils sont très légers; Maille, donc ils ne font pas mal et ne transpiration pas; Taille appropriée. Apparemment, ils sont à l'aise. Espérons qu'ils résistent suffisamment.",
-    images: [
-      "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
-      "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
-    ],
-  },
-  {
-    id: 3,
-    name: "Acheteur Ihambaobab",
-    date: "20 août 2024",
-    color: "white",
-    size: "45(27.5CM)",
-    review:
-      "Pour le prix qu'ils ont, un peu plus peut être commandé. Ils sont très légers; Maille, donc ils ne font pas mal et ne transpiration pas; Taille appropriée. Apparemment, ils sont à l'aise. Espérons qu'ils résistent suffisamment.",
-    images: [
-      "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
-      "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
-    ],
-  },
-  {
-    id: 4,
-    name: "Acheteur Ihambaobab",
-    date: "20 août 2024",
-    color: "white",
-    size: "45(27.5CM)",
-    review:
-      "Pour le prix qu'ils ont, un peu plus peut être commandé. Ils sont très légers; Maille, donc ils ne font pas mal et ne transpiration pas; Taille appropriée. Apparemment, ils sont à l'aise. Espérons qu'ils résistent suffisamment.",
-    images: [
-      "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
-      "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
-    ],
-  },
-  {
-    id: 5,
-    name: "Acheteur Ihambaobab",
-    date: "20 août 2024",
-    color: "white",
-    size: "45(27.5CM)",
-    review:
-      "Pour le prix qu'ils ont, un peu plus peut être commandé. Ils sont très légers; Maille, donc ils ne font pas mal et ne transpiration pas; Taille appropriée. Apparemment, ils sont à l'aise. Espérons qu'ils résistent suffisamment.",
-    images: [
-      "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
-      "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
-    ],
-  },
-];
-function CommentaireProduit() {
+// const comments = [
+//   {
+//     id: 1,
+//     name: "Acheteur Ihambaobab",
+//     date: "20 août 2024",
+//     color: "white",
+//     size: "45(27.5CM)",
+//     review:
+//       "Pour le prix qu'ils ont, un peu plus peut être commandé. Ils sont très légers; Maille, donc ils ne font pas mal et ne transpiration pas; Taille appropriée. Apparemment, ils sont à l'aise. Espérons qu'ils résistent suffisamment.",
+//     images: [
+//       "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
+//       "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
+//     ],
+//   },
+//   {
+//     id: 2,
+//     name: "Acheteur Ihambaobab",
+//     date: "20 août 2024",
+//     color: "white",
+//     size: "45(27.5CM)",
+//     review:
+//       "Pour le prix qu'ils ont, un peu plus peut être commandé. Ils sont très légers; Maille, donc ils ne font pas mal et ne transpiration pas; Taille appropriée. Apparemment, ils sont à l'aise. Espérons qu'ils résistent suffisamment.",
+//     images: [
+//       "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
+//       "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
+//     ],
+//   },
+//   {
+//     id: 3,
+//     name: "Acheteur Ihambaobab",
+//     date: "20 août 2024",
+//     color: "white",
+//     size: "45(27.5CM)",
+//     review:
+//       "Pour le prix qu'ils ont, un peu plus peut être commandé. Ils sont très légers; Maille, donc ils ne font pas mal et ne transpiration pas; Taille appropriée. Apparemment, ils sont à l'aise. Espérons qu'ils résistent suffisamment.",
+//     images: [
+//       "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
+//       "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
+//     ],
+//   },
+//   {
+//     id: 4,
+//     name: "Acheteur Ihambaobab",
+//     date: "20 août 2024",
+//     color: "white",
+//     size: "45(27.5CM)",
+//     review:
+//       "Pour le prix qu'ils ont, un peu plus peut être commandé. Ils sont très légers; Maille, donc ils ne font pas mal et ne transpiration pas; Taille appropriée. Apparemment, ils sont à l'aise. Espérons qu'ils résistent suffisamment.",
+//     images: [
+//       "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
+//       "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
+//     ],
+//   },
+//   {
+//     id: 5,
+//     name: "Acheteur Ihambaobab",
+//     date: "20 août 2024",
+//     color: "white",
+//     size: "45(27.5CM)",
+//     review:
+//       "Pour le prix qu'ils ont, un peu plus peut être commandé. Ils sont très légers; Maille, donc ils ne font pas mal et ne transpiration pas; Taille appropriée. Apparemment, ils sont à l'aise. Espérons qu'ils résistent suffisamment.",
+//     images: [
+//       "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
+//       "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
+//     ],
+//   },
+// ];
+function CommentaireProduit({ name, img, coments, categorie }) {
+  // console.log(coments)
   const [showModal, setShowModal] = useState(false);
   const swiperRef = useRef(null);
 
@@ -84,7 +86,7 @@ function CommentaireProduit() {
     "chaussure de sport homme running",
     "chaussures sport hommes soldes",
     "sneaker blanche homme",
-    "chaussure homme sporti"
+    "chaussure homme sporti",
   ];
 
   const keywords = [
@@ -93,25 +95,47 @@ function CommentaireProduit() {
     "chaussure sports femme",
     "shoes running men marque",
     "sneaker scratch homme",
-    "verrou coffre fort"
+    "verrou coffre fort",
   ];
+  const formatDate = (dateString) => {
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
 
   const CommentCard = ({ comment }) => (
     <div className="p-2 border rounded-md" ref={swiperRef}>
       <div className="flex items-center mb-2">
-        <div className="w-10 h-10 bg-pink-100 rounded-full mr-2"></div>
+        <div
+          style={{
+            textAlign: "center",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontWeight: "bold",
+          }}
+          className="w-10 h-10 bg-pink-100 rounded-full mr-2"
+        >
+          {comment.userName
+            ?.split(" ")
+            .map((word) => word.charAt(0))
+            .join("")}
+        </div>
         <div className="flex">
-          {[...Array(5)].map((_, i) => (
+          {[...Array(comment.etoil)].map((_, i) => (
             <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
           ))}
         </div>
       </div>
       <p className="text-gray-600 mb-2">
-        Color: {comment.color} | Shoe Size: {comment.size}
+        {/* Color: {comment.color} | Shoe Size: {comment.size} */}
+        {comment.userName ? comment.userName : ""}
+      </p>
+      <p className="text-gray-600 mb-2">
+        {comment.description ? comment.description : ""}
       </p>
       <p className="text-gray-800 mb-4">{comment.review}</p>
       <div className="grid grid-cols-6 gap-2 mb-4">
-        {comment.images.map((image, index) => (
+        {img?.map((image, index) => (
           <div
             key={index}
             className="bg-gray-200 h-22 border overflow-hidden rounded-md"
@@ -122,7 +146,8 @@ function CommentaireProduit() {
       </div>
       <div className="flex justify-between items-center text-sm text-gray-500">
         <span>
-          {comment.name} | {comment.date}
+          {/* {comment.name} | {comment.date} */}
+          {name?.slice(0, 20)}... | {formatDate(comment.date)}
         </span>
         <div className="flex text-nowrap cursor-pointer items-center">
           <svg
@@ -149,14 +174,18 @@ function CommentaireProduit() {
     <div className="py-3" ref={swiperRef}>
       <div className="border-t border-gray-300 mb-4" />
       <p className="text-2xl font-bold text-[#B17236] my-3">
-        Avis des acheteurs ({comments.length})
+        Avis des acheteurs ({coments.length})
       </p>
-      <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-2 gap-4 mx-auto">
-        {comments.slice(0, 4).map((comment) => (
-          <CommentCard key={comment.id} comment={comment} />
-        ))}
-      </div>
-      {comments.length > 4 && (
+      {coments.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-2 gap-4 mx-auto">
+          {coments?.slice(0, 4).map((comment) => (
+            <CommentCard key={comment._id} comment={comment} />
+          ))}
+        </div>
+      ) : (
+        <></>
+      )}
+      {coments.length > 4 && (
         <div className="flex items-center justify-center my-4">
           <button
             className="bg-[#96956B] bg-opacity-50 p-2 w-40 rounded-full text-[#399F89]"
@@ -182,8 +211,8 @@ function CommentaireProduit() {
             </div>
             <div className="overflow-y-auto flex-grow p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {comments.map((comment) => (
-                  <CommentCard key={comment.id} comment={comment} />
+                {coments.map((comment) => (
+                  <CommentCard key={comment._id} comment={comment} />
                 ))}
               </div>
             </div>
@@ -191,40 +220,48 @@ function CommentaireProduit() {
         </div>
       )}
 
-
-
-
       <div className="border-t border-gray-300 mb-4" />
       <div className=" mx-auto p-4">
-      <h2 className="text-2xl text-[#B17236] font-bold mb-4">Les acheteurs ont aussi recherchés</h2>
-      
-      <div className="mb-6">
-        <h3 className="text-lg text-[#B17236] font-semibold  mb-2">Recherche connexe</h3>
-        <div className="flex flex-wrap gap-2 cursor-pointer">
-          {relatedSearches.map((search, index) => (
-            <span key={index} className="bg-gray-200 rounded-full px-3 py-1 text-sm">
-              {search}
-            </span>
-          ))}
-        </div>
-      </div>
-      
-      <div className="mb-6">
-        <h3 className="text-lg text-[#B17236] font-semibold  mb-2">Mots-clés de classement</h3>
-        <div className="flex flex-wrap gap-2 cursor-pointer">
-          {keywords.map((keyword, index) => (
-            <span key={index} className="bg-gray-200 rounded-full px-3 py-1 text-sm">
-              {keyword}
-            </span>
-          ))}
-        </div>
-      </div>
-      
-      <p className="text-sm text-gray-600">
-        Cet article est dans la catégorie Accueil
-      </p>
-    </div>
+        <h2 className="text-2xl text-[#B17236] font-bold mb-4">
+          Les acheteurs ont aussi recherchés
+        </h2>
 
+        <div className="mb-6">
+          <h3 className="text-lg text-[#B17236] font-semibold  mb-2">
+            Recherche connexe
+          </h3>
+          <div className="flex flex-wrap gap-2 cursor-pointer">
+            {relatedSearches.map((search, index) => (
+              <span
+                key={index}
+                className="bg-gray-200 rounded-full px-3 py-1 text-sm"
+              >
+                {search}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <h3 className="text-lg text-[#B17236] font-semibold  mb-2">
+            Mots-clés de classement
+          </h3>
+          <div className="flex flex-wrap gap-2 cursor-pointer">
+            {keywords.map((keyword, index) => (
+              <span
+                key={index}
+                className="bg-gray-200 rounded-full px-3 py-1 text-sm"
+              >
+                {keyword}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <p className="text-sm text-gray-600">
+          Cet article est dans la catégorie : {categorie?.name}
+        </p>
+      </div>
     </div>
   );
 }

@@ -6,11 +6,26 @@ import {
   RefreshCw,
   ShoppingCart,
   CreditCard,
-  Tag,Check, AlertCircle
+  Tag,
+  Truck,
 } from "lucide-react";
-import OrderConfirmation from './OrderConfirmation'; 
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import ShippingZonesDropdown from "./ShippingZonesDropdown ";
+import Alert from "../../pages/Alert";
 
-const PanierPage = ({ total = 0, onPaymentComplete }) => {
+// const BackendUrl = process.env.REACT_APP_Backend_Url;
+const BackendUrl = process.env.REACT_APP_Backend_Url;
+// alert(BackendUrl);
+
+const PanierPage = ({
+  total,
+  setTotal,
+  codeP,
+  setCodeP,
+  onPaymentComplete,
+  acces,
+}) => {
   const [articles, setArticles] = useState([]);
   const [codePromo, setCodePromo] = useState("");
   const [reduction, setReduction] = useState(0);
@@ -18,57 +33,207 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
   const [fraisExpedition, setFraisExpedition] = useState(5.99);
   const [estAbonne, setEstAbonne] = useState(false);
   const [message, setMessage] = useState("");
+  const [regionClient, setRegionClient] = useState(null);
+  const [pays, setPays] = useState(null);
+  const [codePro, setCodPro] = useState("");
+  const [codeValide, setCodeValide] = useState(null);
+  const [rond, setRond] = useState(false);
+  const [alert, setAlert] = useState({
+    visible: false,
+    type: "",
+    message: "ds",
+  });
+  const navigation = useNavigate();
+
+  const showAlert = (type, message) => {
+    setAlert({ visible: true, type, message });
+    setTimeout(() => {
+      setAlert({ visible: false, type: "", message: "" });
+    }, 5000); // 3 secondes
+  };
+  const handleSuccess = (message) => {
+    showAlert("success", message);
+  };
+
+  const handleWarning = (message) => {
+    showAlert("warn", message);
+  };
+  // Charger les articles du localStorage au montage du composant
+
+  // Fonction de détection et calcul des frais d'expédition
+  const calculerFraisExpedition = (articles, regionClient) => {
+    // Regrouper les articles par ID et caractéristiques
+    const articlesParId = articles.reduce((acc, article) => {
+      const key = `${article._id}-${article.colors[0]}-${article.sizes[0]}`;
+      if (!acc[key]) {
+        acc[key] = {
+          articles: [],
+          shippingInfo: null,
+          totalQuantity: 0,
+        };
+      }
+      acc[key].articles.push(article);
+      acc[key].totalQuantity += article.quantity;
+
+      // Conserver les informations de livraison du premier article avec des informations complètes
+      if (
+        !acc[key].shippingInfo &&
+        article.shipping &&
+        article.shipping.zones &&
+        article.shipping.zones.length > 0
+      ) {
+        acc[key].shippingInfo = article.shipping;
+      }
+
+      return acc;
+    }, {});
+
+    // Calculer les frais d'expédition pour chaque groupe d'articles
+    const articlesAvecFraisExpedition = articles.map((article) => {
+      const key = `${article._id}-${article.colors[0]}-${article.sizes[0]}`;
+      const groupeArticle = articlesParId[key];
+      const shippingInfo = groupeArticle.shippingInfo;
+
+      // Si pas d'informations de livraison, utiliser un montant par défaut
+      if (
+        !shippingInfo ||
+        !shippingInfo.zones ||
+        shippingInfo.zones.length === 0
+      ) {
+        return {
+          ...article,
+          fraisExpedition: 1000,
+        };
+      }
+
+      // Trouver la zone correspondant à la région du client
+      let zoneClient = shippingInfo.zones.find(
+        (zone) => zone.name.toLowerCase() === regionClient.toLowerCase()
+      );
+
+      // Si aucune zone ne correspond, utiliser la première zone
+      if (!zoneClient && shippingInfo.zones.length > 0) {
+        zoneClient = shippingInfo.zones[0];
+      }
+
+      // Calculer les frais d'expédition
+      if (zoneClient) {
+        const fraisBase = zoneClient.baseFee || 0;
+        const fraisPoids = shippingInfo.weight
+          ? fraisBase +
+            shippingInfo.weight * (zoneClient.weightFee || 0) * article.quantity
+          : fraisBase;
+
+        return {
+          ...article,
+          fraisExpedition: fraisPoids,
+          zoneExpeditionClient: regionClient,
+        };
+      }
+
+      // Fallback si aucune zone n'est trouvée
+      return {
+        ...article,
+        fraisExpedition: 1000,
+      };
+    });
+
+    return articlesAvecFraisExpedition;
+  };
 
   useEffect(() => {
-    setTimeout(() => {
-      setArticles([
-        {
-          id: 1,
-          nom: "T-shirt Classic",
-          description: "T-shirt en coton bio",
-          prix: 19.99,
-          prixOriginal: 29.99,
-          quantite: 1,
-          enPromo: true,
-          image: "https://zz.jumia.is/cms/Coupon_Corner_TN300x300.jpg",
-        },
-        {
-          id: 2,
-          nom: "Jeans Slim",
-          description: "Jeans coupe moderne",
-          prix: 49.99,
-          quantite: 1,
-          enPromo: false,
-          image: "https://zz.jumia.is/cms/Coupon_Corner_TN300x300.jpg",
-        },
-        {
-          id: 3,
-          nom: "T-shirt Classic",
-          description: "T-shirt en coton bio",
-          prix: 19.99,
-          prixOriginal: 29.99,
-          quantite: 1,
-          enPromo: true,
-          image: "https://zz.jumia.is/cms/Coupon_Corner_TN300x300.jpg",
-        },
-      ]);
-    }, 1000);
+    const panierItems = JSON.parse(localStorage.getItem("panier")) || [];
+    const detecterRegion = async () => {
+      try {
+        const response = await axios.get("https://ipapi.co/json/");
+        const region = response.data.region;
+        const pays = response.data.country_name;
+        setRegionClient(region.toLowerCase());
+        setPays(pays);
+
+        const articlesAvecFraisExpedition = calculerFraisExpedition(
+          panierItems,
+          region
+        );
+        setArticles(articlesAvecFraisExpedition);
+        // Calculer le total initial
+        calculerTotal();
+      } catch (error) {
+        console.error("Erreur de détection de région", error);
+        setArticles(panierItems);
+        calculerTotal();
+      }
+    };
+
+    detecterRegion();
   }, []);
 
-  const modifierQuantite = (id, delta) => {
-    setArticles((prevArticles) =>
-      prevArticles.map((article) =>
-        article.id === id
-          ? { ...article, quantite: Math.max(1, article.quantite + delta) }
-          : article
-      )
+  // Calculer le total des frais d'expédition
+  const calculerTotalFraisExpedition = () => {
+    return articles.reduce(
+      (total, article) => total + (article.fraisExpedition || 0),
+      0
     );
   };
 
-  const supprimerArticle = (id) => {
-    setArticles((prevArticles) =>
-      prevArticles.filter((article) => article.id !== id)
+  const calculerTotal = () => {
+    const sousTotal = calculerSousTotal();
+    const totalAvecReduction = sousTotal - reduction;
+    const totalFinal = totalAvecReduction + calculerTotalFraisExpedition();
+    setTotal(totalFinal);
+    // Sauvegarder dans localStorage
+    localStorage.setItem("orderTotal", totalFinal.toString());
+    return totalFinal;
+  };
+
+  // Modification de la quantité avec mise à jour des frais d'expédition
+  const modifierQuantite = (id, colors, sizes, delta) => {
+    setArticles((prevArticles) => {
+      const updatedArticles = prevArticles.map((article) => {
+        // Vérifier si l'article correspond à l'ID, à la couleur et à la taille
+        if (
+          article._id === id &&
+          article.colors[0] === colors[0] &&
+          article.sizes[0] === sizes[0]
+        ) {
+          // Mettre à jour la quantité (minimum 1)
+          const nouvelleQuantite = Math.max(1, article.quantity + delta);
+
+          return { ...article, quantity: nouvelleQuantite };
+        }
+        return article;
+      });
+
+      // Recalculer les frais d'expédition
+      const articlesAvecFraisExpedition = calculerFraisExpedition(
+        updatedArticles,
+        regionClient || "Niamey" // Utiliser une valeur par défaut si regionClient est null
+      );
+
+      // Mettre à jour le localStorage
+      localStorage.setItem(
+        "panier",
+        JSON.stringify(articlesAvecFraisExpedition)
+      );
+
+      return articlesAvecFraisExpedition;
+    });
+  };
+
+  const supprimerArticle = (id, colors, sizes) => {
+    // Filtrer pour supprimer l'article spécifique avec ses détails
+    const updatedArticles = articles.filter(
+      (article) =>
+        !(
+          article._id === id &&
+          article.colors[0] === colors[0] &&
+          article.sizes[0] === sizes[0]
+        )
     );
+
+    // Mettre à jour l'état et le localStorage
+    setArticles(updatedArticles);
+    localStorage.setItem("panier", JSON.stringify(updatedArticles));
     setMessage("Article supprimé avec succès !");
   };
 
@@ -89,41 +254,67 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
 
   const calculerSousTotal = () => {
     return articles.reduce(
-      (total, article) => total + article.prix * article.quantite,
+      (total, article) => total + article.price * article.quantity,
       0
     );
   };
 
-  const calculerTotal = () => {
-    const sousTotal = calculerSousTotal();
-    const totalAvecReduction = sousTotal - (sousTotal * reduction) / 100;
-    return (totalAvecReduction + fraisExpedition).toFixed(2);
-  };
-  // pour les button passer la commande 
+  const ValidCode = () => {
+    if (acces === "non") {
+      handleWarning("Veuiller Vous connecter d'abord");
+      setTimeout(() => {
+        navigation("/Connexion");
+      }, 1000);
+      return;
+    }
+    if (codePromo.length === 0) {
+      handleWarning("code invalide.");
+      return;
+    }
+    setRond(true);
 
-    const [loading, setLoading] = useState(false);
-    const [paymentStatus, setPaymentStatus] = useState(null);
-    const [showConfirmation, setShowConfirmation] = useState(false);
-    
-  
-    const handlePayment = async () => {
-      try {
-        setLoading(true);
-        // Simuler un appel API de paiement
-        await new Promise(resolve => setTimeout(resolve, 2000));
-  
-        // Simuler un succès de paiement
-        setShowConfirmation(true); // Affiche le composant de confirmation
-        if (onPaymentComplete) {
-          onPaymentComplete();
+    axios
+      .get(`${BackendUrl}/getCodePromoByHashedCode`, {
+        params: {
+          hashedCode: codePromo,
+        },
+      })
+      .then((code) => {
+        setRond(false);
+        if (code.data.data.isValide) {
+          setReduction(code.data.data?.prixReduiction);
+          setCodeP(code.data.data);
+          // Sauvegarder le code promo dans localStorage
+          localStorage.setItem("orderCodeP", JSON.stringify(code.data.data));
+          setMessage("Code promo appliqué avec succès !");
+          // Recalculer le total après application du code promo
+          calculerTotal();
+        } else {
+          handleWarning("ce code la a expire.");
+          setReduction(0);
+          localStorage.removeItem("orderCodeP");
+          calculerTotal();
         }
-      } catch (error) {
-      } finally {
-        setLoading(false);
-      }
-    };
+      })
+      .catch((error) => {
+        console.error(error);
+        handleWarning("ce code de promo n'exite pas");
+        setReduction(0);
+        localStorage.removeItem("orderCodeP");
+        calculerTotal();
+        setRond(false);
+      });
+  };
 
-
+  const spinnerStyle = {
+    border: "4px solid rgba(0, 0, 0, 0.1)",
+    borderTop: "4px solid #FFF",
+    borderRadius: "50%",
+    width: "30px",
+    height: "30px",
+    animation: "spin 1s linear infinite",
+    margin: "auto",
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -152,9 +343,9 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Liste des articles */}
             <div className="lg:col-span-2 space-y-4">
-              {articles.map((article) => (
+              {articles.map((article, index) => (
                 <div
-                  key={article.id}
+                  key={`${article._id}-${index}`}
                   className="bg-white rounded-lg shadow-sm overflow-hidden"
                 >
                   <div className="p-4">
@@ -162,43 +353,87 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
                       {/* Image Container */}
                       <div className="relative w-full md:w-48 h-50 md:h-40">
                         <img
-                          src={article.image}
-                          alt={article.nom}
+                          src={article?.imageUrl}
+                          alt={article?.name}
                           className="w-full h-full object-fit-cover rounded-lg"
                         />
-                        {article.enPromo && (
-                          <div className="absolute top-2 right-2 bg-[#30A08B] text-white px-2 py-1 text-xs rounded-md">
-                            Promo
-                          </div>
-                        )}
                       </div>
 
                       {/* Info Container */}
                       <div className="flex-grow flex flex-col justify-between">
                         <div className="space-y-2">
                           <h2 className="text-lg md:text-xl font-semibold text-[#30A08B]">
-                            {article.nom}
+                            {article?.name}
                           </h2>
-                          <p className="text-sm text-gray-600">
-                            {article.description}
-                          </p>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm text-gray-600">
+                              {article?.colors[0] ? (
+                                `Couleur: ${article?.colors[0]}`
+                              ) : (
+                                <></>
+                              )}
+                            </span>
+                            <span className="text-sm text-gray-600">
+                              {article?.sizes[0] ? (
+                                `Taille: ${article?.sizes[0]}`
+                              ) : (
+                                <></>
+                              )}
+                            </span>
+                            <span className="text-sm text-gray-600">
+                              {article?.shipping?.weight ? (
+                                `Poids: ${article.shipping.weight} kg`
+                              ) : (
+                                <></>
+                              )}
+                            </span>
+                          </div>
                           <div className="flex items-center space-x-2">
                             <span className="text-lg font-bold text-[#30A08B]">
-                              {article.prix.toFixed(2)} F CFA
+                              {article.price} F CFA
                             </span>
-                            {article.prixOriginal && (
-                              <span className="text-sm line-through text-gray-500">
-                                {article.prixOriginal.toFixed(2)} F CFA
-                              </span>
-                            )}
                           </div>
                         </div>
 
-                        <div className="flex flex- sm:flex-row sm:justify-between justify-between gap-4 mt-4">
+                        {/* /////////////////////////////////////////////////// */}
+                        {/* <div className="mt-2 space-y-2"> */}
+                        {/* <div className="flex items-center space-x-2">
+                          <Truck className="h-5 w-5 text-[#30A08B]" />
+                          <span className="text-sm text-gray-600">
+                            Frais d'expédition : {article.fraisExpedition} F CFA
+                          </span>
+                        </div> */}
+                        <ShippingZonesDropdown
+                          zones={article.shipping?.zones}
+                        />
+                        {/* Affichage des frais d'expédition pour la zone du client */}
+                        <div className="flex items-center space-x-2">
+                          <Truck className="h-5 w-5 text-[#30A08B]" />
+                          <span className="text-sm text-gray-600">
+                            Frais d'expédition (
+                            {article.zoneExpeditionClient ||
+                              (regionClient
+                                ? regionClient.charAt(0).toUpperCase() +
+                                  regionClient.slice(1).toLowerCase()
+                                : "")}
+                            ):
+                            {article.fraisExpedition} F CFA
+                          </span>
+                        </div>
+                        {/* /////////////////////////////////////////////////// */}
+
+                        <div className="flex flex-row justify-between gap-4 mt-4">
                           <div className="flex items-center space-x-2">
                             <button
                               className="p-2 h-10 border border-[#30A08B] rounded-md hover:bg-gray-50"
-                              onClick={() => modifierQuantite(article.id, -1)}
+                              onClick={() =>
+                                modifierQuantite(
+                                  article._id,
+                                  article.colors,
+                                  article.sizes,
+                                  -1
+                                )
+                              }
                             >
                               <Minus className="h-4 w-4 text-[#30A08B]" />
                             </button>
@@ -206,23 +441,39 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
                               className="w-16 text-center border rounded-md p-1 focus:ring-2 focus:ring-[#30A08B] focus:border-transparent"
                               type="number"
                               min="1"
-                              value={article.quantite}
+                              value={article.quantity}
                               onChange={(e) =>
                                 modifierQuantite(
-                                  article.id,
-                                  parseInt(e.target.value) - article.quantite
+                                  article._id,
+                                  article.colors,
+                                  article.sizes,
+                                  parseInt(e.target.value) - article.quantity
                                 )
                               }
                             />
+
                             <button
                               className="p-2 h-10 border border-[#30A08B] rounded-md hover:bg-gray-50"
-                              onClick={() => modifierQuantite(article.id, 1)}
+                              onClick={() =>
+                                modifierQuantite(
+                                  article._id,
+                                  article.colors,
+                                  article.sizes,
+                                  1
+                                )
+                              }
                             >
                               <Plus className="h-4 w-4 text-[#30A08B]" />
                             </button>
                           </div>
                           <button
-                            onClick={() => supprimerArticle(article.id)}
+                            onClick={() =>
+                              supprimerArticle(
+                                article._id,
+                                article.colors,
+                                article.sizes
+                              )
+                            }
                             className="p-2 border border-[#30A08B] rounded-full hover:bg-red-50 transition-colors"
                           >
                             <Trash2 className="h-5 w-6 text-red-500" />
@@ -246,19 +497,17 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>Sous-total</span>
-                    <span>{calculerSousTotal().toFixed(2)} F CFA</span>
+                    <span>{calculerSousTotal()} F CFA</span>
                   </div>
                   {reduction > 0 && (
                     <div className="flex justify-between text-sm text-green-600">
                       <span>Réduction</span>
-                      <span>
-                        -{((calculerSousTotal() * reduction) / 100).toFixed(2)} €
-                      </span>
+                      <span>-{reduction} F cfa</span>
                     </div>
                   )}
                   <div className="flex justify-between text-sm text-gray-600">
-                    <span>Frais d'expédition</span>
-                    <span>{fraisExpedition.toFixed(2)} F CFA</span>
+                    <span>Frais d'expédition total</span>
+                    <span>{calculerTotalFraisExpedition()} F CFA</span>
                   </div>
                   <div className="pt-2 border-t">
                     <div className="flex justify-between font-bold text-lg text-[#30A08B]">
@@ -282,9 +531,13 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
                     />
                     <button
                       className="px-4 py-2 bg-[#30A08B] text-white rounded-lg hover:bg-[#30A08B]/90"
-                      onClick={appliquerCodePromo}
+                      onClick={ValidCode}
                     >
-                      <Tag className="h-4 w-4" />
+                      {rond ? (
+                        <div style={spinnerStyle}></div>
+                      ) : (
+                        <Tag className="h-4 w-4" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -294,14 +547,37 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
                   <h3 className="text-sm font-semibold text-[#30A08B] mb-2">
                     Mode d'expédition
                   </h3>
-                  <select
+                  {/* <select
                     className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-[#30A08B] focus:border-transparent"
                     value={modeExpedition}
                     onChange={(e) => changerModeExpedition(e.target.value)}
                   >
                     <option value="standard">Standard (5.99 €)</option>
                     <option value="express">Express (12.99 €)</option>
-                  </select>
+                  </select> */}
+
+                  {articles?.map((article, index) => {
+                    const transporteurName = article.shipping?.zones.find(
+                      (item) => item.name.toLowerCase() === regionClient
+                    )?.transporteurName;
+                    const transporteurContact = article.shipping?.zones.find(
+                      (item) => item.name.toLowerCase() === regionClient
+                    )?.transporteurContact;
+                    if (transporteurName && transporteurContact) {
+                      return (
+                        <div key={index}>
+                          {article.name} ({transporteurName} :{" "}
+                          {transporteurContact})
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <div key={index}>
+                          {article.name} (IhamBaobab : +227 87727501)
+                        </div>
+                      );
+                    }
+                  })}
                 </div>
 
                 {/* Newsletter et réinitialisation */}
@@ -330,7 +606,9 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
                     <button
                       className="p-2 hover:bg-gray-100 rounded-full"
                       onClick={() =>
-                        setArticles(articles.map((a) => ({ ...a, quantite: 1 })))
+                        setArticles(
+                          articles.map((a) => ({ ...a, quantite: 1 }))
+                        )
                       }
                     >
                       <RefreshCw className="h-4 w-4 text-[#30A08B]" />
@@ -342,72 +620,79 @@ const PanierPage = ({ total = 0, onPaymentComplete }) => {
           </div>
         )}
       </div>
-  
       {/* Bouton Commander (fixe en bas sur mobile, dans le flux sur desktop) */}
       <div className="container mx-auto px-4 py-4">
-      
-      {showConfirmation && <OrderConfirmation />}
-  
-
-
-
-<div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white p-3 shadow-lg">
-        <button
-          onClick={handlePayment}
-          disabled={loading || paymentStatus === 'success'}
-        className="w-full bg-[#30A08B] disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold hover:bg-[#30A08B]/90 flex items-center justify-center space-x-2">
-          {loading ? (
-          <div className="flex items-center space-x-2 fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="animate-spin z-1 rounded-full h-5 w-5 border-b-2 border-white "></div>
-            <span>Traitement en cours...</span>
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white p-3 shadow-lg">
+          {calculerTotal() !== 0 ? (
+            <button
+              onClick={() => {
+                if (calculerTotal() === 0) {
+                  return;
+                }
+                if (acces === "non") {
+                  handleWarning("Veuiller Vous connecter d'abord");
+                  setTimeout(() => {
+                    navigation("/OrderConfirmation");
+                  }, 1000);
+                } else {
+                  navigation("/OrderConfirmation");
+                }
+              }}
+              // onClick={handlePayment}
+              // disabled={loading || paymentStatus === "success"}
+              className="w-full bg-[#30A08B] disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold hover:bg-[#30A08B]/90 flex items-center justify-center space-x-2"
+            >
+              Passer la commande {calculerTotal()} F CFA
+              {/* {loading ? (
+              <div className="flex items-center space-x-2 fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="animate-spin z-1 rounded-full h-5 w-5 border-b-2 border-white "></div>
+                <span>Traitement en cours...</span>
+              </div>
+            ) : (
+              <></>
+            )} */}
+            </button>
+          ) : (
+            <></>
+          )}
+        </div>
+        <div className="hidden lg:block">
+          <div className="container mx-auto px-4 py-4">
+            {calculerTotal() !== 0 ? (
+              <button
+                onClick={() => {
+                  if (calculerTotal() === 0) {
+                    return;
+                  }
+                  if (acces === "non") {
+                    handleWarning("Veuiller Vous connecter d'abord");
+                    setTimeout(() => {
+                      navigation("/OrderConfirmation");
+                    }, 1000);
+                  } else {
+                    navigation("/OrderConfirmation");
+                  }
+                }}
+                // onClick={handlePayment}
+                // disabled={loading || paymentStatus === "success"}
+                className="w-full bg-[#30A08B] disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold hover:bg-[#30A08B]/90 flex items-center justify-center space-x-2"
+              >
+                Passer la commande {calculerTotal()} F CFA
+              </button>
+            ) : (
+              <></>
+            )}
           </div>
-        ): (
-          <>
-            <CreditCard className="h-5 w-5" />
-            <span>
-              {paymentStatus === 'success' 
-                ? 'Commande validée'
-                : `Passer la commande ${calculerSousTotal()} F CFA`
-              }
-            </span>
-          </>
-        )}
-        </button>
-      </div>
-
-      <div className="hidden lg:block">
-        <div className="container mx-auto px-4 py-4">
-        <button
-          onClick={handlePayment}
-          disabled={loading || paymentStatus === 'success'}
-        className="w-full bg-[#30A08B] disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold hover:bg-[#30A08B]/90 flex items-center justify-center space-x-2">
-          {loading ? (
-          <div className="flex items-center space-x-2 fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="animate-spin z-1 rounded-full h-5 w-5 border-b-2 border-white "></div>
-            <span>Traitement en cours...</span>
-          </div>
-        ): (
-          <>
-            <CreditCard className="h-5 w-5" />
-            <span className="text-white">
-              {paymentStatus === 'success' 
-                ? 'Commande validée'
-                : `Passer la commande ${calculerSousTotal()} F CFA`
-              }
-            </span>
-          </>
-        )}
-        </button>
         </div>
       </div>
 
-
-
-
-    </div>
-
-
-      
+      {alert.visible && (
+        <Alert
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert({ visible: false })}
+        />
+      )}
     </div>
   );
 };
