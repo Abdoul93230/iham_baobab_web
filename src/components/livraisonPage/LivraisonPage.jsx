@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
+const BackendUrl = process.env.REACT_APP_Backend_Url;
+
 const LivraisonPage = () => {
   const [userData, setUserData] = useState({
     name: "",
@@ -29,16 +31,18 @@ const LivraisonPage = () => {
       try {
         const userId = JSON.parse(localStorage.getItem("userEcomme"))?.id;
         if (!userId) {
-          throw new Error("ID utilisateur non trouvé. Veuillez vous reconnecter.");
+          throw new Error(
+            "ID utilisateur non trouvé. Veuillez vous reconnecter."
+          );
         }
 
         // Récupérer les informations de l'utilisateur
-        const userResponse = await axios.get(
-          `http://localhost:8080/user?id=${userId}`
-        );
+        const userResponse = await axios.get(`${BackendUrl}/user?id=${userId}`);
         const user = userResponse.data.user;
         if (!user) {
-          throw new Error("Impossible de récupérer les informations utilisateur.");
+          throw new Error(
+            "Impossible de récupérer les informations utilisateur."
+          );
         }
         setUserData({
           name: user.name || "",
@@ -48,7 +52,7 @@ const LivraisonPage = () => {
 
         // Récupérer l'adresse de livraison
         const addressResponse = await axios.get(
-          `http://localhost:8080/getAddressByUserKey/${userId}`
+          `${BackendUrl}/getAddressByUserKey/${userId}`
         );
         const address = addressResponse.data.address;
         if (address) {
@@ -63,7 +67,8 @@ const LivraisonPage = () => {
         }
         setLoading(false);
       } catch (err) {
-        let errorMessage = "Une erreur est survenue lors du chargement des données.";
+        let errorMessage =
+          "Une erreur est survenue lors du chargement des données.";
         if (err.response) {
           // Erreur de réponse du serveur
           switch (err.response.status) {
@@ -92,23 +97,26 @@ const LivraisonPage = () => {
 
   const validateAddressData = () => {
     const errors = [];
-    
+
     if (!addressData.name || addressData.name.length < 2) {
       errors.push("Le nom doit contenir au moins 2 caractères");
     }
-    
-    if (addressData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addressData.email)) {
+
+    if (
+      addressData.email &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addressData.email)
+    ) {
       errors.push("L'adresse email n'est pas valide");
     }
-    
+
     if (!addressData.numero || addressData.numero.length < 8) {
       errors.push("Le numéro de téléphone doit contenir au moins 8 chiffres");
     }
-    
+
     if (!addressData.region || addressData.region.length < 3) {
       errors.push("La région doit contenir au moins 3 caractères");
     }
-    
+
     if (!addressData.quartier || addressData.quartier.length < 2) {
       errors.push("Le quartier doit contenir au moins 2 caractères");
     }
@@ -144,16 +152,15 @@ const LivraisonPage = () => {
     try {
       const userId = JSON.parse(localStorage.getItem("userEcomme"))?.id;
       if (!userId) {
-        throw new Error("ID utilisateur non trouvé. Veuillez vous reconnecter.");
+        throw new Error(
+          "ID utilisateur non trouvé. Veuillez vous reconnecter."
+        );
       }
 
-      const response = await axios.post(
-        "http://localhost:8080/createOrUpdateAddress",
-        {
-          ...addressData,
-          clefUser: userId,
-        }
-      );
+      const response = await axios.post(`${BackendUrl}/createOrUpdateAddress`, {
+        ...addressData,
+        clefUser: userId,
+      });
 
       setSubmitStatus({
         loading: false,
@@ -163,12 +170,11 @@ const LivraisonPage = () => {
 
       // Réinitialiser le message de succès après 3 secondes
       setTimeout(() => {
-        setSubmitStatus(prev => ({ ...prev, success: false }));
+        setSubmitStatus((prev) => ({ ...prev, success: false }));
       }, 3000);
-
     } catch (error) {
       let errorMessage = "Erreur lors de la mise à jour de l'adresse.";
-      
+
       if (error.response) {
         switch (error.response.status) {
           case 400:
@@ -177,7 +183,8 @@ const LivraisonPage = () => {
             if (Array.isArray(backendErrors)) {
               errorMessage = backendErrors;
             } else {
-              errorMessage = error.response.data?.message || "Données invalides";
+              errorMessage =
+                error.response.data?.message || "Données invalides";
             }
             break;
           case 401:
@@ -201,31 +208,33 @@ const LivraisonPage = () => {
     }
   };
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center p-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B17236] mx-auto mb-4"></div>
-        <p className="text-[#B17236]">Chargement...</p>
-      </div>
-    </div>
-  );
-
-  if (error) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center text-red-500 p-4 max-w-md mx-auto">
-        <div className="bg-red-100 border border-red-400 rounded-lg p-4">
-          <p className="text-lg font-semibold mb-2">Erreur</p>
-          <p>{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-          >
-            Réessayer
-          </button>
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center p-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#B17236] mx-auto mb-4"></div>
+          <p className="text-[#B17236]">Chargement...</p>
         </div>
       </div>
-    </div>
-  );
+    );
+
+  if (error)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center text-red-500 p-4 max-w-md mx-auto">
+          <div className="bg-red-100 border border-red-400 rounded-lg p-4">
+            <p className="text-lg font-semibold mb-2">Erreur</p>
+            <p>{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+            >
+              Réessayer
+            </button>
+          </div>
+        </div>
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
@@ -253,9 +262,7 @@ const LivraisonPage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <div className="transform transition-all duration-300">
-                <label
-                  className="block text-sm sm:text-base text-[#B2905F] font-medium mb-1 sm:mb-2"
-                >
+                <label className="block text-sm sm:text-base text-[#B2905F] font-medium mb-1 sm:mb-2">
                   Nom Complet
                 </label>
                 <input
@@ -267,9 +274,7 @@ const LivraisonPage = () => {
               </div>
 
               <div className="transform transition-all duration-300">
-                <label
-                  className="block text-sm sm:text-base text-[#B2905F] font-medium mb-1 sm:mb-2"
-                >
+                <label className="block text-sm sm:text-base text-[#B2905F] font-medium mb-1 sm:mb-2">
                   Email
                 </label>
                 <input
@@ -281,9 +286,7 @@ const LivraisonPage = () => {
               </div>
 
               <div className="transform transition-all duration-300">
-                <label
-                  className="block text-sm sm:text-base text-[#B2905F] font-medium mb-1 sm:mb-2"
-                >
+                <label className="block text-sm sm:text-base text-[#B2905F] font-medium mb-1 sm:mb-2">
                   Téléphone
                 </label>
                 <input
@@ -408,9 +411,13 @@ const LivraisonPage = () => {
 
           {/* Messages d'état */}
           {(submitStatus.error || submitStatus.success) && (
-            <div className={`mb-6 p-4 rounded-lg ${
-              submitStatus.success ? 'bg-green-100 border border-green-400' : 'bg-red-100 border border-red-400'
-            }`}>
+            <div
+              className={`mb-6 p-4 rounded-lg ${
+                submitStatus.success
+                  ? "bg-green-100 border border-green-400"
+                  : "bg-red-100 border border-red-400"
+              }`}
+            >
               {submitStatus.success && (
                 <p className="text-green-700 text-center">
                   ✓ Adresse mise à jour avec succès
@@ -444,8 +451,8 @@ const LivraisonPage = () => {
               disabled={submitStatus.loading}
               className={`w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base ${
                 submitStatus.loading
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-[#30A08B] hover:bg-[#2a8f7c]'
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-[#30A08B] hover:bg-[#2a8f7c]"
               } text-white rounded-lg transform transition-all duration-300 hover:-translate-y-1 hover:shadow-lg flex items-center justify-center`}
             >
               {submitStatus.loading ? (
