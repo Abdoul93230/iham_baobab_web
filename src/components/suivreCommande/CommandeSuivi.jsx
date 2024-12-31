@@ -19,6 +19,8 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import { format } from "date-fns";
 import axios from "axios";
+import OrderedItems from "./OrderedItems ";
+import OrderPaymentHandler from "./OrderPaymentHandler";
 
 const BackendUrl = process.env.REACT_APP_Backend_Url;
 
@@ -208,8 +210,18 @@ export default function CommandeSuivi() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
             <div>
               <div className="flex items-center mb-2">
+                {/* {order?.statusPayment === "échec" ? (
+                  <span className="px-4 py-1 text-nowrap bg-teal text-white rounded-full text-xs md:text-sm">
+                    Faire le payment ?
+                  </span>
+                ) : (
+                  <></>
+                )} */}
+                {order?.statusPayment === "échec" && (
+                  <OrderPaymentHandler order={order} />
+                )}
                 <h1 className="text-xl md:text-2xl font-bold text-gray-800 mr-4">
-                  Commande #{order.reference || "N/A"}
+                  Commande #{order?._id?.slice(0, 7) || "N/A"} ...
                 </h1>
                 <span className="px-4 py-1 text-nowrap bg-teal text-white rounded-full text-xs md:text-sm">
                   {order.etatTraitement}
@@ -277,7 +289,7 @@ export default function CommandeSuivi() {
                 </div>
               </div>
 
-              <div className="mb-8">
+              {/* <div className="mb-8">
                 <h2 className="font-semibold text-lg mb-4">
                   Articles commandés
                 </h2>
@@ -324,7 +336,8 @@ export default function CommandeSuivi() {
                     Total: {order.prix || 0} F CFA
                   </p>
                 </div>
-              </div>
+              </div> */}
+              <OrderedItems items={order.nbrProduits} totalPrice={order.prix} />
 
               <div className="mb-8">
                 <h2 className="font-semibold text-lg mb-4">

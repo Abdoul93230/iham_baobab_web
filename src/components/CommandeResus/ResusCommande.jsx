@@ -9,6 +9,7 @@ import {
   Calendar,
   CheckCircle,
   AlertCircle,
+  Clock,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
@@ -112,17 +113,21 @@ export default function ResusCommande() {
             <div>
               <div className="flex items-center mb-2">
                 <h1 className="text-xl md:text-2xl font-bold text-gray-800 mr-4">
-                  Commande #{order.reference || "N/A"}
+                  Commande #{order?._id?.slice(0, 7) || "N/A"} ...
                 </h1>
                 <span className="px-4 py-1 text-nowrap bg-teal text-white rounded-full text-xs md:text-sm">
-                  {order.etatTraitement}
+                  {order?.etatTraitement}
                 </span>
               </div>
               <div className="text-sm text-gray-600">
                 <div className="flex items-center">
                   <Calendar className="w-4 h-4 mr-1" />
                   Commandé le:{" "}
-                  {new Date(order.date).toLocaleDateString("fr-FR")}
+                  {new Date(order?.date).toLocaleDateString("fr-FR")}
+                </div>
+                <div className="flex items-center pt-2">
+                  <Clock className="w-4 h-4 mr-1" />
+                  Status: {order?.statusLivraison}
                 </div>
               </div>
             </div>

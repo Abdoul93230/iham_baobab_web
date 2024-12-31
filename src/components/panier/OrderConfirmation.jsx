@@ -339,6 +339,14 @@ const OrderConfirmation = ({ onClose }) => {
               {
                 oldReference: currentReference,
                 newReference: newTransactionReference,
+                livraisonDetails: {
+                  customerName: deliveryInfo.name,
+                  email: deliveryInfo.email,
+                  region: deliveryInfo.region,
+                  quartier: deliveryInfo.quartier,
+                  numero: deliveryInfo.numero,
+                  description: deliveryInfo.description,
+                },
               }
             );
 
@@ -359,6 +367,14 @@ const OrderConfirmation = ({ onClose }) => {
               nbrProduits: produits,
               prix: orderTotal,
               statusPayment: "en attente",
+              livraisonDetails: {
+                customerName: deliveryInfo.name,
+                email: deliveryInfo.email,
+                region: deliveryInfo.region,
+                quartier: deliveryInfo.quartier,
+                numero: deliveryInfo.numero,
+                description: deliveryInfo.description,
+              },
               reference: transactionId,
               ...(orderCodeP?.isValide && {
                 codePro: true,
@@ -406,6 +422,14 @@ const OrderConfirmation = ({ onClose }) => {
           nbrProduits: produits,
           prix: orderTotal,
           statusPayment: "payé à la livraison",
+          livraisonDetails: {
+            customerName: deliveryInfo.name,
+            email: deliveryInfo.email,
+            region: deliveryInfo.region,
+            quartier: deliveryInfo.quartier,
+            numero: deliveryInfo.numero,
+            description: deliveryInfo.description,
+          },
           ...(orderCodeP?.isValide && {
             codePro: true,
             idCodePro: orderCodeP._id,
@@ -708,23 +732,7 @@ const OrderConfirmation = ({ onClose }) => {
                   placeholder="Votre quartier"
                 />
               </div>
-              <div>
-                <label
-                  htmlFor="rue"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Rue
-                </label>
-                <input
-                  type="text"
-                  id="rue"
-                  name="rue"
-                  value={deliveryInfo.rue}
-                  onChange={handleDeliveryChange}
-                  className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
-                  placeholder="Nom ou numéro de rue"
-                />
-              </div>
+
               <div>
                 <label
                   htmlFor="description"
