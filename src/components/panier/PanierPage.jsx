@@ -8,6 +8,8 @@ import {
   CreditCard,
   Tag,
   Truck,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -38,12 +40,83 @@ const PanierPage = ({
   const [codePro, setCodPro] = useState("");
   const [codeValide, setCodeValide] = useState(null);
   const [rond, setRond] = useState(false);
+  const [groupedArticles, setGroupedArticles] = useState({});
+  const [expandedGroups, setExpandedGroups] = useState({});
   const [alert, setAlert] = useState({
     visible: false,
     type: "",
     message: "ds",
   });
   const navigation = useNavigate();
+
+  // Fonction pour regrouper les articles
+  const groupArticles = (articlesArray) => {
+    return articlesArray.reduce((groups, article) => {
+      const productId = article._id;
+      if (!groups[productId]) {
+        groups[productId] = {
+          productId,
+          name: article.name,
+          imageUrl: article.imageUrl,
+          shipping: article.shipping,
+          variants: [],
+          totalQuantity: 0,
+          baseShippingFee: 0,
+          weightShippingFee: 0,
+        };
+      }
+
+      groups[productId].variants.push(article);
+      groups[productId].totalQuantity += article.quantity;
+      return groups;
+    }, {});
+  };
+
+  // Calculer les frais d'expédition pour un groupe
+  const calculateGroupShipping = (group, region) => {
+    const shippingInfo = group.shipping;
+    if (
+      !shippingInfo ||
+      !shippingInfo.zones ||
+      shippingInfo.zones.length === 0
+    ) {
+      return {
+        baseShippingFee: 1000,
+        weightShippingFee: 0,
+      };
+    }
+
+    let zoneClient = shippingInfo.zones.find(
+      (zone) => zone.name.toLowerCase() === region.toLowerCase()
+    );
+
+    if (!zoneClient && shippingInfo.zones.length > 0) {
+      zoneClient = shippingInfo.zones[0];
+    }
+
+    if (zoneClient) {
+      const baseShippingFee = zoneClient.baseFee || 0;
+      let totalWeightFee = 0;
+
+      // Calculer les frais de poids pour chaque variante
+      group.variants.forEach((variant) => {
+        const weightFee = shippingInfo.weight
+          ? shippingInfo.weight * (zoneClient.weightFee || 0) * variant.quantity
+          : 0;
+        totalWeightFee += weightFee;
+      });
+
+      return {
+        baseShippingFee,
+        weightShippingFee: totalWeightFee,
+      };
+    }
+
+    return {
+      baseShippingFee: 1000,
+      weightShippingFee: 0,
+    };
+  };
 
   const showAlert = (type, message) => {
     setAlert({ visible: true, type, message });
@@ -151,15 +224,37 @@ const PanierPage = ({
         setRegionClient(region.toLowerCase());
         setPays(pays);
 
-        const articlesAvecFraisExpedition = calculerFraisExpedition(
-          panierItems,
-          region
-        );
-        setArticles(articlesAvecFraisExpedition);
-        // Calculer le total initial
+        // Grouper les articles et calculer les frais d'expédition
+        const grouped = groupArticles(panierItems);
+        Object.keys(grouped).forEach((productId) => {
+          const shippingFees = calculateGroupShipping(
+            grouped[productId],
+            region
+          );
+          grouped[productId] = {
+            ...grouped[productId],
+            ...shippingFees,
+          };
+        });
+
+        setGroupedArticles(grouped);
+        setArticles(panierItems);
         calculerTotal();
+
+        // const articlesAvecFraisExpedition = calculerFraisExpedition(
+        //   panierItems,
+        //   region
+        // );
+        // setArticles(articlesAvecFraisExpedition);
+        // // Calculer le total initial
+        // calculerTotal();
       } catch (error) {
+        // console.error("Erreur de détection de région", error);
+        // setArticles(panierItems);
+        // calculerTotal();
         console.error("Erreur de détection de région", error);
+        const grouped = groupArticles(panierItems);
+        setGroupedArticles(grouped);
         setArticles(panierItems);
         calculerTotal();
       }
@@ -168,57 +263,65 @@ const PanierPage = ({
     detecterRegion();
   }, []);
 
-  // Calculer le total des frais d'expédition
-  const calculerTotalFraisExpedition = () => {
-    return articles.reduce(
-      (total, article) => total + (article.fraisExpedition || 0),
-      0
-    );
+  // Fonction pour gérer l'expansion/réduction des groupes
+  const toggleGroupExpansion = (productId) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [productId]: !prev[productId],
+    }));
   };
 
-  const calculerTotal = () => {
-    const sousTotal = calculerSousTotal();
-    const totalAvecReduction = sousTotal - reduction;
-    const totalFinal = totalAvecReduction + calculerTotalFraisExpedition();
-    setTotal(totalFinal);
-    // Sauvegarder dans localStorage
-    localStorage.setItem("orderTotal", totalFinal.toString());
-    return totalFinal;
-  };
+  // Calculer le total des frais d'expédition
+  // const calculerTotalFraisExpedition = () => {
+  //   return articles.reduce(
+  //     (total, article) => total + (article.fraisExpedition || 0),
+  //     0
+  //   );
+  // };
+
+  // const calculerTotal = () => {
+  //   const sousTotal = calculerSousTotal();
+  //   const totalAvecReduction = sousTotal - reduction;
+  //   const totalFinal = totalAvecReduction + calculerTotalFraisExpedition();
+  //   setTotal(totalFinal);
+  //   // Sauvegarder dans localStorage
+  //   localStorage.setItem("orderTotal", totalFinal.toString());
+  //   return totalFinal;
+  // };
 
   // Modification de la quantité avec mise à jour des frais d'expédition
-  const modifierQuantite = (id, colors, sizes, delta) => {
-    setArticles((prevArticles) => {
-      const updatedArticles = prevArticles.map((article) => {
-        // Vérifier si l'article correspond à l'ID, à la couleur et à la taille
-        if (
-          article._id === id &&
-          article.colors[0] === colors[0] &&
-          article.sizes[0] === sizes[0]
-        ) {
-          // Mettre à jour la quantité (minimum 1)
-          const nouvelleQuantite = Math.max(1, article.quantity + delta);
+  // const modifierQuantite = (id, colors, sizes, delta) => {
+  //   setArticles((prevArticles) => {
+  //     const updatedArticles = prevArticles.map((article) => {
+  //       // Vérifier si l'article correspond à l'ID, à la couleur et à la taille
+  //       if (
+  //         article._id === id &&
+  //         article.colors[0] === colors[0] &&
+  //         article.sizes[0] === sizes[0]
+  //       ) {
+  //         // Mettre à jour la quantité (minimum 1)
+  //         const nouvelleQuantite = Math.max(1, article.quantity + delta);
 
-          return { ...article, quantity: nouvelleQuantite };
-        }
-        return article;
-      });
+  //         return { ...article, quantity: nouvelleQuantite };
+  //       }
+  //       return article;
+  //     });
 
-      // Recalculer les frais d'expédition
-      const articlesAvecFraisExpedition = calculerFraisExpedition(
-        updatedArticles,
-        regionClient || "Niamey" // Utiliser une valeur par défaut si regionClient est null
-      );
+  //     // Recalculer les frais d'expédition
+  //     const articlesAvecFraisExpedition = calculerFraisExpedition(
+  //       updatedArticles,
+  //       regionClient || "Niamey" // Utiliser une valeur par défaut si regionClient est null
+  //     );
 
-      // Mettre à jour le localStorage
-      localStorage.setItem(
-        "panier",
-        JSON.stringify(articlesAvecFraisExpedition)
-      );
+  //     // Mettre à jour le localStorage
+  //     localStorage.setItem(
+  //       "panier",
+  //       JSON.stringify(articlesAvecFraisExpedition)
+  //     );
 
-      return articlesAvecFraisExpedition;
-    });
-  };
+  //     return articlesAvecFraisExpedition;
+  //   });
+  // };
 
   const supprimerArticle = (id, colors, sizes) => {
     // Filtrer pour supprimer l'article spécifique avec ses détails
@@ -252,12 +355,12 @@ const PanierPage = ({
     setFraisExpedition(mode === "express" ? 12.99 : 5.99);
   };
 
-  const calculerSousTotal = () => {
-    return articles.reduce(
-      (total, article) => total + article.price * article.quantity,
-      0
-    );
-  };
+  // const calculerSousTotal = () => {
+  //   return articles.reduce(
+  //     (total, article) => total + article.price * article.quantity,
+  //     0
+  //   );
+  // };
 
   const ValidCode = () => {
     if (acces === "non") {
@@ -316,6 +419,273 @@ const PanierPage = ({
     margin: "auto",
   };
 
+  // Rendu du groupe d'articles
+  // Modification du rendu du groupe d'articles pour inclure ShippingZonesDropdown
+  const renderArticleGroup = (group) => {
+    const isExpanded = expandedGroups[group.productId];
+    const totalShippingFee = group.baseShippingFee + group.weightShippingFee;
+
+    return (
+      <div
+        key={group.productId}
+        className="bg-white rounded-lg shadow-sm overflow-hidden mb-4"
+      >
+        {/* En-tête du groupe */}
+        <div
+          className="p-4 border-b cursor-pointer"
+          onClick={() => toggleGroupExpansion(group.productId)}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <img
+                src={group.imageUrl}
+                alt={group.name}
+                className="w-16 h-16 object-cover rounded"
+              />
+              <div>
+                <h3 className="font-medium text-lg">{group.name}</h3>
+                <p className="text-sm text-gray-500">
+                  {group.variants.length} variante(s)
+                </p>
+              </div>
+            </div>
+            {isExpanded ? (
+              <ChevronUp className="w-6 h-6" />
+            ) : (
+              <ChevronDown className="w-6 h-6" />
+            )}
+          </div>
+          <div className="mt-2">
+            <div className="flex items-center text-sm text-gray-600">
+              <Truck className="h-4 w-4 mr-2 text-[#30A08B]" />
+              <span>
+                Frais d'expédition de base: {group.baseShippingFee} F CFA
+              </span>
+            </div>
+            <div className="flex items-center text-sm text-gray-600">
+              <Tag className="h-4 w-4 mr-2 text-[#30A08B]" />
+              <span>Frais de poids total: {group.weightShippingFee} F CFA</span>
+            </div>
+            {/* Ajout du ShippingZonesDropdown */}
+            <ShippingZonesDropdown zones={group.shipping?.zones} />
+          </div>
+        </div>
+
+        {/* Liste des variantes */}
+        {isExpanded && (
+          <div className="p-4 space-y-4">
+            {group.variants.map((variant, index) => (
+              <div
+                key={`${variant._id}-${index}`}
+                className="flex items-center justify-between border-b pb-4"
+              >
+                {/* Image de la couleur si elle existe */}
+                {variant?.imageUrl && (
+                  <img
+                    src={variant.imageUrl}
+                    alt={`Couleur ${variant.colors[0]}`}
+                    className="w-12 h-12 object-cover rounded-md border"
+                  />
+                )}
+                <div className="flex-1">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-600">
+                      {variant.colors[0] && `Couleur: ${variant.colors[0]}`}
+                    </span>
+                    <span className="text-sm text-gray-600">
+                      {variant.sizes[0] && `Taille: ${variant.sizes[0]}`}
+                    </span>
+                  </div>
+                  <div className="text-[#30A08B] font-medium">
+                    {variant.price} F CFA
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <button
+                      className="p-1 border border-[#30A08B] rounded-md hover:bg-gray-50"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        modifierQuantite(
+                          variant._id,
+                          variant.colors,
+                          variant.sizes,
+                          -1
+                        );
+                      }}
+                    >
+                      <Minus className="h-4 w-4 text-[#30A08B]" />
+                    </button>
+                    <input
+                      className="w-16 text-center border rounded-md p-1"
+                      type="number"
+                      min="1"
+                      value={variant.quantity}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        const newQuantity = parseInt(e.target.value) || 1;
+                        modifierQuantite(
+                          variant._id,
+                          variant.colors,
+                          variant.sizes,
+                          newQuantity - variant.quantity
+                        );
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <button
+                      className="p-1 border border-[#30A08B] rounded-md hover:bg-gray-50"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        modifierQuantite(
+                          variant._id,
+                          variant.colors,
+                          variant.sizes,
+                          1
+                        );
+                      }}
+                    >
+                      <Plus className="h-4 w-4 text-[#30A08B]" />
+                    </button>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      supprimerArticle(
+                        variant._id,
+                        variant.colors,
+                        variant.sizes
+                      );
+                    }}
+                    className="p-2 border border-[#30A08B] rounded-full hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Remplacer la section de rendu des articles par ceci dans le return
+  const renderArticlesSection = () => {
+    if (Object.keys(groupedArticles).length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center space-y-4 p-8 bg-white rounded-lg shadow-sm">
+          <ShoppingCart className="h-12 w-12 text-[#30A08B] animate-bounce" />
+          <p className="text-lg text-[#30A08B]">Votre panier est vide</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {Object.values(groupedArticles).map((group) =>
+          renderArticleGroup(group)
+        )}
+      </div>
+    );
+  };
+
+  // Mettre à jour les autres fonctions existantes pour prendre en compte le groupement
+  const calculerTotalFraisExpedition = () => {
+    return Object.values(groupedArticles).reduce((total, group) => {
+      return total + group.baseShippingFee + group.weightShippingFee;
+    }, 0);
+  };
+
+  const calculerSousTotal = () => {
+    return articles.reduce(
+      (total, article) => total + article.price * article.quantity,
+      0
+    );
+  };
+
+  const calculerTotal = () => {
+    const sousTotal = calculerSousTotal();
+    const totalAvecReduction = sousTotal - reduction;
+    const totalFinal = totalAvecReduction + calculerTotalFraisExpedition();
+    setTotal(totalFinal);
+    localStorage.setItem("orderTotal", totalFinal.toString());
+    return totalFinal;
+  };
+
+  // Modification de la fonction de mise à jour de la quantité
+  const modifierQuantite = (id, colors, sizes, delta) => {
+    setArticles((prevArticles) => {
+      const updatedArticles = prevArticles.map((article) => {
+        if (
+          article._id === id &&
+          article.colors[0] === colors[0] &&
+          article.sizes[0] === sizes[0]
+        ) {
+          const nouvelleQuantite = Math.max(1, article.quantity + delta);
+          return { ...article, quantity: nouvelleQuantite };
+        }
+        return article;
+      });
+
+      // Mettre à jour le localStorage
+      localStorage.setItem("panier", JSON.stringify(updatedArticles));
+
+      // Mettre à jour groupedArticles
+      const newGrouped = groupArticles(updatedArticles);
+      Object.keys(newGrouped).forEach((productId) => {
+        const shippingFees = calculateGroupShipping(
+          newGrouped[productId],
+          regionClient || "Niamey"
+        );
+        newGrouped[productId] = {
+          ...newGrouped[productId],
+          ...shippingFees,
+        };
+      });
+      setGroupedArticles(newGrouped);
+
+      return updatedArticles;
+    });
+  };
+
+  // Ajoutez cette fonction pour générer le résumé des modes d'expédition
+  const renderShippingModes = () => {
+    // Regrouper les transporteurs par groupe de produits
+    const shippingInfo = Object.values(groupedArticles).map((group) => {
+      const zone = group.shipping?.zones?.find(
+        (zone) => zone.name.toLowerCase() === regionClient?.toLowerCase()
+      );
+
+      return {
+        productName: group.name,
+        transporteurName: zone?.transporteurName || "IhamBaobab",
+        transporteurContact: zone?.transporteurContact || "+227 87727501",
+      };
+    });
+
+    return (
+      <div className="pt-4">
+        <h3 className="text-sm font-semibold text-[#30A08B] mb-2">
+          Mode d'expédition
+        </h3>
+        <div className="space-y-2 bg-gray-50 p-3 rounded-md">
+          {shippingInfo.map((info, index) => (
+            <div key={index} className="text-sm">
+              <span className="font-medium">{info.productName}</span>
+              <div className="ml-2 text-gray-600">
+                Transporteur: {info.transporteurName}
+                <br />
+                Contact: {info.transporteurContact}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header fixe */}
@@ -343,147 +713,7 @@ const PanierPage = ({
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Liste des articles */}
             <div className="lg:col-span-2 space-y-4">
-              {articles.map((article, index) => (
-                <div
-                  key={`${article._id}-${index}`}
-                  className="bg-white rounded-lg shadow-sm overflow-hidden"
-                >
-                  <div className="p-4">
-                    <div className="flex flex-col md:flex-row gap-4">
-                      {/* Image Container */}
-                      <div className="relative w-full md:w-48 h-50 md:h-40">
-                        <img
-                          src={article?.imageUrl}
-                          alt={article?.name}
-                          className="w-full h-full object-fit-cover rounded-lg"
-                        />
-                      </div>
-
-                      {/* Info Container */}
-                      <div className="flex-grow flex flex-col justify-between">
-                        <div className="space-y-2">
-                          <h2 className="text-lg md:text-xl font-semibold text-[#30A08B]">
-                            {article?.name}
-                          </h2>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-sm text-gray-600">
-                              {article?.colors[0] ? (
-                                `Couleur: ${article?.colors[0]}`
-                              ) : (
-                                <></>
-                              )}
-                            </span>
-                            <span className="text-sm text-gray-600">
-                              {article?.sizes[0] ? (
-                                `Taille: ${article?.sizes[0]}`
-                              ) : (
-                                <></>
-                              )}
-                            </span>
-                            <span className="text-sm text-gray-600">
-                              {article?.shipping?.weight ? (
-                                `Poids: ${article.shipping.weight} kg`
-                              ) : (
-                                <></>
-                              )}
-                            </span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-lg font-bold text-[#30A08B]">
-                              {article.price} F CFA
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* /////////////////////////////////////////////////// */}
-                        {/* <div className="mt-2 space-y-2"> */}
-                        {/* <div className="flex items-center space-x-2">
-                          <Truck className="h-5 w-5 text-[#30A08B]" />
-                          <span className="text-sm text-gray-600">
-                            Frais d'expédition : {article.fraisExpedition} F CFA
-                          </span>
-                        </div> */}
-                        <ShippingZonesDropdown
-                          zones={article.shipping?.zones}
-                        />
-                        {/* Affichage des frais d'expédition pour la zone du client */}
-                        <div className="flex items-center space-x-2">
-                          <Truck className="h-5 w-5 text-[#30A08B]" />
-                          <span className="text-sm text-gray-600">
-                            Frais d'expédition (
-                            {article.zoneExpeditionClient ||
-                              (regionClient
-                                ? regionClient.charAt(0).toUpperCase() +
-                                  regionClient.slice(1).toLowerCase()
-                                : "")}
-                            ):
-                            {article.fraisExpedition} F CFA
-                          </span>
-                        </div>
-                        {/* /////////////////////////////////////////////////// */}
-
-                        <div className="flex flex-row justify-between gap-4 mt-4">
-                          <div className="flex items-center space-x-2">
-                            <button
-                              className="p-2 h-10 border border-[#30A08B] rounded-md hover:bg-gray-50"
-                              onClick={() =>
-                                modifierQuantite(
-                                  article._id,
-                                  article.colors,
-                                  article.sizes,
-                                  -1
-                                )
-                              }
-                            >
-                              <Minus className="h-4 w-4 text-[#30A08B]" />
-                            </button>
-                            <input
-                              className="w-16 text-center border rounded-md p-1 focus:ring-2 focus:ring-[#30A08B] focus:border-transparent"
-                              type="number"
-                              min="1"
-                              value={article.quantity}
-                              onChange={(e) =>
-                                modifierQuantite(
-                                  article._id,
-                                  article.colors,
-                                  article.sizes,
-                                  parseInt(e.target.value) - article.quantity
-                                )
-                              }
-                            />
-
-                            <button
-                              className="p-2 h-10 border border-[#30A08B] rounded-md hover:bg-gray-50"
-                              onClick={() =>
-                                modifierQuantite(
-                                  article._id,
-                                  article.colors,
-                                  article.sizes,
-                                  1
-                                )
-                              }
-                            >
-                              <Plus className="h-4 w-4 text-[#30A08B]" />
-                            </button>
-                          </div>
-                          <button
-                            onClick={() =>
-                              supprimerArticle(
-                                article._id,
-                                article.colors,
-                                article.sizes
-                              )
-                            }
-                            className="p-2 border border-[#30A08B] rounded-full hover:bg-red-50 transition-colors"
-                          >
-                            <Trash2 className="h-5 w-6 text-red-500" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+              {renderArticlesSection()}
             </div>
 
             {/* Résumé de la commande */}
@@ -543,18 +773,10 @@ const PanierPage = ({
                 </div>
 
                 {/* Mode d'expédition */}
-                <div className="pt-4">
+                {/* <div className="pt-4">
                   <h3 className="text-sm font-semibold text-[#30A08B] mb-2">
                     Mode d'expédition
                   </h3>
-                  {/* <select
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-[#30A08B] focus:border-transparent"
-                    value={modeExpedition}
-                    onChange={(e) => changerModeExpedition(e.target.value)}
-                  >
-                    <option value="standard">Standard (5.99 €)</option>
-                    <option value="express">Express (12.99 €)</option>
-                  </select> */}
 
                   {articles?.map((article, index) => {
                     const transporteurName = article.shipping?.zones.find(
@@ -578,7 +800,8 @@ const PanierPage = ({
                       );
                     }
                   })}
-                </div>
+                </div> */}
+                {renderShippingModes()}
 
                 {/* Newsletter et réinitialisation */}
                 <div className="pt-4">
