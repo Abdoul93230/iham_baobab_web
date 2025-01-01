@@ -337,6 +337,9 @@ const OrderConfirmation = ({ onClose }) => {
             await axios.put(
               `${process.env.REACT_APP_Backend_Url}/updateCommande`,
               {
+                clefUser: userId,
+                nbrProduits: produits,
+                prix: orderTotal,
                 oldReference: currentReference,
                 newReference: newTransactionReference,
                 livraisonDetails: {
@@ -347,6 +350,11 @@ const OrderConfirmation = ({ onClose }) => {
                   numero: deliveryInfo.numero,
                   description: deliveryInfo.description,
                 },
+                prod: panier,
+                ...(orderCodeP?.isValide && {
+                  codePro: true,
+                  idCodePro: orderCodeP._id,
+                }),
               }
             );
 
@@ -375,6 +383,7 @@ const OrderConfirmation = ({ onClose }) => {
                 numero: deliveryInfo.numero,
                 description: deliveryInfo.description,
               },
+              prod: panier,
               reference: transactionId,
               ...(orderCodeP?.isValide && {
                 codePro: true,
@@ -430,6 +439,7 @@ const OrderConfirmation = ({ onClose }) => {
             numero: deliveryInfo.numero,
             description: deliveryInfo.description,
           },
+          prod: panier,
           ...(orderCodeP?.isValide && {
             codePro: true,
             idCodePro: orderCodeP._id,

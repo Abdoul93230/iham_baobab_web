@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import OrderedItems from "../suivreCommande/OrderedItems";
 
 const BackendUrl = process.env.REACT_APP_Backend_Url;
 export default function ResusCommande() {
@@ -185,7 +186,7 @@ export default function ResusCommande() {
                 <h2 className="font-semibold text-lg mb-4">
                   Articles commandés
                 </h2>
-                <div className="bg-white rounded-lg shadow overflow-hidden">
+                {/* <div className="bg-white rounded-lg shadow overflow-hidden">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
@@ -222,7 +223,13 @@ export default function ResusCommande() {
                       ))}
                     </tbody>
                   </table>
-                </div>
+                </div> */}
+
+                <OrderedItems
+                  items={order?.prod ? order : null}
+                  totalPrice={order.prix}
+                />
+
                 <div className="mt-4 text-right">
                   <p className="text-lg font-semibold">
                     Total: {order.prix || 0} F CFA
