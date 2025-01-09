@@ -34,8 +34,8 @@ import Nouveau from "./pages/Nouveau";
 import Promotion from "./pages/Promotion";
 import LikeProduit from "./pages/LikeProduit";
 import IPayPayment from "./components/payment/IPayPayment";
-import SuccessPage from './components/payment/SuccessPage';
-import ErrorPage from './components/payment/ErrorPage';
+import SuccessPage from "./components/payment/SuccessPage";
+import ErrorPage from "./components/payment/ErrorPage";
 import axios from "axios";
 import io from "socket.io-client";
 import { Provider } from "react-redux";
@@ -57,10 +57,22 @@ function App() {
   const [adminConnection, setAdminConnection] = useState(false);
   const [total, setTotal] = useState(0);
   const [codeP, setCodeP] = useState(null);
+  const [produits, setProduits] = useState(0);
+
+  const panier = () => {
+    const local = localStorage.getItem("panier");
+    if (local) {
+      console.log("nbr", JSON.parse(local).length);
+      setProduits(JSON.parse(local));
+    } else {
+      setProduits(0);
+    }
+  };
 
   //////////////// verification d'hautentification de l'utilisateur
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("userEcomme"));
+    panier();
 
     if (user) {
       axios.defaults.headers.common["Authorization"] = `Bearer ${user.token}`;
@@ -134,32 +146,51 @@ function App() {
       <div className="App">
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/Connexion" element={<Connexion chg={changeA} />} />
+            <Route path="/" element={<Home paniernbr={produits} />} />
+            <Route
+              path="/Connexion"
+              element={<Connexion chg={changeA} panierchg={panier} />}
+            />
             <Route
               path="/Inscription"
               element={<Inscription chg={changeA} />}
             />
-            <Route path="/Home" element={<Home />} />
+            <Route
+              path="/Home"
+              element={<Home paniernbr={produits} panierchg={panier} />}
+            />
             <Route path="/Forget Password" element={<ForgetPassword />} />
-            <Route path="/ProduitDétail/:id" element={<ProduitDetail />} />
+            <Route
+              path="/ProduitDétail/:id"
+              element={
+                <ProduitDetail panierchg={panier} paniernbr={produits} />
+              }
+            />
             <Route
               path="/Suggestion"
               element={
-                acces === "oui" ? <Suggestion /> : <Connexion chg={changeA} />
+                acces === "oui" ? (
+                  <Suggestion paniernbr={produits} />
+                ) : (
+                  <Connexion chg={changeA} />
+                )
               }
             />
             <Route
               path="/Compte"
               element={
-                acces === "oui" ? <Compte /> : <Connexion chg={changeA} />
+                acces === "oui" ? (
+                  <Compte paniernbr={produits} />
+                ) : (
+                  <Connexion chg={changeA} />
+                )
               }
             />
             <Route
               path="/Commande"
               element={
                 acces === "oui" ? (
-                  <CommandeSuivi />
+                  <CommandeSuivi paniernbr={produits} />
                 ) : (
                   <Connexion chg={changeA} />
                 )
@@ -168,54 +199,82 @@ function App() {
             <Route
               path="/Inviter les amis"
               element={
-                acces === "oui" ? <InviteAmi /> : <Connexion chg={changeA} />
+                acces === "oui" ? (
+                  <InviteAmi paniernbr={produits} />
+                ) : (
+                  <Connexion chg={changeA} />
+                )
               }
             />
             <Route path="/payment/ipay" element={<IPayPayment />} />
             <Route
               path="/Legal information"
               element={
-                acces === "oui" ? <Informagtion /> : <Connexion chg={changeA} />
+                // acces === "oui" ? (
+                <Informagtion paniernbr={produits} />
+                // ) : (
+                //   <Connexion chg={changeA} />
+                // )
               }
             />
             <Route
               path="/Question Fréquement possées"
               element={
-                acces === "oui" ? <Question /> : <Connexion chg={changeA} />
+                // acces === "oui" ? (
+                <Question paniernbr={produits} />
+                // ) : (
+                //   <Connexion chg={changeA} />
+                // )
               }
             />
             <Route
               path="/Avis de confidentialité"
               element={
+                // acces === "oui" ? (
+                <Confidentialite paniernbr={produits} />
+                // ) : (
+                //   <Connexion chg={changeA} />
+                // )
+              }
+            />
+            <Route
+              path="/Paramètre de notification"
+              element={
                 acces === "oui" ? (
-                  <Confidentialite />
+                  <Notification paniernbr={produits} />
                 ) : (
                   <Connexion chg={changeA} />
                 )
               }
             />
             <Route
-              path="/Paramètre de notification"
-              element={
-                acces === "oui" ? <Notification /> : <Connexion chg={changeA} />
-              }
-            />
-            <Route
               path="/Paement"
               element={
-                acces === "oui" ? <Paement /> : <Connexion chg={changeA} />
+                acces === "oui" ? (
+                  <Paement paniernbr={produits} />
+                ) : (
+                  <Connexion chg={changeA} />
+                )
               }
             />
             <Route
               path="/Service"
               element={
-                acces === "oui" ? <Service /> : <Connexion chg={changeA} />
+                // acces === "oui" ? (
+                <Service paniernbr={produits} />
+                // ) : (
+                //   <Connexion chg={changeA} />
+                // )
               }
             />
             <Route
               path="/Livraison"
               element={
-                acces === "oui" ? <Livraison /> : <Connexion chg={changeA} />
+                acces === "oui" ? (
+                  <Livraison paniernbr={produits} />
+                ) : (
+                  <Connexion chg={changeA} />
+                )
               }
             />
             <Route
@@ -228,6 +287,8 @@ function App() {
                   setTotal={setTotal}
                   codeP={codeP}
                   setCodeP={setCodeP}
+                  panierchg={panier}
+                  paniernbr={produits}
                 />
                 // ) : (
                 //   <Connexion chg={changeA} />
@@ -237,37 +298,72 @@ function App() {
             <Route
               path="/Suivre la commande/:id"
               element={
-                acces === "oui" ? <SuiviCommand /> : <Connexion chg={changeA} />
+                acces === "oui" ? (
+                  <SuiviCommand paniernbr={produits} />
+                ) : (
+                  <Connexion chg={changeA} />
+                )
               }
             />
             <Route
               path="/NotificationHeader"
               element={
-                acces === "oui" ? <BellPage /> : <Connexion chg={changeA} />
+                acces === "oui" ? (
+                  <BellPage paniernbr={produits} />
+                ) : (
+                  <Connexion chg={changeA} />
+                )
               }
             />
             <Route
               path="/Commande réisus/:id"
               element={
-                acces === "oui" ? <ResusCommand /> : <Connexion chg={changeA} />
+                acces === "oui" ? (
+                  <ResusCommand paniernbr={produits} />
+                ) : (
+                  <Connexion chg={changeA} />
+                )
               }
             />
-            <Route path="/Categorie/:name" element={<Homme />} />
-            <Route path="/Categorie/:name/:type" element={<Homme />} />
-            <Route path="/Voir-plus" element={<Voir />} />
-            <Route path="/Nouveau produit" element={<Nouveau />} />
-            <Route path="/Produit promotions" element={<Promotion />} />
+            <Route
+              path="/Categorie/:name"
+              element={<Homme paniernbr={produits} />}
+            />
+            <Route
+              path="/Categorie/:name/:type"
+              element={<Homme paniernbr={produits} />}
+            />
+            <Route path="/Voir-plus" element={<Voir paniernbr={produits} />} />
+            <Route
+              path="/Nouveau produit"
+              element={<Nouveau paniernbr={produits} />}
+            />
+            <Route
+              path="/Produit promotions"
+              element={<Promotion paniernbr={produits} />}
+            />
             <Route
               path="/Like produit"
               element={
-                acces === "oui" ? <LikeProduit /> : <Connexion chg={changeA} />
+                acces === "oui" ? (
+                  <LikeProduit paniernbr={produits} />
+                ) : (
+                  <Connexion chg={changeA} />
+                )
               }
             />
-            <Route path="/Boutique" element={<Boutique />} />
+            <Route
+              path="/Boutique"
+              element={<Boutique paniernbr={produits} />}
+            />
             <Route
               path="/Messagerie"
               element={
-                acces === "oui" ? <Messagerie /> : <Connexion chg={changeA} />
+                acces === "oui" ? (
+                  <Messagerie paniernbr={produits} />
+                ) : (
+                  <Connexion chg={changeA} />
+                )
               }
             />
             <Route
@@ -275,6 +371,7 @@ function App() {
               element={
                 acces === "oui" ? (
                   <OrderConfirmationPaiement
+                    paniernbr={produits}
                     total={total}
                     codeP={codeP}
                     setCodeP={setCodeP}
@@ -286,7 +383,7 @@ function App() {
             />
             <Route
               path="/Profile d'un boutiquier"
-              element={<BoutiquierProfile />}
+              element={<BoutiquierProfile paniernbr={produits} />}
             />
             <Route path="/success" element={<SuccessPage />} />
             <Route path="/error" element={<ErrorPage />} />

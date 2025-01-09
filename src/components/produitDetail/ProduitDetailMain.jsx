@@ -33,7 +33,7 @@ import { shuffle } from "lodash";
 import Alert from "../../pages/Alert";
 import { useNavigate } from "react-router-dom";
 
-function ProduitDetailMain() {
+function ProduitDetailMain({ panierchg }) {
   const navigation = useNavigate();
   const swiperRef = useRef(null);
   const [isZoomed, setIsZoomed] = useState(false);
@@ -541,6 +541,7 @@ function ProduitDetailMain() {
 
     // Mettre à jour la longueur du panier
     const local = localStorage.getItem("panier");
+    panierchg();
     if (local) {
       setProduitsL(JSON.parse(local));
     } else {
@@ -610,9 +611,12 @@ function ProduitDetailMain() {
   useEffect(() => {
     const detecterRegion = async () => {
       try {
-        const response = await axios.get("https://ipapi.co/json/");
-        const region = response.data.region;
-        const pays = response.data.country_name;
+        // const response = await axios.get("https://ipapi.co/json/");
+        const response = await axios.get("http://ip-api.com/json/");
+        // const region = response.data.region;
+        // const pays = response.data.country_name;
+        const region = response.data.regionName || "Niamey";
+        const pays = response.data.country || "Niger";
         setRegionClient(region.toLowerCase());
         setPays(pays.toLowerCase());
         console.log(pays);

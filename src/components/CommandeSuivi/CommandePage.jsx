@@ -112,7 +112,7 @@ export default function CommandePage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4">
-          {filteredOrders.map((order, index) => (
+          {filteredOrders.reverse().map((order, index) => (
             <div
               key={order._id}
               className="bg-white p-4 rounded-lg shadow cursor-pointer"

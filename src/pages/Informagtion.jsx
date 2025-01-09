@@ -1,13 +1,13 @@
-import React from 'react'
-import InformationPage from '../components/legalInformationPage/InformationPage'
-import HomeHeader from '../components/homePage/HomeHeader'
-function Informagtion() {
+import React from "react";
+import InformationPage from "../components/legalInformationPage/InformationPage";
+import HomeHeader from "../components/homePage/HomeHeader";
+function Informagtion({ paniernbr }) {
   return (
     <>
-    <HomeHeader/>
-    <InformationPage/>
+      <HomeHeader paniernbr={paniernbr} />
+      <InformationPage />
     </>
-  )
+  );
 }
 
-export default Informagtion
+export default Informagtion;

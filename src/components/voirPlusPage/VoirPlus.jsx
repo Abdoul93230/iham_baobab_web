@@ -1,51 +1,41 @@
-import React, { useState } from 'react';
-import { Search, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-
-const categories = [
-  { id: 1, name: "Homme", image: "https://img.freepik.com/photos-gratuite/voiture-3d-aux-couleurs-vives_23-2150797034.jpg" },
-  { id: 2, name: "Électronique", image: "https://img.freepik.com/photos-gratuite/voiture-3d-aux-couleurs-vives_23-2150797034.jpg" },
-  { id: 3, name: "Beauté", image: "https://img.freepik.com/photos-gratuite/voiture-3d-aux-couleurs-vives_23-2150797034.jpg" },
-  { id: 4, name: "Cuisine & Ustensiles", image: "https://img.freepik.com/photos-gratuite/voiture-3d-aux-couleurs-vives_23-2150797034.jpg" },
-  { id: 5, name: "Électroménager", image: "https://img.freepik.com/photos-gratuite/voiture-3d-aux-couleurs-vives_23-2150797034.jpg" },
-  { id: 6, name: "Mode Femme", image: "https://img.freepik.com/photos-gratuite/voiture-3d-aux-couleurs-vives_23-2150797034.jpg" },
-  { id: 7, name: "Enfants", image: "https://img.freepik.com/photos-gratuite/voiture-3d-aux-couleurs-vives_23-2150797034.jpg" },
-  { id: 8, name: "Sport", image: "https://img.freepik.com/photos-gratuite/voiture-3d-aux-couleurs-vives_23-2150797034.jpg" },
-  { id: 9, name: "Jardin", image: "https://img.freepik.com/photos-gratuite/voiture-3d-aux-couleurs-vives_23-2150797034.jpg" },
-  { id: 10, name: "Livres", image: "https://img.freepik.com/photos-gratuite/voiture-3d-aux-couleurs-vives_23-2150797034.jpg" },
-  { id: 11, name: "Musique", image: "https://img.freepik.com/photos-gratuite/voiture-3d-aux-couleurs-vives_23-2150797034.jpg" },
-  { id: 12, name: "Jeux Vidéo", image: "https://img.freepik.com/photos-gratuite/voiture-3d-aux-couleurs-vives_23-2150797034.jpg" }
-];
+import React, { useState } from "react";
+import { Search, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 export default function VoirPlus() {
-  const navigation = useNavigate()
+  const navigation = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
-
-  const filteredCategories = categories.filter(category =>
+  const DATA_Categories = useSelector((state) => state.products.categories);
+  const filteredCategories = DATA_Categories.filter(
+    (c) => c.name !== "all"
+  )?.filter((category) =>
     category.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // console.log(DATA_Categories.filter((c) => c.name !== "all"));
 
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
     console.log(`Navigating to /${category.name}`);
-    navigation("/Homme")
+    navigation(`/Categorie/${category.name}`);
   };
-
-
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-[#30A08B] shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center">
-          <button 
+          <button
             onClick={() => navigation("/Home")}
             className="p-2 hover:bg-[#2a907d] rounded-full transition-colors"
           >
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
-          <h1 className="ml-4 text-2xl font-semibold text-white">Toutes les catégories</h1>
+          <h1 className="ml-4 text-2xl font-semibold text-white">
+            Toutes les catégories
+          </h1>
         </div>
       </header>
 
@@ -73,8 +63,8 @@ export default function VoirPlus() {
               className="group bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 flex flex-col items-center justify-center space-y-3 border border-gray-200 hover:border-[#30A08B]"
             >
               <div className="w-20 h-20 rounded-lg bg-gray-100 overflow-hidden">
-                <img 
-                  src={category.image} 
+                <img
+                  src={category.image}
                   alt={category.name}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
                 />

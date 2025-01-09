@@ -35,7 +35,7 @@ const comments = [
     ],
   },
 ];
-const DetailHomme = ({ setCartCount }) => {
+const DetailHomme = ({ setCartCount, paniernbr }) => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -359,7 +359,7 @@ const DetailHomme = ({ setCartCount }) => {
                   <ShoppingCart className="w-5 h-5 lg:w-6 lg:h-6 text-amber-800 hover:text-[#30A08B] transition-colors" />
                   {/* {cartCount > 0 && ( */}
                   <span className="absolute -top-2 -right-1 bg-[#30A08B] text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                    {/* {cartCount} */}0
+                    {paniernbr ? paniernbr?.length : 0}
                   </span>
                   {/* )} */}
                 </button>

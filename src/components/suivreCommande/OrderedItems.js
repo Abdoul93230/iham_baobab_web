@@ -218,14 +218,17 @@ const OrderedItems = ({ items, totalPrice }) => {
                 )}
                 <div className="flex-1">
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-600 ml-3">
                       {variant.colors[0] && `Couleur: ${variant.colors[0]}`}
                     </span>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-600 ml-3">
                       {variant.sizes[0] && `Taille: ${variant.sizes[0]}`}
                     </span>
+                    <div className="text-sm text-[#30A08B] font-medium ml-3">
+                      {variant.quantity && `quantite: ${variant.quantity}`}
+                    </div>
                   </div>
-                  <div className="text-[#30A08B] font-medium">
+                  <div className="text-[#30A08B] font-medium ml-3">
                     {variant.price} F CFA
                   </div>
                 </div>

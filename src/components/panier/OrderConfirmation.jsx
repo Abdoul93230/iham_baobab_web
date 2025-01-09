@@ -426,6 +426,7 @@ const OrderConfirmation = ({ onClose }) => {
         }
       } else {
         // Paiement à la livraison
+        const transactionId = generateUniqueID();
         const commandeData = {
           clefUser: userId,
           nbrProduits: produits,
@@ -439,6 +440,7 @@ const OrderConfirmation = ({ onClose }) => {
             numero: deliveryInfo.numero,
             description: deliveryInfo.description,
           },
+          reference: transactionId,
           prod: panier,
           ...(orderCodeP?.isValide && {
             codePro: true,
