@@ -183,9 +183,9 @@ export default function ResusCommande() {
               </div>
 
               <div className="mb-8">
-                <h2 className="font-semibold text-lg mb-4">
+                {/* <h2 className="font-semibold text-lg mb-4">
                   Articles commandés
-                </h2>
+                </h2> */}
                 {/* <div className="bg-white rounded-lg shadow overflow-hidden">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
@@ -230,11 +230,11 @@ export default function ResusCommande() {
                   totalPrice={order.prix}
                 />
 
-                <div className="mt-4 text-right">
+                {/* <div className="mt-4 text-right">
                   <p className="text-lg font-semibold">
                     Total: {order.prix || 0} F CFA
                   </p>
-                </div>
+                </div> */}
               </div>
 
               <div className="mb-8">

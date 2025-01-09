@@ -27,6 +27,7 @@ const PanierPage = ({
   setCodeP,
   onPaymentComplete,
   acces,
+  panierchg,
 }) => {
   const [articles, setArticles] = useState([]);
   const [codePromo, setCodePromo] = useState("");
@@ -218,9 +219,12 @@ const PanierPage = ({
     const panierItems = JSON.parse(localStorage.getItem("panier")) || [];
     const detecterRegion = async () => {
       try {
-        const response = await axios.get("https://ipapi.co/json/");
-        const region = response.data.region;
-        const pays = response.data.country_name;
+        // const response = await axios.get("https://ipapi.co/json/");
+        const response = await axios.get("http://ip-api.com/json/");
+        // const region = response.data.region || "Niamey";
+        // const pays = response.data.country_name || "Niger";
+        const region = response.data.regionName || "Niamey";
+        const pays = response.data.country || "Niger";
         setRegionClient(region.toLowerCase());
         setPays(pays);
 
@@ -325,6 +329,7 @@ const PanierPage = ({
 
   const supprimerArticle = (id, colors, sizes) => {
     // Filtrer pour supprimer l'article spécifique avec ses détails
+
     const updatedArticles = articles.filter(
       (article) =>
         !(
@@ -337,22 +342,13 @@ const PanierPage = ({
     // Mettre à jour l'état et le localStorage
     setArticles(updatedArticles);
     localStorage.setItem("panier", JSON.stringify(updatedArticles));
+
+    // Mettre à jour groupedArticles
+    const newGrouped = groupArticles(updatedArticles);
+
+    setGroupedArticles(newGrouped);
+    panierchg();
     setMessage("Article supprimé avec succès !");
-  };
-
-  const appliquerCodePromo = () => {
-    if (codePromo === "PROMO10") {
-      setReduction(10);
-      setMessage("Code promo appliqué avec succès !");
-    } else {
-      setReduction(0);
-      setMessage("Code promo invalide.");
-    }
-  };
-
-  const changerModeExpedition = (mode) => {
-    setModeExpedition(mode);
-    setFraisExpedition(mode === "express" ? 12.99 : 5.99);
   };
 
   // const calculerSousTotal = () => {
@@ -367,7 +363,7 @@ const PanierPage = ({
       handleWarning("Veuiller Vous connecter d'abord");
       setTimeout(() => {
         navigation("/Connexion");
-      }, 1000);
+      }, 500);
       return;
     }
     if (codePromo.length === 0) {
@@ -489,14 +485,14 @@ const PanierPage = ({
                 )}
                 <div className="flex-1">
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-600 ml-3">
                       {variant.colors[0] && `Couleur: ${variant.colors[0]}`}
                     </span>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-600 ml-3">
                       {variant.sizes[0] && `Taille: ${variant.sizes[0]}`}
                     </span>
                   </div>
-                  <div className="text-[#30A08B] font-medium">
+                  <div className="text-[#30A08B] font-medium ml-3">
                     {variant.price} F CFA
                   </div>
                 </div>

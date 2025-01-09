@@ -34,7 +34,7 @@ const MessagerieMain = () => {
   const initialConversations = [
     {
       id: 1,
-      vendeur: "E-Habou's Store",
+      vendeur: "IHAM BAOBAB's Store",
       image:
         "https://elfsight.com/fr/wp-content/uploads/sites/5/2024/04/how-to-integrate-whatsapp-in-your-website-featured-image-1.png",
       nonLu: 0,
@@ -55,13 +55,14 @@ const MessagerieMain = () => {
           setMessages(res.data);
           // Mettre à jour le nombre de messages non lus
           const unreadCount = res.data.filter(
-            (msg) => !msg.provenance && !msg.lecture
-          ).length;
+            (item) => item.lusUser == false && item.provenance === false
+          )?.length;
           setConversations((prevConv) =>
             prevConv.map((conv) => ({
               ...conv,
               nonLu: unreadCount,
-              dernierMessage: res.data[res.data.length - 1]?.message || conv.dernierMessage,
+              dernierMessage:
+                res.data[res.data.length - 1]?.message || conv.dernierMessage,
               timestamp: res.data[res.data.length - 1]
                 ? formatDate(res.data[res.data.length - 1].date)
                 : conv.timestamp,
@@ -73,11 +74,11 @@ const MessagerieMain = () => {
         });
 
       // Marquer les messages comme lus
-      axios
-        .put(`${BackendUrl}/lecturUserMessage`, { userKey: userE.id })
-        .catch((error) => {
-          console.log(error);
-        });
+      // axios
+      //   .put(`${BackendUrl}/lecturUserMessage`, { userKey: userE.id })
+      //   .catch((error) => {
+      //     console.log(error);
+      //   });
     }
   }, [userE?.id]);
 
@@ -106,6 +107,21 @@ const MessagerieMain = () => {
         .get(`${BackendUrl}/getUserMessagesByClefUser/${userE.id}`)
         .then((res) => {
           setMessages(res.data);
+          // Mettre à jour le nombre de messages non lus
+          const unreadCount = res.data.filter(
+            (item) => item.lusUser == false && item.provenance === false
+          )?.length;
+          setConversations((prevConv) =>
+            prevConv.map((conv) => ({
+              ...conv,
+              nonLu: unreadCount,
+              dernierMessage:
+                res.data[res.data.length - 1]?.message || conv.dernierMessage,
+              timestamp: res.data[res.data.length - 1]
+                ? formatDate(res.data[res.data.length - 1].date)
+                : conv.timestamp,
+            }))
+          );
         })
         .catch((error) => {
           console.log(error);
@@ -168,11 +184,21 @@ const MessagerieMain = () => {
     setSelectedChat(chat);
     setShowMobileList(false);
 
+    axios
+      .put(`${BackendUrl}/lecturUserMessage`, { userKey: userE.id })
+      .then((resp) => {
+        console.log(resp);
+      })
+      .catch((erro) => {
+        console.log(erro);
+      });
+
     // Reset unread count for selected chat
     const updatedConversations = conversations.map((conv) =>
       conv.id === chat.id ? { ...conv, nonLu: 0 } : conv
     );
     setConversations(updatedConversations);
+    console.log(updatedConversations);
   };
 
   const MessageStatus = ({ status }) => {
@@ -266,8 +292,13 @@ const MessagerieMain = () => {
                 <h3 className="font-semibold text-gray-900">{conv.vendeur}</h3>
                 <span className="text-xs text-gray-500">{conv.timestamp}</span>
               </div>
-              <p className="text-sm text-gray-600 truncate">
-                {conv.dernierMessage}
+              <p
+                className="text-sm text-gray-600 truncate"
+                dangerouslySetInnerHTML={{
+                  __html: `${conv?.dernierMessage.slice(0, 10)} ...`,
+                }}
+              >
+                {/* {conv.dernierMessage} */}
               </p>
             </div>
             {conv.nonLu > 0 && (
@@ -347,9 +378,12 @@ const MessagerieMain = () => {
                         : "bg-white text-gray-800 rounded-tl-2xl rounded-tr-2xl rounded-br-2xl"
                     } p-3 shadow-sm`}
                   >
-                    <p className="text-[15px] whitespace-pre-wrap">
-                      {message.message}
-                    </p>
+                    <div
+                      className="text-[15px] whitespace-pre-wrap"
+                      dangerouslySetInnerHTML={{ __html: message?.message }}
+                    >
+                      {/* {message.message} */}
+                    </div>
                     <div className="flex items-center justify-end mt-1 space-x-1">
                       <span className="text-xs opacity-70">
                         {formatDate(message.date)}

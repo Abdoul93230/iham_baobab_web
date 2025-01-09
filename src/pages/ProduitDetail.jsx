@@ -4,15 +4,15 @@ import ProduitDetailMain from "../components/produitDetail/ProduitDetailMain";
 import ProduitDetailFooter from "../components/produitDetail/ProduitDetailFooter";
 import { useParams } from "react-router-dom";
 
-function ProduitDetail() {
+function ProduitDetail({ panierchg, paniernbr }) {
   const params = useParams();
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [params.id]);
   return (
     <>
-      <ProduitDetailHeader />
-      <ProduitDetailMain />
+      <ProduitDetailHeader paniernbr={paniernbr} />
+      <ProduitDetailMain panierchg={panierchg} />
       <ProduitDetailFooter />
     </>
   );

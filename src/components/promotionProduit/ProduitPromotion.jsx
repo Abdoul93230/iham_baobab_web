@@ -16,10 +16,11 @@ import {
   FaTwitter,
   FaFacebook,
   FaLinkedin,
-  FaTiktok
+  FaTiktok,
 } from "react-icons/fa";
 import LogoText from "../../image/LogoText.png";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 const comments = [
   {
     id: 1,
@@ -35,89 +36,64 @@ const comments = [
     ],
   },
 ];
-export default function ProduitPromotion() {
+export default function ProduitPromotion({ paniernbr }) {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeCategory, setActiveCategory] = useState("Tous les produits");
   const swiperRef = useRef(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryName, setCategoryName] = useState(
+    "mode et divers sous un même toit"
+  );
 
-  const categories = [
-    { id: "all", name: "Tous les produits" },
-    { id: "sandales", name: "Sandales" },
-    { id: "claquettes", name: "Claquettes" },
-    { id: "pantoufles", name: "Pantoufles" },
-    { id: "chaussures", name: "Chaussures" },
-  ];
+  const DATA_Products = useSelector((state) => state.products.data);
+  // Filtrer les produits avec un prix promotionnel
+  const produitsEnPromo = DATA_Products?.filter(
+    (produit) => produit.prixPromo && produit.prixPromo > 0
+  );
 
-  const products = [
-    {
-      id: 1,
-      name: "Claquettes Nike Comfort",
-      price: 3500,
-      image:
-        "https://ae-pic-a1.aliexpress-media.com/kf/S6af9c502409f49f4ac50e1c4968b9b926.jpg_.webp",
-      category: "claquettes",
-      rating: 4.8,
-      reviews: 256,
-      isOnSale: true,
-      salePrice: 2990,
-      nouveau: "Nouveau",
-    },
-    {
-      id: 2,
-      name: "Pantoufles Designer Collection",
-      price: 5500,
-      image:
-        "https://ae-pic-a1.aliexpress-media.com/kf/S6af9c502409f49f4ac50e1c4968b9b926.jpg_.webp",
-      category: "pantoufles",
-      rating: 4.7,
-      reviews: 167,
-      nouveau: "Nouveau",
-    },
-    {
-      id: 3,
-      name: "Chaussures Luxe Signature",
-      price: 10000,
-      image:
-        "https://ae-pic-a1.aliexpress-media.com/kf/S6af9c502409f49f4ac50e1c4968b9b926.jpg_.webp",
-      category: "chaussures",
-      rating: 4.9,
-      reviews: 324,
-      nouveau: "Nouveau",
-    },
-    {
-      id: 4,
-      name: "Sandales",
-      price: 10000,
-      image:
-        "https://ae-pic-a1.aliexpress-media.com/kf/S6af9c502409f49f4ac50e1c4968b9b926.jpg_.webp",
-      category: "Sandales",
-      rating: 4.9,
-      reviews: 324,
-      isOnSale: true,
-      salePrice: 2990,
-      nouveau: "Nouveau",
-    },
+  const DATA_Categories = useSelector((state) => state.products.categories);
+  const filteredCategories = DATA_Categories.filter((c) => c.name !== "all");
 
-  ];
+  const DATA_Types = useSelector((state) => state.products.types);
 
   const getFilteredProducts = () => {
-    if (activeCategory === "all") {
-      return products;
+    if (activeCategory === "Tous les produits") {
+      return (
+        produitsEnPromo?.filter((prod) =>
+          prod?.name.toLowerCase().includes(searchTerm.toLowerCase())
+        ) || []
+      );
     }
-    return products.filter(
-      (product) =>
-        product.category.toLowerCase() === activeCategory.toLowerCase()
-    );
+    // console.log(
+    //   DATA_Types?.find((type) => type.clefCategories === activeCategory)
+    // );
+    return produitsEnPromo
+      .filter(
+        (item) =>
+          item.ClefType ===
+          DATA_Types?.find((type) => type.clefCategories === activeCategory)
+            ?._id
+      )
+      ?.filter((prod) =>
+        prod?.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+
+    // return (
+    //   produitsEnPromo.filter(
+    //     (product) =>
+    //       product?.category?.toLowerCase() === activeCategory?.toLowerCase()
+    //   ) || []
+    // );
   };
 
   const filteredProducts = getFilteredProducts();
 
-  const handleCategoryClick = (categoryId) => {
+  const handleCategoryClick = (categoryId, name) => {
     setActiveCategory(categoryId);
+    setCategoryName(name);
     setIsMenuOpen(false);
   };
 
@@ -125,6 +101,10 @@ export default function ProduitPromotion() {
     setSelectedProduct(product);
     setShowReviewForm(true);
   };
+
+  function getRandomIntBetween3and5() {
+    return Math.floor(Math.random() * (5 - 3 + 1)) + 3;
+  }
 
   const CommentCard = ({ comment }) => (
     <div className="p-2 border rounded-md" ref={swiperRef}>
@@ -200,12 +180,33 @@ export default function ProduitPromotion() {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex space-x-4 lg:space-x-8">
-              {categories.map((category) => (
+              <button
+                key={1}
+                onClick={() => {
+                  handleCategoryClick(
+                    "Tous les produits",
+                    "mode et divers sous un même toit"
+                  );
+                  window.scrollTo(0, 0);
+                }}
+                className={`text-white-900  hover:text-[#30A08B] transition-colors text-sm lg:text-base ${
+                  activeCategory === "Tous les produits"
+                    ? "font-bold text-[#30A08B]"
+                    : "text-[#B17236]"
+                }`}
+              >
+                Tous les produits
+              </button>
+
+              {filteredCategories?.slice(0, 4)?.map((category) => (
                 <button
-                  key={category.id}
-                  onClick={() => handleCategoryClick(category.id)}
+                  key={category._id}
+                  onClick={() => {
+                    handleCategoryClick(category._id, category?.name);
+                    window.scrollTo(0, 0);
+                  }}
                   className={`text-white-900  hover:text-[#30A08B] transition-colors text-sm lg:text-base ${
-                    activeCategory === category.id
+                    activeCategory === category._id
                       ? "font-bold text-[#30A08B]"
                       : "text-[#B17236]"
                   }`}
@@ -225,7 +226,7 @@ export default function ProduitPromotion() {
                   <div
                     className="relative text-amber-800 hover:text-[#30A08B]"
                     aria-label="Notifications"
-                    onClick={() => navigate("/Notification header")}
+                    onClick={() => navigate("/NotificationHeader")}
                   >
                     <Bell className="h-6 w-6" />
                     <span className="absolute -top-1 -right-1  bg-[#30A08B] rounded-full w-4 h-4 text-xs text-white flex items-center justify-center">
@@ -235,17 +236,23 @@ export default function ProduitPromotion() {
                 </button>
                 <button className="transition-colors rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
                   <div className="relative text-amber-800 hover:text-[#30A08B]">
-                    <Heart className="h-6 w-6" />
+                    <Heart
+                      onClick={() => navigate("/Like produit")}
+                      className="h-6 w-6"
+                    />
                     <span className="absolute -top-2 -right-1 bg-[#30A08B] text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                       0
                     </span>
                   </div>
                 </button>
-                <button className="transition-colors rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
+                <button
+                  onClick={() => navigate("/panier")}
+                  className="transition-colors rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl"
+                >
                   <ShoppingCart className="w-5 h-5 lg:w-6 lg:h-6 text-amber-800 hover:text-[#30A08B] transition-colors" />
                   {/* {cartCount > 0 && ( */}
                   <span className="absolute -top-2 -right-1 bg-[#30A08B] text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                    {/* {cartCount} */}0
+                    {paniernbr ? paniernbr.length : 0}
                   </span>
                   {/* )} */}
                 </button>
@@ -268,12 +275,33 @@ export default function ProduitPromotion() {
         {isMenuOpen && (
           <div className="md:hidden bg-white border-t">
             <div className="px-4 py-2 space-y-1">
-              {categories.map((category) => (
+              <button
+                key={1}
+                onClick={() => {
+                  handleCategoryClick(
+                    "Tous les produits",
+                    "mode et divers sous un même toit"
+                  );
+                  setActiveCategory("Tous les produits");
+                  setIsMenuOpen(false);
+                  window.scrollTo(0, 0);
+                }}
+                className={`text-white-900  hover:text-[#30A08B] transition-colors text-sm lg:text-base ${
+                  activeCategory === "Tous les produits"
+                    ? "font-bold text-[#30A08B]"
+                    : "text-[#B17236]"
+                }`}
+              >
+                Tous les produits
+              </button>
+              {filteredCategories?.slice(0, 4)?.map((category) => (
                 <button
-                  key={category.id}
+                  key={category._id}
                   onClick={() => {
-                    setActiveCategory(category.id);
+                    // setActiveCategory(category._id);
+                    handleCategoryClick(category._id, category?.name);
                     setIsMenuOpen(false);
+                    window.scrollTo(0, 0);
                   }}
                   className="block w-full text-left px-3 py-2 text-base hover:bg-gray-50 hover:text-[#30A08B] transition-colors"
                 >
@@ -281,15 +309,24 @@ export default function ProduitPromotion() {
                 </button>
               ))}
               <div className="flex w-full  items-center justify-around gap-4 py-4 border-t">
-                <button className="flex flex-col items-center text-gray-600">
+                <button
+                  onClick={() => navigate("/Compte")}
+                  className="flex flex-col items-center text-gray-600"
+                >
                   <User className="w-6 h-6" />
                   <span className="text-xs mt-1">Compte</span>
                 </button>
-                <button className="flex flex-col items-center text-gray-600">
+                <button
+                  onClick={() => navigate("/Like produit")}
+                  className="flex flex-col items-center text-gray-600"
+                >
                   <Heart className="w-6 h-6" />
                   <span className="text-xs mt-1">Favoris</span>
                 </button>
-                <button className="flex flex-col items-center text-gray-600">
+                <button
+                  onClick={() => navigate("/panier")}
+                  className="flex flex-col items-center text-gray-600"
+                >
                   <ShoppingCart className="w-6 h-6" />
                   <span className="text-xs mt-1">Panier</span>
                 </button>
@@ -304,15 +341,17 @@ export default function ProduitPromotion() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 lg:py-20">
           <div className="text-center">
             <h2 className="text-3xl md:text-4xl lg:text-4xl font-bold mb-4">
-              Tous vos besoins en matière de mode sous un même toit
+              Tous vos besoins en matière de {categoryName}
             </h2>
             <p className="text-lg md:text-xl mb-8 opacity-90">
-              Découvrez notre collection exclusive pour hommes
+              Découvrez notre collection exclusive pour {categoryName}
             </p>
             <div className="relative max-w-xl mx-auto">
               <input
                 type="search"
                 placeholder="Rechercher un produit..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full focus:outline-none focus:ring-2 focus:ring-emerald-500 px-4 py-3 rounded-lg text-black text-sm md:text-base"
               />
               <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -334,65 +373,87 @@ export default function ProduitPromotion() {
 
         {/* Produits Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
-          {filteredProducts.map((product) => (
-            <div
-              key={product.id}
-              className="bg-white rounded-lg shadow-md overflow-hidden group flex flex-col transform hover:-translate-y-1 transition-all duration-300"
-            >
-              <div className="relative flex-grow">
-                <img
-                onClick={() => navigate("/Produit détail")}
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-48 sm:h-56 md:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <button
-                  className="absolute hidden top-100 mt-3 right-4 p-2 bg-[#62aca2bb] rounded-full shadow-md  transition-colors"
-                  onClick={() => setCartCount((prev) => prev + 1)}
-                >
-                  <Heart className="w-5 h-5 text-[#B17236] hover:animate-bounce" />
-                </button>
-                <span className="absolute top-2 left-2 bg-[#62aca2bb] text-white text-xs font-bold py-1 px-2 rounded-full">
-                  -10%
-                </span>
-              </div>
-              <div className="p-4">
-                <h3 className="text-base md:text-lg font-medium mb-2 text-gray-800">
-                  {product.name}
-                </h3>
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    {product.isOnSale ? (
-                      <>
-                        <p className="text-lg md:text-xl font-bold text-[#B17236] line-through">
-                          F {product.price.toLocaleString()}
-                        </p>
-                        <p className="text-lg md:text-xl font-bold text-[#30A08B]">
-                          F {product.salePrice.toLocaleString()}
-                        </p>
-                      </>
-                    ) : (
-                      <p className="text-lg md:text-xl font-bold text-[#B17236]">
-                        F {product.price.toLocaleString()}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center">
-                    <span className="text-[#B2905F]">★</span>
-                    <span className="ml-1 text-sm text-gray-600">
-                      {product.rating} ({product.reviews})
-                    </span>
-                  </div>
+          {filteredProducts.length > 0 ? (
+            filteredProducts?.map((product) => (
+              <div
+                key={product._id}
+                className="bg-white rounded-lg shadow-md overflow-hidden group flex flex-col transform hover:-translate-y-1 transition-all duration-300"
+              >
+                <div className="relative flex-grow">
+                  <img
+                    onClick={() => navigate(`/ProduitDétail/${product?._id}`)}
+                    src={product?.image1}
+                    alt={product?.name}
+                    className="w-full h-48 sm:h-56 md:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <button className="absolute hidden top-100 mt-3 right-4 p-2 bg-[#62aca2bb] rounded-full shadow-md  transition-colors">
+                    <Heart className="w-5 h-5 text-[#B17236] hover:animate-bounce" />
+                  </button>
+                  <span className="absolute top-2 left-2 bg-[#62aca2bb] text-white text-xs font-bold py-1 px-2 rounded-full">
+                    -{" "}
+                    {Math.round(
+                      ((product.prix - product.prixPromo) / product.prix) * 100
+                    )}{" "}
+                    %
+                  </span>
                 </div>
-                <button
-                  onClick={() => setCartCount((prev) => prev + 1)}
-                  className="w-full bg-[#30A08B] text-white py-2 rounded-md hover:bg-[#B2905F] transition-colors text-sm md:text-base"
-                >
-                  Ajouter au panier
-                </button>
+                <div className="p-4">
+                  <h3 className="text-base md:text-lg font-medium mb-2 text-gray-800">
+                    {product?.name}
+                  </h3>
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      {product?.prixPromo && product?.prixPromo > 0 ? (
+                        <>
+                          <p className="text-lg md:text-xl font-bold text-[#B17236] line-through">
+                            F {product?.prix?.toLocaleString()}
+                          </p>
+                          <p className="text-lg md:text-xl font-bold text-[#30A08B]">
+                            F {product?.prixPromo?.toLocaleString()}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-lg md:text-xl font-bold text-[#B17236]">
+                          F {product?.prix?.toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-[#B2905F]">★</span>
+                      <span className="ml-1 text-sm text-gray-600">
+                        ({getRandomIntBetween3and5()})
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigate(`/ProduitDétail/${product?._id}`)}
+                    className="w-full bg-[#30A08B] text-white py-2 rounded-md hover:bg-[#B2905F] transition-colors text-sm md:text-base"
+                  >
+                    Ajouter au panier
+                  </button>
+                </div>
               </div>
+            ))
+          ) : (
+            <div
+              style={{
+                textAlign: "center",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: "bold",
+                width: "100%",
+
+                color: "#333",
+                fontSize: "1.2em",
+              }}
+            >
+              <p>
+                Aucun produit en promo correspondant trouvé pour ce type.
+                Veuillez essayer un autre type.
+              </p>
             </div>
-          ))}
+          )}
         </div>
         {/* Formulaire de commentaire */}
         {showReviewForm && (

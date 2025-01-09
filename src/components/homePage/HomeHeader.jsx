@@ -36,9 +36,11 @@ import {
 import LogoText from "../../image/LogoText.png";
 import HeaderMobile from "./HeaderMobile";
 import { useSelector } from "react-redux";
+import { io } from "socket.io-client";
+import axios from "axios";
 // import './style.css'
 
-function HomeHeader() {
+function HomeHeader({ paniernbr }) {
   const navigate = useNavigate();
   const DATA_Categories = useSelector((state) => state.products.categories);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -46,6 +48,56 @@ function HomeHeader() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const dropdownRef = useRef(null);
   const [produits, setProduits] = useState(0);
+  const [nbr, setNbr] = useState(0);
+
+  const a = JSON.parse(localStorage.getItem(`userEcomme`));
+  const BackendUrl = process.env.REACT_APP_Backend_Url;
+  const socket = io(BackendUrl);
+
+  useEffect(() => {
+    if (a) {
+      axios
+        .get(`${BackendUrl}/getUserMessagesByClefUser/${a?.id}`)
+        .then((res) => {
+          setNbr(
+            res.data.filter(
+              (item) => item.lusUser == false && item.provenance === false
+            )?.length
+          );
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+  }, []);
+
+  useEffect(() => {
+    // Écouter les nouveaux messages du serveur
+    socket.on("new_message_user", (message) => {
+      if (message) {
+        console.log("oui");
+        if (a) {
+          axios
+            .get(`${BackendUrl}/getUserMessagesByClefUser/${a?.id}`)
+            .then((res) => {
+              setNbr(
+                res.data.filter(
+                  (item) => item.lusUser == false && item.provenance === false
+                )?.length
+              );
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        }
+      }
+    });
+    return () => {
+      // Nettoyer l'écouteur du socket lors du démontage du composant
+      socket.off("new_message_user");
+    };
+  }, [socket]);
+
   const toggleDropdown = (dropdown) => {
     setActiveDropdown((prevDropdown) =>
       prevDropdown === dropdown ? null : dropdown
@@ -423,7 +475,7 @@ function HomeHeader() {
                 <button className="bg-blue-500 w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
                   <div onClick={() => navigate("/Panier")} className="relative">
                     <div className="bg-emerald-600 rounded-full z-10 w-4 h-4 md:w-5 md:h-5 flex items-center justify-center text-white text-[10px] md:text-xs font-bold absolute -top-2 -right-2">
-                      {produits ? produits.length : 0}{" "}
+                      {paniernbr ? paniernbr.length : 0}{" "}
                     </div>
                     <ShoppingCart
                       className="h-5 w-5 md:h-6 md:w-6 text-amber-800 hover:text-amber-900 cursor-pointer transition-transform transform hover:scale-110"
@@ -440,7 +492,7 @@ function HomeHeader() {
                   >
                     <MessageCircle className="h-5 w-5 md:h-6 md:w-6" />
                     <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-3 h-3 md:w-4 md:h-4 text-[10px] md:text-xs text-white flex items-center justify-center">
-                      3
+                      {nbr}
                     </span>
                   </div>
                 </button>
@@ -548,7 +600,7 @@ function HomeHeader() {
               <Bell className="h-6 w-6" />
 
               <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-4 h-4 text-xs text-white flex items-center justify-center">
-                {/* {unreadCount} */}2
+                {5}
               </span>
             </button>
 
@@ -565,7 +617,7 @@ function HomeHeader() {
             <div onClick={() => navigate("/Panier")} className="relative">
               <div className="bg-emerald-600 rounded-full z-10 w-5 h-5 flex items-center justify-center text-white text-xs font-bold absolute -top-2 -right-2">
                 {" "}
-                {produits ? produits.length : 0}{" "}
+                {paniernbr ? paniernbr.length : 0}{" "}
               </div>
               <ShoppingCart
                 className="h-6 w-6 text-amber-800 hover:text-amber-900 cursor-pointer transition-transform transform hover:scale-110"
@@ -576,7 +628,7 @@ function HomeHeader() {
             <div onClick={() => navigate("/Messagerie")} className="relative">
               <div className="bg-emerald-600 rounded-full z-10 w-5 h-5 flex items-center justify-center text-white text-xs font-bold absolute -top-2 -right-2">
                 {" "}
-                2{" "}
+                {nbr}{" "}
               </div>
               <MessageCircle
                 className="h-6 w-6 text-amber-800 hover:text-amber-900 cursor-pointer transition-transform transform hover:scale-110"
