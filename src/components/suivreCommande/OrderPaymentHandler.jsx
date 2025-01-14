@@ -22,7 +22,13 @@ const OrderPaymentHandler = ({ panier, pendingOrder, id }) => {
       // Sauvegarder le nouveau panier dans le localStorage
       localStorage.setItem("panier", JSON.stringify(panier));
       const newTransactionReference = generateUniqueID();
-      if (pendingOrder && id)
+      console.log({
+        commandeId: id,
+        transactionId: newTransactionReference,
+        timestamp: new Date().getTime(),
+      });
+      console.log(pendingOrder !== null && id !== null);
+      if (pendingOrder !== null && id !== null)
         localStorage.setItem(
           "pendingOrder",
           JSON.stringify({
