@@ -1,10 +1,10 @@
 import React from "react";
 import ResusCommande from "../components/CommandeResus/ResusCommande";
 import HomeHeader from "../components/homePage/HomeHeader";
-export default function ResusCommand({ paniernbr }) {
+export default function ResusCommand({ paniernbr, acces }) {
   return (
     <>
-      <HomeHeader paniernbr={paniernbr} />
+      <HomeHeader acces={acces} paniernbr={paniernbr} />
       <ResusCommande />
     </>
   );

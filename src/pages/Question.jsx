@@ -1,10 +1,10 @@
 import React from "react";
 import FrequementQeustion from "../components/QuestionFrequement/FrequementQeustion";
 import HomeHeader from "../components/homePage/HomeHeader";
-function Question({ paniernbr }) {
+function Question({ paniernbr, acces }) {
   return (
     <>
-      <HomeHeader paniernbr={paniernbr} />
+      <HomeHeader acces={acces} paniernbr={paniernbr} />
       <FrequementQeustion />
     </>
   );

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import ResetPassword from "./pages/ResetPassword";
 import Connexion from "../src/components/connexion/Connexion";
 import Inscription from "./components/inscription/Inscription";
 import Home from "./pages/Home";
@@ -62,7 +63,6 @@ function App() {
   const panier = () => {
     const local = localStorage.getItem("panier");
     if (local) {
-      console.log("nbr", JSON.parse(local).length);
       setProduits(JSON.parse(local));
     } else {
       setProduits(0);
@@ -146,7 +146,10 @@ function App() {
       <div className="App">
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Home paniernbr={produits} />} />
+            <Route
+              path="/"
+              element={<Home acces={acces} paniernbr={produits} />}
+            />
             <Route
               path="/Connexion"
               element={<Connexion chg={changeA} panierchg={panier} />}
@@ -157,20 +160,27 @@ function App() {
             />
             <Route
               path="/Home"
-              element={<Home paniernbr={produits} panierchg={panier} />}
+              element={
+                <Home acces={acces} paniernbr={produits} panierchg={panier} />
+              }
             />
             <Route path="/Forget Password" element={<ForgetPassword />} />
+            <Route path="/ResetPassword/:email" element={<ResetPassword />} />
             <Route
               path="/ProduitDétail/:id"
               element={
-                <ProduitDetail panierchg={panier} paniernbr={produits} />
+                <ProduitDetail
+                  acces={acces}
+                  panierchg={panier}
+                  paniernbr={produits}
+                />
               }
             />
             <Route
               path="/Suggestion"
               element={
                 acces === "oui" ? (
-                  <Suggestion paniernbr={produits} />
+                  <Suggestion acces={acces} paniernbr={produits} />
                 ) : (
                   <Connexion chg={changeA} />
                 )
@@ -180,7 +190,7 @@ function App() {
               path="/Compte"
               element={
                 acces === "oui" ? (
-                  <Compte paniernbr={produits} />
+                  <Compte acces={acces} paniernbr={produits} />
                 ) : (
                   <Connexion chg={changeA} />
                 )
@@ -190,7 +200,7 @@ function App() {
               path="/Commande"
               element={
                 acces === "oui" ? (
-                  <CommandeSuivi paniernbr={produits} />
+                  <CommandeSuivi acces={acces} paniernbr={produits} />
                 ) : (
                   <Connexion chg={changeA} />
                 )
@@ -200,7 +210,7 @@ function App() {
               path="/Inviter les amis"
               element={
                 acces === "oui" ? (
-                  <InviteAmi paniernbr={produits} />
+                  <InviteAmi acces={acces} paniernbr={produits} />
                 ) : (
                   <Connexion chg={changeA} />
                 )
@@ -211,7 +221,7 @@ function App() {
               path="/Legal information"
               element={
                 // acces === "oui" ? (
-                <Informagtion paniernbr={produits} />
+                <Informagtion acces={acces} paniernbr={produits} />
                 // ) : (
                 //   <Connexion chg={changeA} />
                 // )
@@ -221,7 +231,7 @@ function App() {
               path="/Question Fréquement possées"
               element={
                 // acces === "oui" ? (
-                <Question paniernbr={produits} />
+                <Question acces={acces} paniernbr={produits} />
                 // ) : (
                 //   <Connexion chg={changeA} />
                 // )
@@ -231,7 +241,7 @@ function App() {
               path="/Avis de confidentialité"
               element={
                 // acces === "oui" ? (
-                <Confidentialite paniernbr={produits} />
+                <Confidentialite acces={acces} paniernbr={produits} />
                 // ) : (
                 //   <Connexion chg={changeA} />
                 // )
@@ -241,7 +251,7 @@ function App() {
               path="/Paramètre de notification"
               element={
                 acces === "oui" ? (
-                  <Notification paniernbr={produits} />
+                  <Notification acces={acces} paniernbr={produits} />
                 ) : (
                   <Connexion chg={changeA} />
                 )
@@ -251,7 +261,7 @@ function App() {
               path="/Paement"
               element={
                 acces === "oui" ? (
-                  <Paement paniernbr={produits} />
+                  <Paement acces={acces} paniernbr={produits} />
                 ) : (
                   <Connexion chg={changeA} />
                 )
@@ -261,7 +271,7 @@ function App() {
               path="/Service"
               element={
                 // acces === "oui" ? (
-                <Service paniernbr={produits} />
+                <Service acces={acces} paniernbr={produits} />
                 // ) : (
                 //   <Connexion chg={changeA} />
                 // )
@@ -271,7 +281,7 @@ function App() {
               path="/Livraison"
               element={
                 acces === "oui" ? (
-                  <Livraison paniernbr={produits} />
+                  <Livraison acces={acces} paniernbr={produits} />
                 ) : (
                   <Connexion chg={changeA} />
                 )
@@ -299,7 +309,7 @@ function App() {
               path="/Suivre la commande/:id"
               element={
                 acces === "oui" ? (
-                  <SuiviCommand paniernbr={produits} />
+                  <SuiviCommand acces={acces} paniernbr={produits} />
                 ) : (
                   <Connexion chg={changeA} />
                 )
@@ -309,7 +319,7 @@ function App() {
               path="/NotificationHeader"
               element={
                 acces === "oui" ? (
-                  <BellPage paniernbr={produits} />
+                  <BellPage acces={acces} paniernbr={produits} />
                 ) : (
                   <Connexion chg={changeA} />
                 )
@@ -319,7 +329,7 @@ function App() {
               path="/Commande réisus/:id"
               element={
                 acces === "oui" ? (
-                  <ResusCommand paniernbr={produits} />
+                  <ResusCommand acces={acces} paniernbr={produits} />
                 ) : (
                   <Connexion chg={changeA} />
                 )
@@ -327,26 +337,29 @@ function App() {
             />
             <Route
               path="/Categorie/:name"
-              element={<Homme paniernbr={produits} />}
+              element={<Homme acces={acces} paniernbr={produits} />}
             />
             <Route
               path="/Categorie/:name/:type"
-              element={<Homme paniernbr={produits} />}
+              element={<Homme acces={acces} paniernbr={produits} />}
             />
-            <Route path="/Voir-plus" element={<Voir paniernbr={produits} />} />
+            <Route
+              path="/Voir-plus"
+              element={<Voir acces={acces} paniernbr={produits} />}
+            />
             <Route
               path="/Nouveau produit"
-              element={<Nouveau paniernbr={produits} />}
+              element={<Nouveau acces={acces} paniernbr={produits} />}
             />
             <Route
               path="/Produit promotions"
-              element={<Promotion paniernbr={produits} />}
+              element={<Promotion acces={acces} paniernbr={produits} />}
             />
             <Route
               path="/Like produit"
               element={
                 acces === "oui" ? (
-                  <LikeProduit paniernbr={produits} />
+                  <LikeProduit acces={acces} paniernbr={produits} />
                 ) : (
                   <Connexion chg={changeA} />
                 )
@@ -354,13 +367,13 @@ function App() {
             />
             <Route
               path="/Boutique"
-              element={<Boutique paniernbr={produits} />}
+              element={<Boutique acces={acces} paniernbr={produits} />}
             />
             <Route
               path="/Messagerie"
               element={
                 acces === "oui" ? (
-                  <Messagerie paniernbr={produits} />
+                  <Messagerie acces={acces} paniernbr={produits} />
                 ) : (
                   <Connexion chg={changeA} />
                 )
@@ -371,6 +384,7 @@ function App() {
               element={
                 acces === "oui" ? (
                   <OrderConfirmationPaiement
+                    acces={acces}
                     paniernbr={produits}
                     total={total}
                     codeP={codeP}
@@ -383,7 +397,7 @@ function App() {
             />
             <Route
               path="/Profile d'un boutiquier"
-              element={<BoutiquierProfile paniernbr={produits} />}
+              element={<BoutiquierProfile acces={acces} paniernbr={produits} />}
             />
             <Route path="/success" element={<SuccessPage />} />
             <Route path="/error" element={<ErrorPage />} />

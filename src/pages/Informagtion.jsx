@@ -1,10 +1,10 @@
 import React from "react";
 import InformationPage from "../components/legalInformationPage/InformationPage";
 import HomeHeader from "../components/homePage/HomeHeader";
-function Informagtion({ paniernbr }) {
+function Informagtion({ paniernbr, acces }) {
   return (
     <>
-      <HomeHeader paniernbr={paniernbr} />
+      <HomeHeader acces={acces} paniernbr={paniernbr} />
       <InformationPage />
     </>
   );

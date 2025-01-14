@@ -181,8 +181,10 @@ const PanierPage = ({
       }
 
       // Trouver la zone correspondant à la région du client
-      let zoneClient = shippingInfo.zones.find(
-        (zone) => zone.name.toLowerCase() === regionClient.toLowerCase()
+      let zoneClient = shippingInfo.zones.find((zone) =>
+        zone.name.toLowerCase() === regionClient.toLowerCase()
+          ? regionClient.toLowerCase()
+          : "niamey"
       );
 
       // Si aucune zone ne correspond, utiliser la première zone

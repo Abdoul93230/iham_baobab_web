@@ -548,6 +548,82 @@ function ProduitDetailMain({ panierchg }) {
       setProduitsL(0);
     }
   };
+  const addToCart2 = () => {
+    // Vérification des variantes de couleur
+    if (produit?.variants && produit.variants.length >= 2 && !selectedVariant) {
+      handleWarning(
+        `Veuillez choisir un modèle parmi les ${produit.variants.length}`
+      );
+      return;
+    }
+
+    // Vérification des tailles
+    const hasMultipleSizes = produit?.variants?.some(
+      (variant) => variant.sizes && variant.sizes.length >= 2
+    );
+
+    if (hasMultipleSizes && !selectedSize) {
+      handleWarning(`Veuillez choisir une taille parmi les disponibles`);
+      return;
+    }
+
+    // Récupérer les produits existants dans le panier
+    const existingProducts = JSON.parse(localStorage.getItem("panier")) || [];
+
+    // Vérifier si le produit existe déjà dans le panier
+    const existingProductIndex = existingProducts.findIndex((p) => {
+      // Si le produit n'a pas de variantes, on compare simplement l'ID
+      if (!produit.variants || produit.variants.length === 0) {
+        return p?._id === produit?._id;
+      }
+
+      // Si le produit a des variantes, on compare l'ID, la couleur et la taille
+      return (
+        p?._id === produit?._id &&
+        p.colors[0] === selectedVariant?.color &&
+        p.sizes[0] === selectedSize
+      );
+    });
+
+    if (existingProductIndex !== -1) {
+      // Produit existant : incrémenter la quantité
+      const updatedProducts = existingProducts.map((p, index) =>
+        index === existingProductIndex ? { ...p, quantity: p.quantity + 1 } : p
+      );
+
+      localStorage.setItem("panier", JSON.stringify(updatedProducts));
+      handleSuccess(
+        "La quantité du produit a été incrémentée dans le panier !"
+      );
+    } else {
+      // Nouveau produit à ajouter
+      const newProduct = {
+        ...produit,
+        colors: selectedVariant ? [selectedVariant.color] : [],
+        sizes: selectedSize ? [selectedSize] : [],
+        quantity: quantity,
+        _id: produit?._id,
+        imageUrl: selectedVariant ? selectedVariant.imageUrl : produit?.image1,
+        price: originalPrice,
+        prixPromo: discountedPrice,
+      };
+
+      const updatedProducts = [...existingProducts, newProduct];
+      localStorage.setItem("panier", JSON.stringify(updatedProducts));
+      handleSuccess("Produit ajouté au panier !");
+    }
+
+    // Mettre à jour la longueur du panier
+    const local = localStorage.getItem("panier");
+    panierchg();
+    if (local) {
+      setProduitsL(JSON.parse(local));
+    } else {
+      setProduitsL(0);
+    }
+
+    navigation("/panier");
+  };
 
   // Gestion du zoom avec la molette de souris
   const handleImageWheel = (e) => {
@@ -1007,7 +1083,10 @@ function ProduitDetailMain({ panierchg }) {
             </div>
 
             <div className="flex flex-col md:flex-row md:space-x-2">
-              <button className="w-full bg-[#30A08B] hover:bg-[#228B73] text-white py-3 rounded-md mb-2 md:mb-0">
+              <button
+                onClick={addToCart2}
+                className="w-full bg-[#30A08B] hover:bg-[#228B73] text-white py-3 rounded-md mb-2 md:mb-0"
+              >
                 Acheter maintenant
               </button>
               <button

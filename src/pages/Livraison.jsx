@@ -1,10 +1,10 @@
 import React from "react";
 import LivraisonPage from "../components/livraisonPage/LivraisonPage";
 import HomeHeader from "../components/homePage/HomeHeader";
-function Livraison({ paniernbr }) {
+function Livraison({ paniernbr, acces }) {
   return (
     <>
-      <HomeHeader paniernbr={paniernbr} />
+      <HomeHeader acces={acces} paniernbr={paniernbr} />
       <LivraisonPage />
     </>
   );

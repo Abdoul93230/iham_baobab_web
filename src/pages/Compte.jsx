@@ -1,11 +1,11 @@
-import React from 'react'
-import ComptePage from '../components/compte/ComptePage'
-function Compte() {
+import React from "react";
+import ComptePage from "../components/compte/ComptePage";
+function Compte(acces) {
   return (
-   <>
-   <ComptePage />
-   </>
-  )
+    <>
+      <ComptePage />
+    </>
+  );
 }
 
-export default Compte
+export default Compte;

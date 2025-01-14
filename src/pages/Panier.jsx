@@ -12,7 +12,7 @@ function Panier({
 }) {
   return (
     <>
-      <HomeHeader paniernbr={paniernbr} />
+      <HomeHeader acces={acces} paniernbr={paniernbr} />
       <PanierPage
         acces={acces}
         total={total}

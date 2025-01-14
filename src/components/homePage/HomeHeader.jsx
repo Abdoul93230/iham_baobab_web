@@ -40,7 +40,7 @@ import { io } from "socket.io-client";
 import axios from "axios";
 // import './style.css'
 
-function HomeHeader({ paniernbr }) {
+function HomeHeader({ paniernbr, acces }) {
   const navigate = useNavigate();
   const DATA_Categories = useSelector((state) => state.products.categories);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -180,11 +180,16 @@ function HomeHeader({ paniernbr }) {
       },
     ];
     const accountOptions = [
-      {
-        icon: User,
-        label: "Se connecter",
-        onClick: () => navigate("/Connexion"),
-      },
+      ...(acces === "non"
+        ? [
+            {
+              icon: User,
+              label: "Se connecter",
+              onClick: () => navigate("/Connexion"),
+            },
+          ]
+        : []),
+
       { icon: Home, label: "Mon compte", onClick: () => navigate("/Compte") },
       {
         icon: Package,
@@ -201,11 +206,22 @@ function HomeHeader({ paniernbr }) {
         label: "Mon adresses",
         onClick: () => navigate("/Livraison"),
       },
-      {
-        icon: LogOut,
-        label: "Se déconnecter",
-        onClick: () => navigate("/logout"),
-      },
+
+      ...(acces === "oui"
+        ? [
+            {
+              icon: LogOut,
+              label: "Se déconnecter",
+              onClick: () => {
+                localStorage.removeItem("userEcomme");
+                localStorage.removeItem("orderTotal");
+                localStorage.removeItem("pendingOrder");
+                navigate("/Home");
+                window.location.reload();
+              },
+            },
+          ]
+        : []),
     ];
     const helpOptions = [
       {

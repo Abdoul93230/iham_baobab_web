@@ -216,7 +216,11 @@ export default function CommandeSuivi() {
               <></>
             )} */}
             {order?.statusPayment === "échec" && (
-              <OrderPaymentHandler panier={order?.prod ? order.prod : null} />
+              <OrderPaymentHandler
+                panier={order?.prod ? order.prod : null}
+                pendingOrder={order?.preferencerod ? order.reference : null}
+                id={order?._id ? order._id : null}
+              />
             )}
             <div>
               <div className="flex items-center mb-2">
