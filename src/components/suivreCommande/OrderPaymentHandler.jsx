@@ -32,8 +32,8 @@ const OrderPaymentHandler = ({ panier, pendingOrder, id }) => {
         localStorage.setItem(
           "pendingOrder",
           JSON.stringify({
-            commandeId: pendingOrder,
-            transactionId: newTransactionReference,
+            commandeId: id,
+            transactionId: pendingOrder,
             timestamp: new Date().getTime(),
           })
         );
