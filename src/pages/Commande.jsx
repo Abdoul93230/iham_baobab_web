@@ -2,10 +2,10 @@ import React from "react";
 import CommandePage from "../components/CommandeSuivi/CommandePage";
 import HomeHeader from "../components/homePage/HomeHeader";
 
-function CommandeSuivi({ paniernbr }) {
+function CommandeSuivi({ paniernbr, acces }) {
   return (
     <>
-      <HomeHeader paniernbr={paniernbr} />
+      <HomeHeader acces={acces} paniernbr={paniernbr} />
       <CommandePage />
     </>
   );

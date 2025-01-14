@@ -1,10 +1,10 @@
 import React from "react";
 import ConfidentialitePage from "../components/avisConfidentialite/ConfidentialitePage";
 import HomeHeader from "../components/homePage/HomeHeader";
-function Confidentialite({ paniernbr }) {
+function Confidentialite({ paniernbr, acces }) {
   return (
     <>
-      <HomeHeader paniernbr={paniernbr} />
+      <HomeHeader acces={acces} paniernbr={paniernbr} />
       <ConfidentialitePage />
     </>
   );

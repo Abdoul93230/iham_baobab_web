@@ -1,0 +1,6 @@
+{
+  "path": "./src/components",
+  "framework": "react",
+  "typescript": false,
+  "tailwind": true
+}

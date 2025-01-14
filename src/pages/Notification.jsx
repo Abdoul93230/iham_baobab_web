@@ -1,10 +1,10 @@
 import React from "react";
 import ParaNotification from "../components/parametreNotification/ParaNotification";
 import HomeHeader from "../components/homePage/HomeHeader";
-function Notification({ paniernbr }) {
+function Notification({ paniernbr, acces }) {
   return (
     <div>
-      <HomeHeader paniernbr={paniernbr} />
+      <HomeHeader acces={acces} paniernbr={paniernbr} />
       <ParaNotification />
     </div>
   );

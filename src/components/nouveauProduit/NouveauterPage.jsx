@@ -7,7 +7,6 @@ import {
   User,
   Bell,
   Heart,
-  MessageCircle,
   Star,
 } from "lucide-react";
 import {
@@ -41,8 +40,6 @@ export default function NouveauterPage({ paniernbr }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState("Tous les produits");
   const swiperRef = useRef(null);
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryName, setCategoryName] = useState(
     "mode et divers sous un même toit"
@@ -148,10 +145,6 @@ export default function NouveauterPage({ paniernbr }) {
     setIsMenuOpen(false);
   };
 
-  const handleReviewClick = (product) => {
-    setSelectedProduct(product);
-    setShowReviewForm(true);
-  };
   function getRandomIntBetween3and5() {
     return Math.floor(Math.random() * (5 - 3 + 1)) + 3;
   }
@@ -398,15 +391,6 @@ export default function NouveauterPage({ paniernbr }) {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        <div className="fixed bottom-50 left-3 flex flex-col gap-2 z-2">
-          <button
-            className="p-3 bg-gradient-to-r from-[#30A08B] to-[#B2905F] rounded-full shadow-lg animate-bounce"
-            onClick={() => handleReviewClick(selectedProduct)}
-          >
-            <MessageCircle className="w-6 h-6 text-white" />
-          </button>
-        </div>
-
         {/* Produits Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
           {filteredProducts.length > 0 ? (
@@ -498,30 +482,6 @@ export default function NouveauterPage({ paniernbr }) {
         </div>
 
         {/* Formulaire de commentaire */}
-        {showReviewForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg w-full max-w-4xl h-[90vh] flex flex-col">
-              <div className="flex justify-between items-center p-6 border-b">
-                <h2 className="text-2xl  font-bold text-[#B17236]">
-                  Tous les avis
-                </h2>
-                <button
-                  onClick={() => setShowReviewForm(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-              <div className="overflow-y-auto flex-grow p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {comments.map((comment) => (
-                    <CommentCard key={comment.id} comment={comment} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </main>
 
       {/* Newsletter */}

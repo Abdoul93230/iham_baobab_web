@@ -1,9 +1,9 @@
 import React from "react";
 import DetailHomme from "../components/categorieHommePage/DetailHomme";
-export default function Homme({ paniernbr }) {
+export default function Homme({ paniernbr, acces }) {
   return (
     <>
-      <DetailHomme paniernbr={paniernbr} />
+      <DetailHomme acces={acces} paniernbr={paniernbr} />
     </>
   );
 }

@@ -1,10 +1,10 @@
 import React from "react";
 import ServicePage from "../components/servicePage/ServicePage";
 import HomeHeader from "../components/homePage/HomeHeader";
-function Service({ paniernbr }) {
+function Service({ paniernbr, acces }) {
   return (
     <div className="overflow-hidden">
-      <HomeHeader paniernbr={paniernbr} />
+      <HomeHeader acces={acces} paniernbr={paniernbr} />
       <ServicePage />
     </div>
   );

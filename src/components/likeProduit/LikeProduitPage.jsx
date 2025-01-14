@@ -9,7 +9,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-const LikeProduitPage = () => {
+const LikeProduitPage = ({ acces }) => {
   const navigation = useNavigate();
   const [likedProducts, setLikedProducts] = useState([
     {
