@@ -222,7 +222,7 @@ const PanierPage = ({
     const detecterRegion = async () => {
       try {
         // const response = await axios.get("https://ipapi.co/json/");
-        const response = await axios.get("http://ip-api.com/json/");
+        const response = await axios.get(`${BackendUrl}/proxy/ip-api`);
         // const region = response.data.region || "Niamey";
         // const pays = response.data.country_name || "Niger";
         const region = response.data.regionName || "Niamey";
