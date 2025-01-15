@@ -21,6 +21,7 @@ import { format } from "date-fns";
 import axios from "axios";
 import OrderedItems from "./OrderedItems";
 import OrderPaymentHandler from "./OrderPaymentHandler";
+import OrderTracking from "./OrderTracking";
 
 const BackendUrl = process.env.REACT_APP_Backend_Url;
 
@@ -292,55 +293,6 @@ export default function CommandeSuivi() {
                   )}
                 </div>
               </div>
-
-              {/* <div className="mb-8">
-                <h2 className="font-semibold text-lg mb-4">
-                  Articles commandés
-                </h2>
-                <div className="bg-white rounded-lg shadow overflow-hidden">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Produit
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Quantité
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Taille
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Couleur
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {order.nbrProduits.map((item, index) => (
-                        <tr key={index}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {item.produit}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {item.quantite}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {item.tailles ? item.tailles.join(", ") : "N/A"}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {item.couleurs ? item.couleurs.join(", ") : "N/A"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="mt-4 text-right">
-                  <p className="text-lg font-semibold">
-                    Total: {order.prix || 0} F CFA
-                  </p>
-                </div>
-              </div> */}
               <OrderedItems
                 items={order?.prod ? order : null}
                 totalPrice={order.prix}
@@ -370,9 +322,15 @@ export default function CommandeSuivi() {
             </>
           )}
 
-          {activeTab === "map" && (
+          {/* {activeTab === "map" && (
             <div className="h-96 bg-gray-100 rounded-lg flex items-center justify-center">
               <p className="text-gray-500">Carte en cours de développement</p>
+            </div>
+          )} */}
+
+          {activeTab === "map" && (
+            <div className="bg-white rounded-lg">
+              <OrderTracking order={order} />
             </div>
           )}
         </div>

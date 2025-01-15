@@ -3,7 +3,7 @@ import HomeMain from "../components/homePage/HomeMain";
 import HomeFooter from "../components/homePage/HomeFooter";
 import HomeHeader from "../components/homePage/HomeHeader";
 import { Info, Menu } from "lucide-react";
-import GeolocationComponent from "./GeolocationComponent ";
+import AppPromo from "../components/produitDetail/AppPromo ";
 
 function Home({ acces, paniernbr }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,8 +17,7 @@ function Home({ acces, paniernbr }) {
       </button>
       <HomeHeader acces={acces} chg={chg} paniernbr={paniernbr} />
       <HomeMain isOpen={isOpen} />
-
-      <GeolocationComponent />
+      <AppPromo />
       <HomeFooter />
     </>
   );
