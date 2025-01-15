@@ -688,7 +688,7 @@ function ProduitDetailMain({ panierchg }) {
     const detecterRegion = async () => {
       try {
         // const response = await axios.get("https://ipapi.co/json/");
-        const response = await axios.get("http://ip-api.com/json/");
+        const response = await axios.get(`${BackendUrl}/proxy/ip-api`);
         // const region = response.data.region;
         // const pays = response.data.country_name;
         const region = response.data.regionName || "Niamey";
