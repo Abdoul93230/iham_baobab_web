@@ -32,6 +32,7 @@ import { useParams } from "react-router-dom";
 import { shuffle } from "lodash";
 import Alert from "../../pages/Alert";
 import { useNavigate } from "react-router-dom";
+import AppPromo from "./AppPromo ";
 
 function ProduitDetailMain({ panierchg }) {
   const navigation = useNavigate();
@@ -80,8 +81,8 @@ function ProduitDetailMain({ panierchg }) {
     "togo",
   ];
 
-  const [regionClient, setRegionClient] = useState(null);
-  const [pays, setPays] = useState(null);
+  const [regionClient, setRegionClient] = useState("Niamey");
+  const [pays, setPays] = useState("Niger");
   const [alert, setAlert] = useState({
     visible: false,
     type: "",
@@ -103,8 +104,7 @@ function ProduitDetailMain({ panierchg }) {
   const produit = DATA_Products.find((item) => item._id === params.id);
 
   const [selectedVariant, setSelectedVariant] = useState(produit?.variants[0]);
-  // console.log(produit);
-  // console.log(DATA_Types);
+
   const handleMouseEnter = () => {
     setIsZoomed(true);
   };
@@ -268,7 +268,10 @@ function ProduitDetailMain({ panierchg }) {
     if (!isOpen) return null;
 
     return (
-      <div className="fixed inset-0 z-10 flex items-center p-3 justify-center bg-black bg-opacity-50">
+      <div
+        style={{ zIndex: 100 }}
+        className="fixed inset-0 z-10 flex items-center p-3 justify-center bg-black bg-opacity-50"
+      >
         <div className="bg-white p-6 rounded-lg shadow-lg w-96">
           <h2
             className="text-xl font-bold mb-4 text-center"
@@ -351,7 +354,6 @@ function ProduitDetailMain({ panierchg }) {
       .get(`${BackendUrl}/getAllCommenteProduitById/${params.id}`)
       .then((coments) => {
         setAllCommente(coments.data);
-        // console.log(coments.data);
       })
       .catch((error) => {
         console.log(error);
@@ -443,7 +445,6 @@ function ProduitDetailMain({ panierchg }) {
           .get(`${BackendUrl}/getAllCommenteProduitById/${params.id}`)
           .then((coments) => {
             setAllCommente(coments.data);
-            // console.log(coments.data);
           })
           .catch((error) => {
             handleWarning(error.response.data);
@@ -475,6 +476,10 @@ function ProduitDetailMain({ panierchg }) {
   );
 
   const addToCart = () => {
+    if (!westAfricanCountries.includes(pays?.toLowerCase())) {
+      handleWarning(`ce Produit ne peut etre expedier au ${pays}`);
+      return;
+    }
     // Vérification des variantes de couleur
     if (produit?.variants && produit.variants.length >= 2 && !selectedVariant) {
       handleWarning(
@@ -549,6 +554,11 @@ function ProduitDetailMain({ panierchg }) {
     }
   };
   const addToCart2 = () => {
+    if (!westAfricanCountries.includes(pays?.toLowerCase())) {
+      handleWarning(`ce Produit ne peut etre expedier au ${pays}`);
+      return;
+    }
+
     // Vérification des variantes de couleur
     if (produit?.variants && produit.variants.length >= 2 && !selectedVariant) {
       handleWarning(
@@ -700,7 +710,6 @@ function ProduitDetailMain({ panierchg }) {
         const pays = response.data.country || "Niger";
         setRegionClient(region.toLowerCase());
         setPays(pays.toLowerCase());
-        console.log(pays);
       } catch (error) {
         console.error("Erreur de détection de région", error);
       }
@@ -1122,7 +1131,10 @@ function ProduitDetailMain({ panierchg }) {
                   <span className="text-sm">Commenter</span>
 
                   {isCommentOpen && (
-                    <div className="fixed inset-0 p-3 z-10 flex items-center justify-center bg-black bg-opacity-50">
+                    <div
+                      style={{ zIndex: 100 }}
+                      className="fixed inset-0 p-3 z-10 flex items-center justify-center bg-black bg-opacity-50"
+                    >
                       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
                         <h2
                           className="text-xl font-bold mb-4 text-center"
@@ -1216,46 +1228,7 @@ function ProduitDetailMain({ panierchg }) {
         </div>
       </div>
       <ProduitSimilaires titre={"Articles similaires"} produits={products} />
-      {/* ////////////////////////////////////// */}
-      <div className="p-6 bg-[#30A08B]/80 rounded-md text-sm text-gray-800 mt-4 shadow-md border border-[#208066]">
-        <h3 className="font-bold text-white text-lg mb-4 flex items-center">
-          🏆 Programme Fidélité
-        </h3>
-        <ul className="list-disc pl-5 space-y-2 text-white">
-          <li>
-            <strong>1 XOF dépensé = 1 point</strong> - Plus vous dépensez, plus
-            vous gagnez !
-          </li>
-          <li>
-            <strong>100 points = -10% sur le prochain achat</strong> -
-            Récompensez votre fidélité rapidement.
-          </li>
-          <li>
-            <strong>Statuts :</strong> Bronze, Argent, Or - Montez en grade et
-            débloquez des avantages exclusifs !
-          </li>
-          <li>
-            <strong>Avantages exclusifs :</strong> Offres spéciales, cadeaux
-            d'anniversaire, préventes VIP, services prioritaires.
-          </li>
-          <li>
-            <strong>Inscription gratuite :</strong> Rejoignez notre communauté
-            sans frais et profitez dès aujourd'hui.
-          </li>
-        </ul>
-        <div className="mt-4 p-3 bg-white rounded-md border border-[#208066] text-gray-700">
-          🎁 <strong>Bonus spécial :</strong> Gagnez 50 points à votre première
-          commande après inscription !
-        </div>
-        <div className="mt-4 p-3 bg-white rounded-md border border-[#208066] text-gray-700">
-          🌟 <strong>Offres limitées :</strong> Profitez de promotions réservées
-          aux membres fidèles chaque mois !
-        </div>
-        <button className="mt-6 px-5 py-2 bg-[#208066] text-white font-semibold rounded-md hover:bg-[#166b59] transition">
-          S'inscrire Maintenant
-        </button>
-      </div>
-      {/* ////////////////////////////////////// */}
+
       <div className="py-3">
         <div className="border-t border-gray-300 mb-4" />
 
@@ -1276,6 +1249,11 @@ function ProduitDetailMain({ panierchg }) {
           quasi aperiam beatae odio fugiat, ipsum sequi ullam accusamus.
         </p> */}
       </div>
+
+      {/* ////////////////////////////////////// */}
+      <AppPromo />
+      {/* ////////////////////////////////////// */}
+
       <ProduitSimilaires titre={"Autres Articles"} produits={productsAutres} />
       <CommentaireProduit
         name={produit?.name}

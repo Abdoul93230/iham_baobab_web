@@ -18,7 +18,6 @@ export default function VoirPlus() {
 
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
-    console.log(`Navigating to /${category.name}`);
     navigation(`/Categorie/${category.name}`);
   };
 

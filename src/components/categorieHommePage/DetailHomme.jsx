@@ -544,7 +544,7 @@ const DetailHomme = ({ setCartCount, paniernbr }) => {
                   </div>
                 </div>
                 <button
-                  onClick={() => setCartCount((prev) => prev + 1)}
+                  onClick={() => navigation(`/ProduitDétail/${product._id}`)}
                   className="mt-2 flex justify-around items-center w-full bg-[#30A08B] text-white py-2
                        rounded-full hover:bg-opacity-90 transition transition-colors duration-200 text-sm md:text-base shadow-md hover:shadow-lg"
                 >
