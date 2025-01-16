@@ -238,77 +238,77 @@ const LivraisonPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
-      <div className="container mx-auto p-4 sm:p-6 md:p-8">
-        {/* En-tête avec animation */}
-        <div className="text-center mb-6 sm:mb-8 md:mb-10 transform transition-all duration-500 hover:scale-105">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#B17236] mb-2 sm:mb-3">
+      <div className="container mx-auto p-3 sm:p-4 md:p-6 lg:p-8">
+        {/* En-tête avec animation originale */}
+        <div className="text-center mb-4 sm:mb-6 md:mb-8 lg:mb-10 transform transition-all duration-500 hover:scale-105">
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-[#B17236] mb-2 sm:mb-3">
             Adresse de Livraison
           </h1>
-          <p className="text-sm sm:text-base md:text-lg text-[#B2905F] animate-pulse">
+          <p className="text-xs sm:text-sm md:text-base lg:text-lg text-[#B2905F] animate-pulse">
             Gérez vos informations de livraison
           </p>
         </div>
 
-        {/* Formulaire principal */}
+        {/* Formulaire principal avec styles originaux */}
         <form
           onSubmit={handleSubmit}
           className="w-full max-w-3xl mx-auto bg-white rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl p-4 sm:p-6 md:p-8 transition-all duration-300"
         >
-          {/* Section Informations Utilisateur (non modifiable) */}
+          {/* Section Informations Utilisateur */}
           <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
-            <h2 className="text-xl sm:text-2xl font-semibold text-[#B17236] border-b-2 border-[#30A08B] pb-2">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-[#B17236] border-b-2 border-[#30A08B] pb-2">
               Informations Utilisateur
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
               <div className="transform transition-all duration-300">
-                <label className="block text-sm sm:text-base text-[#B2905F] font-medium mb-1 sm:mb-2">
+                <label className="block text-sm md:text-base text-[#B2905F] font-medium mb-1 sm:mb-2">
                   Nom Complet
                 </label>
                 <input
                   type="text"
                   value={userData.name}
                   disabled
-                  className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg border bg-gray-100"
+                  className="w-full px-3 sm:px-4 py-2 text-sm md:text-base rounded-lg border bg-gray-100"
                 />
               </div>
 
               <div className="transform transition-all duration-300">
-                <label className="block text-sm sm:text-base text-[#B2905F] font-medium mb-1 sm:mb-2">
+                <label className="block text-sm md:text-base text-[#B2905F] font-medium mb-1 sm:mb-2">
                   Email
                 </label>
                 <input
                   type="email"
                   value={userData.email}
                   disabled
-                  className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg border bg-gray-100"
+                  className="w-full px-3 sm:px-4 py-2 text-sm md:text-base rounded-lg border bg-gray-100"
                 />
               </div>
 
-              <div className="transform transition-all duration-300">
-                <label className="block text-sm sm:text-base text-[#B2905F] font-medium mb-1 sm:mb-2">
+              <div className="transform transition-all duration-300 md:col-span-2">
+                <label className="block text-sm md:text-base text-[#B2905F] font-medium mb-1 sm:mb-2">
                   Téléphone
                 </label>
                 <input
                   type="tel"
                   value={userData.phoneNumber}
                   disabled
-                  className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg border bg-gray-100"
+                  className="w-full px-3 sm:px-4 py-2 text-sm md:text-base rounded-lg border bg-gray-100"
                 />
               </div>
             </div>
           </div>
 
-          {/* Section Adresse de Livraison (modifiable) */}
+          {/* Section Adresse de Livraison */}
           <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
-            <h2 className="text-xl sm:text-2xl font-semibold text-[#B17236] border-b-2 border-[#30A08B] pb-2">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-[#B17236] border-b-2 border-[#30A08B] pb-2">
               Adresse de Livraison
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
               <div className="transform transition-all duration-300 hover:-translate-y-1">
                 <label
-                  className="block text-sm sm:text-base text-[#B2905F] font-medium mb-1 sm:mb-2"
+                  className="block text-sm md:text-base text-[#B2905F] font-medium mb-1 sm:mb-2"
                   htmlFor="name"
                 >
                   Nom sur la livraison *
@@ -317,15 +317,15 @@ const LivraisonPage = () => {
                   type="text"
                   id="name"
                   value={addressData.name}
-                  required
-                  className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg border focus:ring-2 focus:ring-[#30A08B] focus:border-transparent transition-all duration-300"
                   onChange={handleAddressChange}
+                  required
+                  className="w-full px-3 sm:px-4 py-2 text-sm md:text-base rounded-lg border focus:ring-2 focus:ring-[#30A08B] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
               <div className="transform transition-all duration-300 hover:-translate-y-1">
                 <label
-                  className="block text-sm sm:text-base text-[#B2905F] font-medium mb-1 sm:mb-2"
+                  className="block text-sm md:text-base text-[#B2905F] font-medium mb-1 sm:mb-2"
                   htmlFor="email"
                 >
                   Email de livraison *
@@ -334,15 +334,15 @@ const LivraisonPage = () => {
                   type="email"
                   id="email"
                   value={addressData.email}
-                  required
-                  className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg border focus:ring-2 focus:ring-[#30A08B] focus:border-transparent transition-all duration-300"
                   onChange={handleAddressChange}
+                  required
+                  className="w-full px-3 sm:px-4 py-2 text-sm md:text-base rounded-lg border focus:ring-2 focus:ring-[#30A08B] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
               <div className="transform transition-all duration-300 hover:-translate-y-1">
                 <label
-                  className="block text-sm sm:text-base text-[#B2905F] font-medium mb-1 sm:mb-2"
+                  className="block text-sm md:text-base text-[#B2905F] font-medium mb-1 sm:mb-2"
                   htmlFor="numero"
                 >
                   Téléphone de livraison *
@@ -351,15 +351,15 @@ const LivraisonPage = () => {
                   type="tel"
                   id="numero"
                   value={addressData.numero}
-                  required
-                  className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg border focus:ring-2 focus:ring-[#30A08B] focus:border-transparent transition-all duration-300"
                   onChange={handleAddressChange}
+                  required
+                  className="w-full px-3 sm:px-4 py-2 text-sm md:text-base rounded-lg border focus:ring-2 focus:ring-[#30A08B] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
               <div className="transform transition-all duration-300 hover:-translate-y-1">
                 <label
-                  className="block text-sm sm:text-base text-[#B2905F] font-medium mb-1 sm:mb-2"
+                  className="block text-sm md:text-base text-[#B2905F] font-medium mb-1 sm:mb-2"
                   htmlFor="region"
                 >
                   Région *
@@ -368,15 +368,15 @@ const LivraisonPage = () => {
                   type="text"
                   id="region"
                   value={addressData.region}
-                  required
-                  className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg border focus:ring-2 focus:ring-[#30A08B] focus:border-transparent transition-all duration-300"
                   onChange={handleAddressChange}
+                  required
+                  className="w-full px-3 sm:px-4 py-2 text-sm md:text-base rounded-lg border focus:ring-2 focus:ring-[#30A08B] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
               <div className="transform transition-all duration-300 hover:-translate-y-1">
                 <label
-                  className="block text-sm sm:text-base text-[#B2905F] font-medium mb-1 sm:mb-2"
+                  className="block text-sm md:text-base text-[#B2905F] font-medium mb-1 sm:mb-2"
                   htmlFor="quartier"
                 >
                   Quartier *
@@ -385,15 +385,15 @@ const LivraisonPage = () => {
                   type="text"
                   id="quartier"
                   value={addressData.quartier}
-                  required
-                  className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg border focus:ring-2 focus:ring-[#30A08B] focus:border-transparent transition-all duration-300"
                   onChange={handleAddressChange}
+                  required
+                  className="w-full px-3 sm:px-4 py-2 text-sm md:text-base rounded-lg border focus:ring-2 focus:ring-[#30A08B] focus:border-transparent transition-all duration-300"
                 />
               </div>
 
-              <div className="col-span-2 transform transition-all duration-300 hover:-translate-y-1">
+              <div className="col-span-1 md:col-span-2 transform transition-all duration-300 hover:-translate-y-1">
                 <label
-                  className="block text-sm sm:text-base text-[#B2905F] font-medium mb-1 sm:mb-2"
+                  className="block text-sm md:text-base text-[#B2905F] font-medium mb-1 sm:mb-2"
                   htmlFor="description"
                 >
                   Instructions de livraison
@@ -401,9 +401,9 @@ const LivraisonPage = () => {
                 <textarea
                   id="description"
                   value={addressData.description}
-                  className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg border focus:ring-2 focus:ring-[#30A08B] focus:border-transparent transition-all duration-300"
-                  rows="3"
                   onChange={handleAddressChange}
+                  className="w-full px-3 sm:px-4 py-2 text-sm md:text-base rounded-lg border focus:ring-2 focus:ring-[#30A08B] focus:border-transparent transition-all duration-300"
+                  rows="3"
                 ></textarea>
               </div>
             </div>
@@ -419,12 +419,12 @@ const LivraisonPage = () => {
               }`}
             >
               {submitStatus.success && (
-                <p className="text-green-700 text-center">
+                <p className="text-green-700 text-center text-sm sm:text-base">
                   ✓ Adresse mise à jour avec succès
                 </p>
               )}
               {submitStatus.error && (
-                <div className="text-red-700">
+                <div className="text-red-700 text-sm sm:text-base">
                   <p className="font-semibold mb-2">Erreurs :</p>
                   <ul className="list-disc list-inside">
                     {submitStatus.error.map((err, index) => (
@@ -437,11 +437,11 @@ const LivraisonPage = () => {
           )}
 
           {/* Boutons d'action */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-6 pt-4 sm:pt-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4 md:gap-6 pt-4 sm:pt-6">
             <button
               type="button"
-              className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-[#B2905F] hover:bg-[#B17236] text-white rounded-lg transform transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
               onClick={() => window.history.back()}
+              className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-[#B2905F] hover:bg-[#B17236] text-white rounded-lg transform transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
             >
               Retour
             </button>
@@ -457,7 +457,7 @@ const LivraisonPage = () => {
             >
               {submitStatus.loading ? (
                 <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white mr-2"></div>
                   Mise à jour...
                 </>
               ) : (
