@@ -15,6 +15,8 @@ import {
 import axios from "axios";
 import io from "socket.io-client";
 
+import img from "../../Images/logo.png";
+
 const BackendUrl = process.env.REACT_APP_Backend_Url;
 
 const MessagerieMain = () => {
@@ -35,8 +37,7 @@ const MessagerieMain = () => {
     {
       id: 1,
       vendeur: "IHAM BAOBAB's Store",
-      image:
-        "https://elfsight.com/fr/wp-content/uploads/sites/5/2024/04/how-to-integrate-whatsapp-in-your-website-featured-image-1.png",
+      image: img,
       nonLu: 0,
       status: "en_ligne",
       dernierMessage: "Bienvenue dans notre boutique !",

@@ -38,6 +38,7 @@ import HeaderMobile from "./HeaderMobile";
 import { useSelector } from "react-redux";
 import { io } from "socket.io-client";
 import axios from "axios";
+import SearchBar from "./SearchBar";
 // import './style.css'
 
 function HomeHeader({ paniernbr, acces }) {
@@ -517,7 +518,7 @@ function HomeHeader({ paniernbr, acces }) {
           </div>
 
           {/* Search bar */}
-          <div className="relative flex-grow max-w-xl mx-4 my-2 w-full">
+          {/* <div className="relative flex-grow max-w-xl mx-4 my-2 w-full">
             <input
               className="border-2 text-[#30A08B] border-emerald-600 p-2 rounded-full w-full focus:outline-none focus:ring-2 focus:ring-emerald-500"
               type="text"
@@ -538,7 +539,8 @@ function HomeHeader({ paniernbr, acces }) {
                 <Search className="h-5 w-5" />
               </button>
             </div>
-          </div>
+          </div> */}
+          <SearchBar />
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
