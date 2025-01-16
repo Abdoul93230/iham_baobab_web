@@ -8,10 +8,10 @@ import MasterCard from "../paementPage/paiementPhoto/masterCard.jpeg";
 import VisaCard from "../paementPage/paiementPhoto/VisaCard.png";
 import DomicileCard from "../paementPage/paiementPhoto/domicile.jpeg";
 import MobileMoney from "../paementPage/paiementPhoto/MobileMoney.png";
-import Airtel from "../paementPage/paiementPhoto/MobileMoney.png";
-import Moov from "../paementPage/paiementPhoto/MobileMoney.png";
-import Zamani from "../paementPage/paiementPhoto/MobileMoney.png";
-import Mtn from "../paementPage/paiementPhoto/MobileMoney.png";
+import Airtel from "../paementPage/paiementPhoto/Aiertel.jpg";
+import Moov from "../paementPage/paiementPhoto/Moov.png";
+import Zamani from "../paementPage/paiementPhoto/Zamani.jpeg";
+import Mtn from "../paementPage/paiementPhoto/MTN.png";
 
 const BackendUrl = process.env.REACT_APP_Backend_Url;
 

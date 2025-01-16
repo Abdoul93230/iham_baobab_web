@@ -338,14 +338,6 @@ const Home = ({ isOpen }) => {
         />
         {DATA_Categories.map((param, index) => {
           if (
-            // getRandomElements(
-            //   DATA_Products.filter(
-            //     (item) =>
-            //       item.ClefType ===
-            //       DATA_Types.find((i) => i.clefCategories === param._id)?._id
-            //   )
-            // ).length > 0 &&
-            // param._id !== clefElectronique?._id
             getRandomElements(
               DATA_Products.filter(
                 (item) =>
@@ -385,13 +377,6 @@ const Home = ({ isOpen }) => {
             );
           else return null;
         })}
-        {/* <ProduitPage name={"📱 Électroniques"} />
-        <SliderPage />
-        <ProduitPage name={"💄 Beauté"} />
-        <SliderPage />
-        <ProduitPage name={"🍳 Cuisine & Ustensiles"} />
-        <SliderPage />
-        <ProduitPage name={"🔌 Électroménager"} /> */}
       </main>
     </div>
   );
