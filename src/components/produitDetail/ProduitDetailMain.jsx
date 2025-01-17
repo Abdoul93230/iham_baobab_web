@@ -718,16 +718,79 @@ function ProduitDetailMain({ panierchg }) {
     detecterRegion();
   }, []);
 
+  // Créer une description SEO optimisée
+  const generateSEODescription = () => {
+    return `${produit?.name} - ${produit?.description?.slice(
+      0,
+      150
+    )}... Prix: ${produit?.prixf || produit?.prix} XOF. Livraison disponible.`;
+  };
+
+  // Créer des mots-clés SEO pertinents
+  const generateSEOKeywords = () => {
+    return `${produit?.name}, ${categorie?.name}, achat en ligne, e-commerce, ${pays}`;
+  };
+
+  // Créer le titre SEO optimisé
+  const generateSEOTitle = () => {
+    return `${produit?.name} | ${categorie?.name} | Achetez en ligne`;
+  };
+
+  // Créer l'URL canonique
+  const canonicalUrl = `${window.location.origin}/produit/${params.id}`;
+
   return (
     <div className="container mx-auto p-4" ref={swiperRef}>
       <Helmet>
-        <title>{produit?.name}</title>
-        {/* <link rel="icon" href="/chemin/vers/votre/nouveau/favicon.ico" /> */}
-        <link rel="icon" type="image" href={produit?.image1} />
+        {/* Balises meta de base */}
+        <title>{generateSEOTitle()}</title>
+        <meta name="description" content={generateSEODescription()} />
+        <meta name="keywords" content={generateSEOKeywords()} />
+
+        {/* URL canonique */}
+        <link rel="canonical" href={canonicalUrl} />
+
+        {/* Favicon et icône Apple */}
+        <link rel="icon" type="image/jpeg" href={produit?.image1} />
         <link rel="apple-touch-icon" href={produit?.image1} />
-        <meta property="og:title" content={produit?.name} />
-        <meta property="og:description" content={produit?.description} />
+
+        {/* Open Graph pour Facebook */}
+        <meta property="og:title" content={generateSEOTitle()} />
+        <meta property="og:description" content={generateSEODescription()} />
         <meta property="og:image" content={produit?.image1} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:type" content="product" />
+        <meta property="og:site_name" content="IHAM Baobab" />
+        <meta
+          property="product:price:amount"
+          content={produit?.prixf || produit?.prix}
+        />
+        <meta property="product:price:currency" content="XOF" />
+
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={generateSEOTitle()} />
+        <meta name="twitter:description" content={generateSEODescription()} />
+        <meta name="twitter:image" content={produit?.image1} />
+
+        {/* Balises Schema.org pour les moteurs de recherche */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: produit?.name,
+            image: [produit?.image1, produit?.image2, produit?.image3].filter(
+              Boolean
+            ),
+            description: produit?.description,
+            offers: {
+              "@type": "Offer",
+              price: produit?.prixf || produit?.prix,
+              priceCurrency: "XOF",
+              availability: "https://schema.org/InStock",
+            },
+          })}
+        </script>
       </Helmet>
 
       <div className="flex flex-col lg:flex-row gap-2">
