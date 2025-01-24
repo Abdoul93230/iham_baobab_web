@@ -81,7 +81,6 @@ function App() {
         .get(`${BackendUrl}/verify`, { withCredentials: true })
         .then((response) => {
           setAcces("oui");
-          setLoading(false);
         })
         .catch((error) => {
           setAcces("non");

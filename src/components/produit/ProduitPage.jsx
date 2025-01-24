@@ -141,14 +141,13 @@ const ProduitPage = ({ name, products }) => {
                 </div>
 
                 <button
+                  //  onClick={() => handleAddToCart(product)}
                   onClick={() => navigate(`/ProduitDétail/${product._id}`)}
-                  // onClick={(e) => handleAddToCart(product, e)}
-                  className="w-full bg-[#30A08B] hover:bg-opacity-90 text-white py-2 px-4 rounded-full
-                    transition-all duration-200 flex items-center justify-center space-x-2
-                    shadow-md hover:shadow-lg"
+                  className="mt-2 flex justify-around items-center w-full bg-[#30A08B] text-white py-2
+                                       rounded-full hover:bg-opacity-90 transition transition-colors duration-200 text-sm md:text-base shadow-md hover:shadow-lg"
                 >
-                  <span>Ajouter au panier</span>
-                  <ShoppingCart className="w-4 h-4" />
+                  Ajouter au panier
+                  <ShoppingCart size={16} />
                 </button>
               </div>
             </div>

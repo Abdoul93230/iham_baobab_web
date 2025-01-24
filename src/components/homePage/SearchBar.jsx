@@ -31,36 +31,49 @@ const SearchBar = () => {
   }, []);
 
   const handleSearch = debounce((term) => {
-    if (!term.trim()) {
+    if (
+      !term.trim() &&
+      !filters.category &&
+      !filters.minPrice &&
+      !filters.maxPrice
+    ) {
       setSearchResults([]);
       return;
     }
 
-    let results = allProducts
-      .filter((product) => {
-        // Supprime les balises HTML de la description pour la recherche
-        const cleanDescription =
-          product.description?.replace(/<[^>]*>/g, "") || "";
+    let results = allProducts.filter((product) => {
+      // Nettoyage de la description HTML
+      const cleanDescription =
+        product.description?.replace(/<[^>]*>/g, "") || "";
 
-        const matchesSearch =
-          product.name.toLowerCase().includes(term.toLowerCase()) ||
-          cleanDescription.toLowerCase().includes(term.toLowerCase());
+      // Vérification du terme de recherche
+      const matchesSearch =
+        !term.trim() ||
+        product.name.toLowerCase().includes(term.toLowerCase()) ||
+        cleanDescription.toLowerCase().includes(term.toLowerCase());
 
-        const matchesCategory =
-          !filters.category || product.ClefType === filters.category;
-        const matchesMinPrice =
-          !filters.minPrice || product.prix >= parseFloat(filters.minPrice);
-        const matchesMaxPrice =
-          !filters.maxPrice || product.prix <= parseFloat(filters.maxPrice);
+      // Vérification de la catégorie
+      const matchesCategory =
+        !filters.category || product.ClefType === filters.category;
 
-        return (
-          matchesSearch && matchesCategory && matchesMinPrice && matchesMaxPrice
-        );
-      })
-      .slice(0, 5);
+      // Vérification du prix minimum
+      const matchesMinPrice =
+        !filters.minPrice || product.prix >= parseFloat(filters.minPrice);
 
+      // Vérification du prix maximum
+      const matchesMaxPrice =
+        !filters.maxPrice || product.prix <= parseFloat(filters.maxPrice);
+
+      return (
+        matchesSearch && matchesCategory && matchesMinPrice && matchesMaxPrice
+      );
+    });
+
+    // Limiter à 5 résultats
+    results = results.slice(0, 5);
     setSearchResults(results);
 
+    // Mise à jour de l'historique uniquement pour les termes de recherche
     if (term.length > 2) {
       const newHistory = [
         term,
@@ -73,17 +86,15 @@ const SearchBar = () => {
 
   useEffect(() => {
     handleSearch(searchTerm);
-  }, [searchTerm, filters]);
+  }, [searchTerm, filters, allProducts]);
 
   // Support des raccourcis clavier
   useEffect(() => {
     const handleKeyPress = (e) => {
-      // Ctrl/Cmd + K pour focus sur la recherche
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
         e.preventDefault();
         inputRef.current?.focus();
       }
-      // Echap pour fermer les résultats
       if (e.key === "Escape") {
         setShowResults(false);
         inputRef.current?.blur();
@@ -106,10 +117,6 @@ const SearchBar = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const createMarkup = (html) => {
-    return { __html: html };
-  };
 
   const stripHtml = (html) => {
     const tmp = document.createElement("DIV");
@@ -154,16 +161,24 @@ const SearchBar = () => {
     localStorage.removeItem("searchHistory");
   };
 
+  // Reset des filtres
+  const resetFilters = () => {
+    setFilters({
+      category: "",
+      minPrice: "",
+      maxPrice: "",
+    });
+  };
+
   return (
     <div className="relative flex-grow max-w-xl mx-4 my-2" ref={searchRef}>
       <div className="relative flex items-center">
-        {/* Bouton filtres - Ajusté pour ne pas chevaucher l'input */}
-        <button
+        {/* <button
           onClick={() => setShowFilters(!showFilters)}
           className="absolute left-3 flex items-center text-emerald-600 hover:text-emerald-700 z-10"
         >
           <Filter className="h-5 w-5" />
-        </button>
+        </button> */}
 
         <input
           ref={inputRef}
@@ -177,7 +192,6 @@ const SearchBar = () => {
           maxLength={45}
         />
 
-        {/* Actions à droite - Espacées correctement */}
         <div className="absolute right-12 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
           {searchTerm && (
             <button
@@ -191,7 +205,10 @@ const SearchBar = () => {
             className="p-1 hover:bg-gray-100 rounded-full group relative"
             aria-label="Recherche par image"
           >
-            <Camera className="h-5 w-5 text-emerald-600 group-hover:scale-110 transition-all duration-200" />
+            <Camera
+              style={{ zIndex: 100 }}
+              className="h-5 w-5 text-emerald-600 group-hover:scale-110 transition-all duration-200"
+            />
             <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
               Recherche par image
             </span>
@@ -207,10 +224,17 @@ const SearchBar = () => {
         </button>
       </div>
 
-      {/* Panneau des filtres - Position ajustée */}
       {showFilters && (
         <div className="absolute z-50 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 p-4 left-0">
-          <h3 className="font-semibold mb-3 text-emerald-700">Filtres</h3>
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="font-semibold text-emerald-700">Filtres</h3>
+            <button
+              onClick={resetFilters}
+              className="text-xs text-red-500 hover:text-red-600"
+            >
+              Réinitialiser
+            </button>
+          </div>
 
           <div className="space-y-3">
             <div>
@@ -259,11 +283,9 @@ const SearchBar = () => {
         </div>
       )}
 
-      {/* Résultats de recherche et historique */}
       {showResults &&
         (searchResults.length > 0 || searchHistory.length > 0) && (
           <div className="absolute z-40 mt-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto">
-            {/* Historique des recherches */}
             {searchHistory.length > 0 && !searchTerm && (
               <div className="p-3 border-b">
                 <div className="flex items-center justify-between mb-2">
@@ -290,7 +312,6 @@ const SearchBar = () => {
               </div>
             )}
 
-            {/* Résultats de recherche */}
             {searchResults.map((product) => (
               <div
                 key={product._id}

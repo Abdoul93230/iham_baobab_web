@@ -16,15 +16,23 @@ const OrderTracking = ({ order }) => {
         id: 2,
         title: "Paiement",
         description:
-          order.statusPayment !== "échec" && order.statusPayment !== "en cours"
+          order.statusPayment === "payé à la livraison"
+            ? "payé à la livraison"
+            : order.statusPayment !== "échec" &&
+              order.statusPayment !== "en cours" &&
+              order.statusPayment !== "en atente"
             ? "Paiement validé"
             : "En attente de paiement",
         icon:
-          order.statusPayment !== "échec" && order.statusPayment !== "en cours"
+          order.statusPayment !== "échec" &&
+          order.statusPayment !== "en cours" &&
+          order.statusPayment !== "en atente"
             ? CheckCircle
             : Clock,
         isCompleted:
-          order.statusPayment !== "échec" && order.statusPayment !== "en cours",
+          order.statusPayment !== "échec" &&
+          order.statusPayment !== "en cours" &&
+          order.statusPayment !== "en atente",
         isError: order.statusPayment === "échec",
       },
       {
