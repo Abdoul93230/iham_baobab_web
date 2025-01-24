@@ -3,7 +3,8 @@ import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
 const BackendUrl = process.env.REACT_APP_Backend_Url;
-export const getProducts = () => async (dispatch) => {
+export const getProducts = (setLoading) => async (dispatch) => {
+  setLoading(false);
   try {
     const response = await axios.get(`${BackendUrl}/products`);
     dispatch(setProducts(response.data.data));
