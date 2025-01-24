@@ -95,26 +95,9 @@ function App() {
     }
   }, []);
 
-  /////////////// verifications de l'hautentification de l'administratreu
-
-  // useEffect(() => {
-  //   const admin = JSON.parse(localStorage.getItem("AdminEcomme"));
-  //   if (admin) {
-  //     axios.defaults.headers.common["Authorization"] = `Bearer ${admin.token}`;
-  //     axios
-  //       .get(`${BackendUrl}/verifyAdmin`, { withCredentials: true })
-  //       .then((response) => {
-  //         setAdminConnection(true);
-  //       })
-  //       .catch((error) => {
-  //         setAdminConnection(false);
-  //       });
-  //   }
-  // }, []);
-
   /////////////////// recuperation des donnees avec redux toolkit////////////////
   useEffect(() => {
-    store.dispatch(getProducts());
+    store.dispatch(getProducts(setLoading));
     store.dispatch(getTypes());
     store.dispatch(getCategories());
     store.dispatch(getProducts_Pubs());
@@ -132,7 +115,7 @@ function App() {
     // socket.on("disconnect", () => {
     //   console.log("Déconnecté du serveur Socket.io");
     // });
-    setLoading(false);
+    // setLoading(false);
 
     return () => {
       socket.disconnect();
