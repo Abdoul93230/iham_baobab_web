@@ -401,10 +401,10 @@ function HomeHeader({ paniernbr, acces }) {
       <div className="bg-emerald-700 text-white py-1 px-4 text-sm  flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <span className="flex items-center">
-            <Phone className="h-4 w-4 mr-1" /> Support: +227 85822480
+            <Phone className="h-4 w-4 mr-1" /> Support: +227 87727501
           </span>
           <span className="flex items-center">
-            <Truck className="h-4 w-4 mr-1" /> Livraison gratuite dès 50€
+            <Truck className="h-4 w-4 mr-1" /> Livraison gratuite dès 30 000F
           </span>
         </div>
         <div className="flex items-center space-x-4">

@@ -14,6 +14,7 @@ import {
   ZoomOut,
   ChevronRight,
   ChevronLeft,
+  MessageSquare,
 } from "lucide-react";
 import {
   FaInstagram,
@@ -718,12 +719,21 @@ function ProduitDetailMain({ panierchg }) {
     detecterRegion();
   }, []);
 
+  const stripHtml = (html) => {
+    const tmp = document.createElement("DIV");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
+  };
+
   // Créer une description SEO optimisée
   const generateSEODescription = () => {
-    return `${produit?.name} - ${produit?.description?.slice(
-      0,
-      150
-    )}... Prix: ${produit?.prixf || produit?.prix} XOF. Livraison disponible.`;
+    const cleanText =
+      typeof produit?.description === "string"
+        ? stripHtml(produit?.description)
+        : "";
+    return `${produit?.name} - ${cleanText?.slice(0, 150)}... Prix: ${
+      produit?.prixf || produit?.prix
+    } XOF. Livraison disponible.`;
   };
 
   // Créer des mots-clés SEO pertinents
@@ -738,6 +748,35 @@ function ProduitDetailMain({ panierchg }) {
 
   // Créer l'URL canonique
   const canonicalUrl = `${window.location.origin}/produit/${params.id}`;
+
+  // Ajout de la fonction pour gérer le clic sur le bouton WhatsApp
+  const handleWhatsAppChat = () => {
+    // Création de l'URL actuelle
+    const currentURL = window.location.href;
+
+    // Création du message pré-rempli
+    let message = `Bonjour, je suis intéressé(e) par le produit ${produit?.name}.\n`;
+
+    // Ajouter l'URL de l'image principale
+    if (produit?.image1) {
+      message += `Voici le lien vers l'image :\n${produit?.image1}\n\n`;
+    }
+
+    // Ajouter le lien vers les détails du produit
+    message += `Lien vers les détails du produit :\n${currentURL}`;
+
+    // Encodage du message pour l'URL
+    const encodedMessage = encodeURIComponent(message);
+
+    // Numéro de téléphone WhatsApp (à remplacer par votre numéro)
+    const phoneNumber = "22787727501"; // Format: code pays + numéro
+
+    // Création de l'URL WhatsApp
+    const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+
+    // Ouvrir WhatsApp dans un nouvel onglet
+    window.open(whatsappURL, "_blank");
+  };
 
   return (
     <div className="container mx-auto p-4" ref={swiperRef}>
@@ -1181,6 +1220,20 @@ function ProduitDetailMain({ panierchg }) {
               </button>
               <span className="text-sm">Boutique</span>
             </div>
+            {/* Nouveau style pour le bouton WhatsApp */}
+            <div className="flex flex-col items-center">
+              <button
+                onClick={handleWhatsAppChat}
+                className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-full transition-all duration-300 transform hover:scale-105"
+                title="Discuter sur WhatsApp"
+              >
+                <FaWhatsapp className="w-5 h-5" />
+              </button>
+              <span className="text-sm text-green-600 font-medium">
+                WhatsApp
+              </span>
+            </div>
+
             {user ? (
               <>
                 <div className="flex flex-col items-center">
@@ -1250,7 +1303,7 @@ function ProduitDetailMain({ panierchg }) {
               <ShareModal isOpen={isModalOpen} onClose={handleClose} />
             </div>
 
-            <div className="flex flex-col items-center">
+            {/* <div className="flex flex-col items-center">
               <button
                 className={`p-2 flex items-center transition-colors duration-300 transform ${
                   liked ? "bg-[#30A08B] animate-like" : "bg-transparent"
@@ -1258,13 +1311,13 @@ function ProduitDetailMain({ panierchg }) {
                   liked ? "cursor-not-allowed" : ""
                 }`}
                 onClick={handleLike}
-                disabled={liked} // Désactive le bouton si déjà aimé
+                disabled={liked} 
               >
                 <Heart
                   className={`w-5 h-5 ${liked ? "text-white" : "text-black"}`}
                 />
                 <span className={`ml-1 ${liked ? "text-white" : "text-black"}`}>
-                  {liked ? "1" : "0"} {/* Affiche 1 si aimé, sinon 0 */}
+                  {liked ? "1" : "0"} 
                 </span>
               </button>
               <span className="text-sm">Like</span>
@@ -1286,7 +1339,7 @@ function ProduitDetailMain({ panierchg }) {
                   animation: like 0.3s ease-in-out;
                 }
               `}</style>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
@@ -1305,12 +1358,6 @@ function ProduitDetailMain({ panierchg }) {
             __html: produit?.description,
           }}
         ></p>
-
-        {/* <p className="text-gray-700 leading-relaxed mt-4">
-          <span className="font-bold">Lorem ipsum:</span> dolor sit amet
-          consectetur, adipisicing elit. Omnis eius neque ratione fugit. Nulla
-          quasi aperiam beatae odio fugiat, ipsum sequi ullam accusamus.
-        </p> */}
       </div>
 
       {/* ////////////////////////////////////// */}
