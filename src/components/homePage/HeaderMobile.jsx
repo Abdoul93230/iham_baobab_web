@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-const HeaderMobile = ({ setIsMobileMenuOpen, navigate }) => {
+const HeaderMobile = ({ setIsMobileMenuOpen, navigate, nbr, paniernbr }) => {
   const [openSection, setOpenSection] = useState(null);
   const [hoveredItem, setHoveredItem] = useState(null);
   const navigation = useNavigate();
@@ -71,7 +71,7 @@ const HeaderMobile = ({ setIsMobileMenuOpen, navigate }) => {
         "Information Legal",
       ],
       links: [
-        "/Centre d'aide",
+        "/service",
         "/Livraison",
         "/Paement",
         "/Paramètre de notification",
@@ -100,7 +100,7 @@ const HeaderMobile = ({ setIsMobileMenuOpen, navigate }) => {
     },
     {
       icon: ShoppingCart,
-      count: 10,
+      count: paniernbr ? paniernbr?.length : 0,
       bgColor: "from-blue-400 to-blue-600",
       countBg: "bg-emerald-600",
       label: "Panier",
@@ -108,7 +108,7 @@ const HeaderMobile = ({ setIsMobileMenuOpen, navigate }) => {
     },
     {
       icon: MessageCircle,
-      count: 3,
+      count: nbr,
       bgColor: "bg-green-500",
       countBg: "bg-emerald-600",
       label: "Panier",
