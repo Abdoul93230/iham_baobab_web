@@ -463,7 +463,7 @@ function ProduitDetailMain({ panierchg }) {
 
   // Calculer le prix et la remise
   const originalPrice = produit?.prix;
-  const discountedPrice = produit?.prixf;
+  const discountedPrice = produit?.prixPromo;
   const discountPercentage = Math.round(
     ((originalPrice - discountedPrice) / originalPrice) * 100
   );
@@ -536,7 +536,10 @@ function ProduitDetailMain({ panierchg }) {
         quantity: quantity,
         _id: produit?._id,
         imageUrl: selectedVariant ? selectedVariant.imageUrl : produit?.image1,
-        price: originalPrice,
+        price:
+          discountedPrice && discountedPrice > 0
+            ? discountedPrice
+            : originalPrice,
         prixPromo: discountedPrice,
       };
 
@@ -615,7 +618,10 @@ function ProduitDetailMain({ panierchg }) {
         quantity: quantity,
         _id: produit?._id,
         imageUrl: selectedVariant ? selectedVariant.imageUrl : produit?.image1,
-        price: originalPrice,
+        price:
+          discountedPrice && discountedPrice > 0
+            ? discountedPrice
+            : originalPrice,
         prixPromo: discountedPrice,
       };
 
@@ -838,7 +844,13 @@ function ProduitDetailMain({ panierchg }) {
           className="w-full lg:w-auto h-40 lg:h-96"
           style={styles.scrollbarHide}
         >
-          <div className="flex w-[90px] lg:flex-col gap-2">
+          <div
+            className="flex w-[90px] lg:flex-col gap-2"
+            style={{
+              marginTop: "55px",
+              // border: "2px solid crimson",
+            }}
+          >
             {getAllImages().map((image, index) => (
               <div
                 key={index}
@@ -866,9 +878,9 @@ function ProduitDetailMain({ panierchg }) {
             className="lg:h-96 border-[#ccc] border flex lg:flex-1 cursor-pointer rounded-md overflow-hidden col-12"
             onWheel={handleWheel}
             style={styles.zoomContainer}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            onMouseMove={handleMouseMove}
+            // onMouseEnter={handleMouseEnter}
+            // onMouseLeave={handleMouseLeave}
+            // onMouseMove={handleMouseMove}
             onClick={() => setIsModalOpen1(true)}
           >
             <img

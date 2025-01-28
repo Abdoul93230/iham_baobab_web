@@ -4,10 +4,10 @@ import axios from "axios";
 
 const BackendUrl = process.env.REACT_APP_Backend_Url;
 export const getProducts = (setLoading) => async (dispatch) => {
-  setLoading(false);
   try {
     const response = await axios.get(`${BackendUrl}/products`);
     dispatch(setProducts(response.data.data));
+    setLoading(false);
   } catch (error) {
     console.log(error.response.data.message);
   }
@@ -21,10 +21,11 @@ export const getTypes = () => async (dispatch) => {
     console.log(error);
   }
 };
-export const getCategories = () => async (dispatch) => {
+export const getCategories = (setLoading) => async (dispatch) => {
   try {
     const response = await axios.get(`${BackendUrl}/getAllCategories`);
     dispatch(setCategories(response.data.data));
+    setLoading(false);
   } catch (error) {
     console.log(error);
   }

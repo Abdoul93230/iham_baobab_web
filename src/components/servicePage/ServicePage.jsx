@@ -15,6 +15,7 @@ import {
   Mail,
   MessageCircle,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const ServicePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -24,7 +25,7 @@ const ServicePage = () => {
   const [activeFilters, setActiveFilters] = useState([]);
   const [sortBy, setSortBy] = useState("relevance");
   const [selectedCategory, setSelectedCategory] = useState("all");
-
+  const navigate = useNavigate();
   // Options de filtrage et tri
   const filterOptions = {
     categories: ["Commandes", "Paiement", "Compte", "Livraison"],
@@ -461,6 +462,10 @@ const ServicePage = () => {
               },
             ].map((item, index) => (
               <div
+                style={{
+                  cursor: index === 2 ? "pointer" : "default",
+                }}
+                onClick={() => (index === 2 ? navigate("/Messagerie") : null)}
                 key={index}
                 className="group bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-[#30A08B]/20"
               >

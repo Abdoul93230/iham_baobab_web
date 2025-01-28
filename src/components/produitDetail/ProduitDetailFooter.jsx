@@ -58,15 +58,15 @@ const HomeProductsFooter = () => {
             <ul className="space-y-2">
               <li className="flex items-center">
                 <MapPin className="h-5 w-5 mr-2" />
-                <span>123 Rue du Commerce,8001 Niamey</span>
+                <span>Bobiel Niamey/Niger</span>
               </li>
               <li className="flex items-center">
                 <Phone className="h-5 w-5 mr-2" />
-                <span>+33 1 23 45 67 89</span>
+                <span>+227 87 72 75 01</span>
               </li>
               <li className="flex items-center">
                 <Mail className="h-5 w-5 mr-2" />
-                <span>contact@example.com</span>
+                <span>ihambaobab@gmail.com</span>
               </li>
             </ul>
           </div>
@@ -97,13 +97,25 @@ const HomeProductsFooter = () => {
         <div className="mt-8 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center space-x-4 mb-4 md:mb-0">
             <span href="#" className="hover:text-gray-300 cursor-pointer">
-              <FacebookIcon className="h-6 w-6" />
+              <a
+                style={{ textDecoration: "none" }}
+                href="https://www.facebook.com/profile.php?id=61564475374925"
+                target="blank"
+              >
+                <FacebookIcon className="h-6 w-6" />
+              </a>
             </span>
             <span href="#" className="hover:text-gray-300 cursor-pointer">
               <XIcon className="h-6 w-6" />
             </span>
             <span href="#" className="hover:text-gray-300 cursor-pointer">
-              <InstagramIcon className="h-6 w-6" />
+              <a
+                style={{ textDecoration: "none" }}
+                href="https://www.instagram.com/iham_baobab?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+                target="blank"
+              >
+                <InstagramIcon className="h-6 w-6" />
+              </a>
             </span>
             <span href="#" className="hover:text-gray-300 cursor-pointer">
               <LinkedInIcon className="h-6 w-6" />
