@@ -237,7 +237,8 @@ export default function CommandeSuivi() {
             ) : (
               <></>
             )} */}
-            {order?.statusPayment === "échec" && (
+            {(order?.statusPayment === "échec" ||
+              order?.statusPayment !== "payé à la livraison") && (
               <OrderPaymentHandler
                 panier={order?.prod ? order.prod : null}
                 pendingOrder={order?.reference ? order.reference : null}

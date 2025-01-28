@@ -378,6 +378,8 @@ function HomeHeader({ paniernbr, acces }) {
     <HeaderMobile
       setIsMobileMenuOpen={setIsMobileMenuOpen}
       navigate={navigate}
+      nbr={nbr}
+      paniernbr={paniernbr}
     />
   );
 
