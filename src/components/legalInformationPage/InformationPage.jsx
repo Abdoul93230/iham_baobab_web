@@ -6,7 +6,7 @@ const InformationPage = () => {
     {
       titre: "1. Introduction :",
       description:
-        "Bienvenue sur notre page de confidentialité. Chez [VotreEntreprise], nous sommes attachés à protéger la confidentialité de vos données personnelles.",
+        "Bienvenue sur notre page de confidentialité. Chez IhamBaobab, nous sommes attachés à protéger la confidentialité de vos données personnelles.",
     },
     {
       titre: "2. Conditions générales d'utilisation (CGU) :",

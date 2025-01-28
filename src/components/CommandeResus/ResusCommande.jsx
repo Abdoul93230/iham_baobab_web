@@ -10,6 +10,7 @@ import {
   CheckCircle,
   AlertCircle,
   Clock,
+  CreditCard,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
@@ -24,6 +25,7 @@ export default function ResusCommande() {
   const [error, setError] = useState(null);
   const [order, setOrder] = useState(null);
   const [shippingAddress, setShippingAddress] = useState(null);
+  const [promoCode, setPromoCode] = useState(null);
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
@@ -38,6 +40,18 @@ export default function ResusCommande() {
           `${BackendUrl}/getCommandesById/${id}`
         );
         setOrder(orderResponse.data.commande);
+
+        if (orderResponse?.data?.commande?.codePro) {
+          const promoCodeRes = await axios.get(
+            `${BackendUrl}/getCodePromoByClefUser/${orderResponse?.data?.commande?.clefUser}`
+          );
+
+          setPromoCode(
+            promoCodeRes.data.data.find(
+              (item) => item._id === orderResponse?.data?.commande?.idCodePro
+            ) || null
+          );
+        }
 
         // Fetch shipping address
         const addressResponse = await axios.get(
@@ -84,6 +98,13 @@ export default function ResusCommande() {
       </div>
     );
   }
+
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat("fr-FR", {
+      style: "currency",
+      currency: "XOF",
+    }).format(price);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -261,6 +282,17 @@ export default function ResusCommande() {
             </>
           )}
         </div>
+        {order?.codePro && promoCode && (
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-2">
+              <CreditCard className="h-4 w-4 text-muted-foreground" />
+              <span>
+                Code promo appliqué : {formatPrice(promoCode.prixReduiction)} de
+                réduction
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -99,7 +99,7 @@ function App() {
   useEffect(() => {
     store.dispatch(getProducts(setLoading));
     store.dispatch(getTypes());
-    store.dispatch(getCategories());
+    store.dispatch(getCategories(setLoading));
     store.dispatch(getProducts_Pubs());
     store.dispatch(getProducts_Commentes());
     const socket = io(BackendUrl);

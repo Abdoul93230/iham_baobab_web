@@ -10,7 +10,8 @@ import ProduitPage from "../produit/ProduitPage";
 import SliderPage from "../slider/SliderPage";
 import { useSelector } from "react-redux";
 import { ShoppingCart } from "lucide-react";
-
+import pub1 from "../../Images/pub1.jpg";
+import pub2 from "../../Images/pub2.jpg";
 import CategorieMobile from "./CategorieMobile";
 
 const products = [
@@ -44,11 +45,7 @@ const products = [
   },
 ];
 
-const carouselImages = [
-  "https://media.istockphoto.com/id/1357529194/fr/photo/rendu-3d-dun-salon-de-style-moderne-avec-chemin%C3%A9e.jpg?s=612x612&w=0&k=20&c=KZBiX2zyVuyoKRuzM95892W7Fr0Rb2vX9qUAN1phS10=",
-  "https://media.istockphoto.com/id/1040810144/photo/unknown-woman-cutting-a-paprika.jpg?s=612x612&w=0&k=20&c=e6t5CL5zrpioK3uJ-TPkEpbWhbKvZPW8cC-y26HtBr8=",
-  // Ajoute d'autres images ici
-];
+const carouselImages = [pub1, pub2];
 
 const Home = ({ isOpen }) => {
   const BackendUrl = process.env.REACT_APP_Backend_Url;

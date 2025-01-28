@@ -490,9 +490,24 @@ const PanierPage = ({
                       {variant.sizes[0] && `Taille: ${variant.sizes[0]}`}
                     </span>
                   </div>
-                  <div className="text-[#30A08B] font-medium ml-3">
+                  {/* <div className="text-[#30A08B] font-medium ml-3">
                     {variant.price} F CFA
-                  </div>
+                  </div> */}
+
+                  {variant.prixPromo ? (
+                    <>
+                      <div className="line-through text-red-500 font-medium ml-3">
+                        {variant.prix} F CFA
+                      </div>
+                      <div className="text-[#30A08B] font-medium ml-3">
+                        {variant.prixPromo} F CFA
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-[#30A08B] font-medium ml-3">
+                      {variant.price} F CFA
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center space-x-4">
