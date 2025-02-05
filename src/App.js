@@ -104,18 +104,11 @@ function App() {
     store.dispatch(getProducts_Commentes());
     const socket = io(BackendUrl);
 
-    // socket.on("connect", () => {
-    //   console.log("Connecté au serveur Socket.io");
-    // });
 
     socket.on("new_message_user", (data) => {
       // console.log("Nouveau message reçu :");
     });
 
-    // socket.on("disconnect", () => {
-    //   console.log("Déconnecté du serveur Socket.io");
-    // });
-    // setLoading(false);
 
     return () => {
       socket.disconnect();
