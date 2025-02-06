@@ -42,6 +42,8 @@ const DetailHomme = ({ setCartCount, paniernbr }) => {
   const swiperRef = useRef(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [testSearch, setTextSearch] = useState("");
+
   const [likedProducts, setLikedProducts] = useState(new Set());
   const [ptAll, setPtAll] = useState([]);
   const params = useParams();
@@ -174,9 +176,19 @@ const DetailHomme = ({ setCartCount, paniernbr }) => {
   };
   const getFilteredProducts = () => {
     if (activeCategory === "all") {
-      return ptAll;
+      return (
+        ptAll?.filter((prod) =>
+          prod?.name.toLowerCase().includes(testSearch.toLowerCase())
+        ) || []
+      );
     }
-    return ptAll.filter((product) => product.ClefType === activeCategory);
+    return (
+      ptAll
+        .filter((product) => product.ClefType === activeCategory)
+        ?.filter((prod) =>
+          prod?.name.toLowerCase().includes(testSearch.toLowerCase())
+        ) || []
+    );
   };
 
   const handleLikeClick = (productId) => {
@@ -273,7 +285,7 @@ const DetailHomme = ({ setCartCount, paniernbr }) => {
     <div className="min-h-screen bg-gray-50">
       {/* Top Banner */}
       <div className="bg-[#30A08B] text-white text-center py-2 text-sm lg:text-base">
-        Livraison gratuite pour toute commande supérieure à 50000 F
+        Livraison gratuite pour toute commande supérieure ou égale à 30 000 F
       </div>
 
       {/* Header */}
@@ -439,6 +451,8 @@ const DetailHomme = ({ setCartCount, paniernbr }) => {
                 type="search"
                 placeholder="Rechercher un produit..."
                 className="w-full focus:outline-none focus:ring-2 focus:ring-emerald-500 px-4 py-3 rounded-lg text-black text-sm md:text-base"
+                value={testSearch}
+                onChange={(e) => setTextSearch(e.target.value)}
               />
               <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             </div>
@@ -609,7 +623,7 @@ const DetailHomme = ({ setCartCount, paniernbr }) => {
       </main>
 
       {/* Newsletter */}
-      <section className="bg-gradient-to-r from-[#30A08B] to-[#B17236] py-12 md:py-16">
+      {/* <section className="bg-gradient-to-r from-[#30A08B] to-[#B17236] py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h3 className="text-2xl md:text-3xl font-bold mb-4 text-white">
             Restez informé
@@ -629,13 +643,13 @@ const DetailHomme = ({ setCartCount, paniernbr }) => {
             </button>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Footer */}
-      <footer className="bg-gradient-to-r from-[#B2905F] to-[#30A08B] bg-opacity-100 text-white py-12 md:py-16">
+      {/* <footer className="bg-gradient-to-r from-[#B2905F] to-[#30A08B] bg-opacity-100 text-white py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {/* About Section */}
+            
             <div>
               <h4 className="text-lg font-bold mb-4">À propos</h4>
               <ul className="space-y-2 text-sm md:text-base">
@@ -651,7 +665,7 @@ const DetailHomme = ({ setCartCount, paniernbr }) => {
               </ul>
             </div>
 
-            {/* Customer Service Section */}
+            
             <div className="max-w-2xl">
               <h4 className="text-lg font-bold mb-4">Service client</h4>
               <ul className="space-y-2 text-sm md:text-base">
@@ -670,7 +684,7 @@ const DetailHomme = ({ setCartCount, paniernbr }) => {
               </ul>
             </div>
 
-            {/* Legal Section */}
+           
             <div>
               <h4 className="text-lg font-bold mb-4">Légal</h4>
               <ul className="space-y-2 text-sm md:text-base">
@@ -686,7 +700,7 @@ const DetailHomme = ({ setCartCount, paniernbr }) => {
               </ul>
             </div>
 
-            {/* Follow Us Section */}
+            
             <div>
               <h4 className="text-lg font-bold mb-4">Suivez-nous</h4>
               <ul className="flex flex-wrap space-x-4">
@@ -709,7 +723,7 @@ const DetailHomme = ({ setCartCount, paniernbr }) => {
             </div>
           </div>
 
-          {/* Bottom Text */}
+          
           <div className="mt-8 text-center text-sm md:text-base">
             <p
               style={{
@@ -723,7 +737,7 @@ const DetailHomme = ({ setCartCount, paniernbr }) => {
             </p>
           </div>
         </div>
-      </footer>
+      </footer> */}
     </div>
   );
 };

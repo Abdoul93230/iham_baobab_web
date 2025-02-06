@@ -3,6 +3,7 @@ import ProduitDetailHeader from "../components/produitDetail/ProduitDetailHeader
 import ProduitDetailMain from "../components/produitDetail/ProduitDetailMain";
 import ProduitDetailFooter from "../components/produitDetail/ProduitDetailFooter";
 import { useParams } from "react-router-dom";
+import HomeFooter from "@/components/homePage/HomeFooter";
 
 function ProduitDetail({ panierchg, paniernbr, acces }) {
   const params = useParams();
@@ -13,7 +14,8 @@ function ProduitDetail({ panierchg, paniernbr, acces }) {
     <>
       <ProduitDetailHeader acces={acces} paniernbr={paniernbr} />
       <ProduitDetailMain panierchg={panierchg} />
-      <ProduitDetailFooter />
+      {/* <ProduitDetailFooter /> */}
+      <HomeFooter />
     </>
   );
 }

@@ -441,7 +441,7 @@ export default function ProduitPromotion({ paniernbr }) {
       </main>
 
       {/* Newsletter */}
-      <section className="bg-gradient-to-r from-[#30A08B] to-[#B17236] py-12 md:py-16">
+      {/* <section className="bg-gradient-to-r from-[#30A08B] to-[#B17236] py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h3 className="text-2xl md:text-3xl font-bold mb-4 text-white">
             Restez informé
@@ -461,13 +461,13 @@ export default function ProduitPromotion({ paniernbr }) {
             </button>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Footer */}
-      <footer className="bg-gradient-to-r from-[#B2905F] to-[#30A08B] bg-opacity-100 text-white py-12 md:py-16">
+      {/* <footer className="bg-gradient-to-r from-[#B2905F] to-[#30A08B] bg-opacity-100 text-white py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {/* About Section */}
+           
             <div>
               <h4 className="text-lg font-bold mb-4">À propos</h4>
               <ul className="space-y-2 text-sm md:text-base">
@@ -483,7 +483,7 @@ export default function ProduitPromotion({ paniernbr }) {
               </ul>
             </div>
 
-            {/* Customer Service Section */}
+            
             <div>
               <h4 className="text-lg font-bold mb-4">Service client</h4>
               <ul className="space-y-2 text-sm md:text-base">
@@ -502,7 +502,7 @@ export default function ProduitPromotion({ paniernbr }) {
               </ul>
             </div>
 
-            {/* Legal Section */}
+            
             <div>
               <h4 className="text-lg font-bold mb-4">Légal</h4>
               <ul className="space-y-2 text-sm md:text-base">
@@ -518,7 +518,7 @@ export default function ProduitPromotion({ paniernbr }) {
               </ul>
             </div>
 
-            {/* Follow Us Section */}
+            
             <div>
               <h4 className="text-lg font-bold mb-4">Suivez-nous</h4>
               <ul className="flex flex-wrap space-x-4">
@@ -544,7 +544,7 @@ export default function ProduitPromotion({ paniernbr }) {
             </div>
           </div>
 
-          {/* Bottom Text */}
+          
           <div className="mt-8 text-center text-sm md:text-base">
             <p>
               &copy; {new Date().getFullYear()} IHAM Baobab Tous droits
@@ -552,7 +552,7 @@ export default function ProduitPromotion({ paniernbr }) {
             </p>
           </div>
         </div>
-      </footer>
+      </footer> */}
     </div>
   );
 }
