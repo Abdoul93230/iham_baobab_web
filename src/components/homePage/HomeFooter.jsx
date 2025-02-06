@@ -14,9 +14,11 @@ import MobileMoney from "../paementPage/paiementPhoto/MobileMoney.png";
 import LogoText from "../../image/LogoText.png";
 import axios from "axios";
 import Alert from "@/pages/Alert";
+import { useNavigate } from "react-router-dom";
 
 const BackendUrl = process.env.REACT_APP_Backend_Url;
 function HomeFooter() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const regexMail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const [alert, setAlert] = useState({
@@ -81,17 +83,26 @@ function HomeFooter() {
             <h3 className="text-lg font-bold mb-4">À propos</h3>
             <ul className="space-y-2">
               <li>
-                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
+                <button
+                  onClick={() => navigate("/AboutUs")}
+                  className="hover:text-emerald-300 transition duration-300 transform hover:scale-105"
+                >
                   Qui sommes-nous
                 </button>
               </li>
               <li>
-                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
+                <button
+                  onClick={() => navigate("/SuppliersPage")}
+                  className="hover:text-emerald-300 transition duration-300 transform hover:scale-105"
+                >
                   Nos magasins
                 </button>
               </li>
               <li>
-                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
+                <button
+                  onClick={() => navigate("/AnniversaryPreview")}
+                  className="hover:text-emerald-300 transition duration-300 transform hover:scale-105"
+                >
                   IHAM Baobab Anniversery {new Date().getFullYear()}
                 </button>
               </li>
@@ -102,27 +113,42 @@ function HomeFooter() {
             <h3 className="text-lg font-bold mb-4">Service client</h3>
             <ul className="space-y-2">
               <li>
-                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
+                <button
+                  onClick={() => navigate("/ContactPage")}
+                  className="hover:text-emerald-300 transition duration-300 transform hover:scale-105"
+                >
                   Contactez-nous
                 </button>
               </li>
               <li>
-                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
+                <button
+                  onClick={() => navigate("/BecomeSellerPage")}
+                  className="hover:text-emerald-300 transition duration-300 transform hover:scale-105"
+                >
                   Devenir vendeure
                 </button>
               </li>
               <li>
-                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
+                <button
+                  onClick={() => navigate("/ShippingPage")}
+                  className="hover:text-emerald-300 transition duration-300 transform hover:scale-105"
+                >
                   expedier votre commande
                 </button>
               </li>
               <li>
-                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
+                <button
+                  onClick={() => navigate("/NigerPresencePage")}
+                  className="hover:text-emerald-300 transition duration-300 transform hover:scale-105"
+                >
                   Par tout au Niger
                 </button>
               </li>
               <li>
-                <button className="hover:text-emerald-300 transition duration-300 transform hover:scale-105">
+                <button
+                  onClick={() => navigate("/ReturnPolicyPage")}
+                  className="hover:text-emerald-300 transition duration-300 transform hover:scale-105"
+                >
                   Retourner une commande
                 </button>
               </li>

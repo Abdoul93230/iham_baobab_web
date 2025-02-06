@@ -50,6 +50,14 @@ import {
   getProducts_Pubs,
   getTypes,
 } from "./redux/ProductsActions";
+import AboutUs from "./pages/AboutUs";
+import SuppliersPage from "./pages/SuppliersPage";
+import AnniversaryPreview from "./pages/AnniversaryPreview";
+import NigerPresencePage from "./pages/NigerPresencePage";
+import ShippingPage from "./pages/ShippingPage";
+import ReturnPolicyPage from "./pages/ReturnPolicyPage";
+import BecomeSellerPage from "./pages/BecomeSellerPage";
+import ContactPage from "./pages/ContactPage";
 
 const BackendUrl = process.env.REACT_APP_Backend_Url;
 
@@ -104,11 +112,9 @@ function App() {
     store.dispatch(getProducts_Commentes());
     const socket = io(BackendUrl);
 
-
     socket.on("new_message_user", (data) => {
       // console.log("Nouveau message reçu :");
     });
-
 
     return () => {
       socket.disconnect();
@@ -322,6 +328,20 @@ function App() {
                 path="/Categorie/:name/:type"
                 element={<Homme acces={acces} paniernbr={produits} />}
               />
+              <Route path="/AboutUs" element={<AboutUs />} />
+              <Route path="/SuppliersPage" element={<SuppliersPage />} />
+              <Route
+                path="/AnniversaryPreview"
+                element={<AnniversaryPreview />}
+              />
+              <Route
+                path="/NigerPresencePage"
+                element={<NigerPresencePage />}
+              />
+              <Route path="/ShippingPage" element={<ShippingPage />} />
+              <Route path="/ReturnPolicyPage" element={<ReturnPolicyPage />} />
+              <Route path="/BecomeSellerPage" element={<BecomeSellerPage />} />
+              <Route path="/ContactPage" element={<ContactPage />} />
               <Route
                 path="/Voir-plus"
                 element={<Voir acces={acces} paniernbr={produits} />}
