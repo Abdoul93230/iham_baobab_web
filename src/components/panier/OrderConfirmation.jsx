@@ -1,24 +1,18 @@
 // OrderConfirmation.js
 import React, { useState, useEffect } from "react";
 import { AlertCircle, Check } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import axios from "axios";
-import MasterCard from "../paementPage/paiementPhoto/masterCard.jpeg";
-import VisaCard from "../paementPage/paiementPhoto/VisaCard.png";
-import DomicileCard from "../paementPage/paiementPhoto/domicile.jpeg";
-import MobileMoney from "../paementPage/paiementPhoto/MobileMoney.png";
-import Airtel from "../paementPage/paiementPhoto/Aiertel.jpg";
-import Moov from "../paementPage/paiementPhoto/Moov.png";
-import Zamani from "../paementPage/paiementPhoto/Zamani.jpeg";
-import Mtn from "../paementPage/paiementPhoto/MTN.png";
+import LoadingIndicator from "@/pages/LoadingIndicator";
+import PaiementPage from "./PaiementPage";
 
 const BackendUrl = process.env.REACT_APP_Backend_Url;
 
 const OrderConfirmation = ({ onClose }) => {
   const navigation = useNavigate();
-  const location = useLocation();
   const [selectedPayment, setSelectedPayment] = useState("");
+  const [message, setMessage] = useState("");
   const [orderTotal, setOrderTotal] = useState(() => {
     const savedTotal = localStorage.getItem("orderTotal");
     return savedTotal ? parseFloat(savedTotal) : 0;
@@ -61,6 +55,8 @@ const OrderConfirmation = ({ onClose }) => {
     animation: "spin 1s linear infinite",
     margin: "auto",
   };
+
+  const user = JSON.parse(localStorage.getItem("userEcomme"));
 
   function generateUniqueID() {
     const now = new Date();
@@ -206,8 +202,11 @@ const OrderConfirmation = ({ onClose }) => {
     }
 
     if (selectedPayment === "Visa") {
-      if (!/^4[0-9]{12}(?:[0-9]{3})?$/.test(cardDetails.number)) {
+      const rawNum = String(cardDetails.number || "").replace(/\s|-/g, ""); // Numéro sans espaces ni tirets
+
+      if (!/^4[0-9]{12}(?:[0-9]{3})?$/.test(rawNum)) {
         errors.push("Le numéro de la carte Visa n'est pas valide");
+        console.log(rawNum);
       }
       if (!/^[0-9]{3}$/.test(cardDetails.cvc)) {
         errors.push("Le code CVC n'est pas valide");
@@ -216,8 +215,11 @@ const OrderConfirmation = ({ onClose }) => {
         errors.push("Veuillez sélectionner la date d'expiration");
       }
     } else if (selectedPayment === "master Card") {
-      if (!/^(?:5[1-5][0-9]{14})$/.test(cardDetails.number)) {
-        errors.push("Le numéro de la carte MasterCard n'est pas valide");
+      const rawNum = String(cardDetails.number || "").replace(/\s|-/g, ""); // Numéro sans espaces ni tirets
+
+      if (!/^4[0-9]{12}(?:[0-9]{3})?$/.test(rawNum)) {
+        errors.push("Le numéro de la carte Visa n'est pas valide");
+        console.log(rawNum);
       }
       if (!/^[0-9]{3}$/.test(cardDetails.cvc)) {
         errors.push("Le code CVC n'est pas valide");
@@ -226,6 +228,14 @@ const OrderConfirmation = ({ onClose }) => {
         errors.push("Veuillez sélectionner la date d'expiration");
       }
     } else if (selectedPayment === "Mobile Money") {
+      if (!/^[0-9]{8,}$/.test(mobileDetails.number)) {
+        errors.push("Le format du numéro n'est pas valide");
+      }
+    } else if (
+      selectedPayment === "zeyna" ||
+      selectedPayment === "nita" ||
+      selectedPayment === "amana"
+    ) {
       if (!/^[0-9]{8,}$/.test(mobileDetails.number)) {
         errors.push("Le format du numéro n'est pas valide");
       }
@@ -248,7 +258,9 @@ const OrderConfirmation = ({ onClose }) => {
   };
 
   const handlePress = (paymentMethod) => {
+    // console.log("+" + mobileDetails.operateur + mobileDetails.number);
     setSelectedPayment(paymentMethod);
+    // console.log(paymentMethod);
   };
 
   const handlePaymentSubmit = async (e) => {
@@ -291,6 +303,12 @@ const OrderConfirmation = ({ onClose }) => {
         paymentData.numeroCard = cardDetails.number;
         paymentData.cvc = cardDetails.cvc;
         paymentData.expire = cardDetails.expiry;
+      } else if (
+        selectedPayment === "zeyna" ||
+        selectedPayment === "nita" ||
+        selectedPayment === "amana"
+      ) {
+        paymentData.option = selectedPayment;
       } else if (selectedPayment === "Mobile Money") {
         paymentData.option = "Mobile Money";
         paymentData.numero =
@@ -301,7 +319,7 @@ const OrderConfirmation = ({ onClose }) => {
       } else {
         paymentData.option = "Payment a domicile";
       }
-      await axios.post(`${BackendUrl}/createMoyentPayment`, paymentData);
+      // await axios.post(`${BackendUrl}/createMoyentPayment`, paymentData);
 
       // Préparer les données de la commande
       const panier = JSON.parse(localStorage.getItem("panier"));
@@ -316,7 +334,16 @@ const OrderConfirmation = ({ onClose }) => {
         couleurs: item.colors,
       }));
 
-      if (["Visa", "master Card", "Mobile Money"].includes(selectedPayment)) {
+      if (
+        [
+          "Visa",
+          "master Card",
+          "Mobile Money",
+          "nita",
+          "zeyna",
+          "amana",
+        ].includes(selectedPayment)
+      ) {
         try {
           // Vérifier si une commande en attente existe déjà
           const existingOrder = localStorage.getItem("pendingOrder");
@@ -408,21 +435,415 @@ const OrderConfirmation = ({ onClose }) => {
             );
           }
 
-          // Stocker les informations de paiement
-          localStorage.setItem(
-            "paymentInfo",
-            JSON.stringify({
-              amount: orderTotal,
-              transactionId: JSON.parse(localStorage.getItem("pendingOrder"))
-                .transactionId,
-            })
-          );
+          ////////////////////////////////////getion du payment de la commande by ckomipay //////////////////////////////////
 
-          // Rediriger vers la page de paiement
-          window.location.href = "/payment.html";
+          if (selectedPayment === "Visa" || selectedPayment === "master Card") {
+            const transactionId = JSON.parse(
+              localStorage.getItem("pendingOrder")
+            ).transactionId;
+            const paymentData = {
+              orderTotal,
+              transactionId,
+              orderId: commandeId,
+              paymentMethod: selectedPayment,
+              cardNumber: cardDetails.number,
+              cardCvc: cardDetails.cvc,
+              cardExpiration: cardDetails.expiry,
+            };
+
+            const rawNum = String(cardDetails.number || "").replace(
+              /\s|-/g,
+              ""
+            );
+            const formattedNum = rawNum.match(/.{1,4}/g)?.join("-") || "";
+            const data_to_send = {
+              cardNumber: formattedNum,
+              expiryDate: cardDetails.expiry,
+              cvv: cardDetails.cvc,
+              amount: orderTotal,
+              payerName: JSON.parse(localStorage.getItem("userEcomme"))?.name,
+              externalRef: transactionId,
+              browserInfo: {
+                javaEnabled: false,
+                javascriptEnabled: true,
+                screenHeight: 900,
+                screenWidth: 1440,
+                TZ: 1,
+                challengeWindowSize: "05",
+              },
+            };
+
+            axios
+              .post(`${BackendUrl}/pay-with-card`, data_to_send)
+              .then((respose) => {
+                const reference = respose.data.transactionData.reference;
+                const externalReference =
+                  respose.data.transactionData.externalReference;
+                const redirectUrl = respose.data.redirectUrl;
+
+                console.log(respose.data);
+
+                if (respose.data.success && respose.data.redirectUrl) {
+                  window.open(
+                    respose.data.redirectUrl, // URL à ouvrir
+                    "_blank", // Ouvre dans une nouvelle fenêtre
+                    "width=800,height=600,scrollbars=yes,resizable=yes"
+                  );
+                }
+                axios
+                  .get(`${BackendUrl}/payment_status_card`, {
+                    params: {
+                      externalRef: externalReference,
+                    },
+                  })
+                  .then(async (response) => {
+                    console.log("Réponse de la requête : ", response.data);
+                    // échec
+                    if (
+                      response?.data?.rawResponse?.code === 200 ||
+                      response?.data?.rawResponse?.code === 201
+                    ) {
+                      setSubmitStatus({
+                        loading: false,
+                        error:
+                          response?.data?.rawResponse?.message ||
+                          "payment effectuer avec succes",
+                        success: true,
+                      });
+                      alert(
+                        response?.data?.rawResponse?.message ||
+                          "payment effectuer avec succes"
+                      );
+                      setMessage(
+                        response?.data?.rawResponse?.message ||
+                          "payment effectuer avec succes"
+                      );
+                      await axios
+                        .post(`${BackendUrl}/payment_callback`, {
+                          status: "success", // Statut du paiement (success/failed)
+                          customerName: user?.name, // Nom du client
+                          msisdn: mobileDetails.number, // Numéro de téléphone
+                          reference: "komipay", // Référence iPay
+                          publicReference: selectedPayment, // Référence publique iPay
+                          externalReference: transactionId, // Notre référence de transaction
+                          amount: orderTotal, // Montant payé
+                          paymentDate: Date.now(), // Date du paiement
+                        })
+                        .then((r) => console.log(r))
+                        .catch((err) => console.log(err));
+                      localStorage.removeItem("panier");
+                      localStorage.removeItem("orderTotal");
+                      localStorage.removeItem("paymentInfo");
+                      localStorage.removeItem("pendingOrder");
+                      navigation("/Commande");
+                    } else {
+                      setSubmitStatus({
+                        loading: false,
+                        error:
+                          response?.data?.rawResponse?.message ||
+                          "Une erreur est survenue",
+                        success: false,
+                      });
+
+                      await axios
+                        .post(`${BackendUrl}/payment_callback`, {
+                          status: "échec", // Statut du paiement (success/failed)
+                          customerName: user?.name, // Nom du client
+                          msisdn: mobileDetails.number, // Numéro de téléphone
+                          reference: "komipay", // Référence iPay
+                          publicReference: selectedPayment, // Référence publique iPay
+                          externalReference: transactionId, // Notre référence de transaction
+                          amount: orderTotal, // Montant payé
+                          paymentDate: Date.now(), // Date du paiement
+                        })
+                        .then((r) => console.log(r))
+                        .catch((err) => console.log(err));
+
+                      return;
+                    }
+                  })
+                  .catch((error) => {
+                    setSubmitStatus({
+                      loading: false,
+                      error:
+                        error?.response?.data?.message ||
+                        "Une erreur est survenue veuillez verifier vos informations",
+                      success: false,
+                    });
+                    console.error("Erreur lors de la requête : ", error);
+                  });
+              })
+              .catch((error) => {
+                setSubmitStatus({
+                  loading: false,
+                  error:
+                    error?.response?.data?.message || "Une erreur est survenue",
+                  success: false,
+                });
+                console.log(error);
+              });
+
+            ////////////// recuperation de l'url de confirmation de code via le backend /////////////////
+          } else if (
+            selectedPayment === "zeyna" ||
+            selectedPayment === "nita" ||
+            selectedPayment === "amana"
+          ) {
+            const paymentDataSend = {};
+            paymentDataSend.option = selectedPayment;
+            if (selectedPayment === "zeyna") {
+              const securityCodereq = await axios.post(
+                `${BackendUrl}/requestZeynaCashSecurityCode`,
+                {
+                  phoneNumber:
+                    "+" + mobileDetails.operateur + mobileDetails.number,
+                }
+              );
+              if (securityCodereq.data.success === true) {
+                const securityCode =
+                  prompt(
+                    "veuiller rentrer le code qui vous a ete envoyer par sms"
+                  ) || null;
+                paymentDataSend.securityCode = securityCode || null;
+              } else {
+                setSubmitStatus({
+                  loading: false,
+                  error:
+                    securityCodereq?.data?.message || "Une erreur est survenue",
+                  success: false,
+                });
+                return;
+              }
+            }
+            const transactionId = JSON.parse(
+              localStorage.getItem("pendingOrder")
+            )?.transactionId;
+
+            paymentDataSend.phoneNumber =
+              "+" + mobileDetails.operateur + mobileDetails.number;
+            paymentDataSend.country = "niger";
+            paymentDataSend.amount = "100";
+            // paymentDataSend.amount = orderTotal;
+            paymentDataSend.externalRef = transactionId;
+            paymentDataSend.staType = selectedPayment;
+            console.log(paymentDataSend);
+            await axios
+              .post(`${BackendUrl}/processSTAPayment`, paymentDataSend)
+              .then((respose) => {
+                alert(
+                  `${respose?.data?.message} voici votre code de validation : ${respose?.data?.code_validation}`
+                );
+                setMessage(
+                  `${respose?.data?.message} voici votre code de validation : ${respose?.data?.code_validation}`
+                );
+                console.log(respose?.data);
+                axios
+                  .get(`${BackendUrl}/payment_status_card`, {
+                    params: {
+                      externalRef: transactionId,
+                    },
+                  })
+                  .then(async (response) => {
+                    console.log("Réponse de la requête : ", response.data);
+                    if (
+                      response?.data?.rawResponse?.code === 200 ||
+                      response?.data?.rawResponse?.code === 201
+                    ) {
+                      setSubmitStatus({
+                        loading: false,
+                        error:
+                          response?.data?.rawResponse?.message ||
+                          "payment effectuer avec succes",
+                        success: true,
+                      });
+                      alert(response?.data?.rawResponse?.message);
+                      setMessage(response?.data?.rawResponse?.message);
+                      await axios
+                        .post(`${BackendUrl}/payment_callback`, {
+                          status: "success", // Statut du paiement (success/failed)
+                          customerName: user?.name, // Nom du client
+                          msisdn: mobileDetails.number, // Numéro de téléphone
+                          reference: "komipay", // Référence iPay
+                          publicReference: selectedPayment, // Référence publique iPay
+                          externalReference: transactionId, // Notre référence de transaction
+                          amount: orderTotal, // Montant payé
+                          paymentDate: Date.now(), // Date du paiement
+                        })
+                        .then((r) => console.log(r))
+                        .catch((err) => console.log(err));
+                      localStorage.removeItem("panier");
+                      localStorage.removeItem("orderTotal");
+                      localStorage.removeItem("paymentInfo");
+                      localStorage.removeItem("pendingOrder");
+                      navigation("/Commande");
+                    } else {
+                      setSubmitStatus({
+                        loading: false,
+                        error:
+                          response?.data?.rawResponse?.message ||
+                          "Une erreur est survenue",
+                        success: false,
+                      });
+                      await axios
+                        .post(`${BackendUrl}/payment_callback`, {
+                          status: "échec", // Statut du paiement (success/failed)
+                          customerName: user?.name, // Nom du client
+                          msisdn: mobileDetails.number, // Numéro de téléphone
+                          reference: "komipay", // Référence iPay
+                          publicReference: selectedPayment, // Référence publique iPay
+                          externalReference: transactionId, // Notre référence de transaction
+                          amount: orderTotal, // Montant payé
+                          paymentDate: Date.now(), // Date du paiement
+                        })
+                        .then((r) => console.log(r))
+                        .catch((err) => console.log(err));
+                      return;
+                    }
+                  })
+                  .catch((error) => {
+                    setSubmitStatus({
+                      loading: false,
+                      error:
+                        error?.response?.data?.message ||
+                        "Une erreur est survenue veuillez verifier vos informations",
+                      success: false,
+                    });
+                    console.error("Erreur lors de la requête : ", error);
+                  });
+              })
+              .catch((error) => {
+                setSubmitStatus({
+                  loading: false,
+                  error:
+                    error?.response?.data?.message || "Une erreur est survenue",
+                  success: false,
+                });
+                console.log(error);
+              });
+          } else if ("Mobile Money") {
+            const transactionId = JSON.parse(
+              localStorage.getItem("pendingOrder")
+            )?.transactionId;
+            const paymentDataSend = {
+              operator: "airtel",
+              amount: "100",
+              phoneNumber: mobileDetails.number,
+              payerName: user?.name,
+              externalRef: transactionId,
+            };
+
+            await axios
+              .post(`${BackendUrl}/processMobilePayment`, paymentDataSend)
+              .then((respose) => {
+                alert(`${respose?.data?.message}`);
+                setMessage(`${respose?.data?.message}`);
+                console.log(respose?.data);
+                axios
+                  .get(`${BackendUrl}/payment_status_card`, {
+                    params: {
+                      externalRef: transactionId,
+                    },
+                  })
+                  .then(async (response) => {
+                    console.log("Réponse de la requête : ", response.data);
+                    if (
+                      response?.data?.rawResponse?.code === 200 ||
+                      response?.data?.rawResponse?.code === 201
+                    ) {
+                      setSubmitStatus({
+                        loading: false,
+                        error:
+                          response?.data?.rawResponse?.message ||
+                          "payment effectuer avec succes",
+                        success: true,
+                      });
+                      alert(response?.data?.rawResponse?.message);
+                      setMessage(response?.data?.rawResponse?.message);
+
+                      await axios
+                        .post(`${BackendUrl}/payment_callback`, {
+                          status: "success", // Statut du paiement (success/failed)
+                          customerName: user?.name, // Nom du client
+                          msisdn: mobileDetails.number, // Numéro de téléphone
+                          reference: "komipay", // Référence iPay
+                          publicReference: selectedPayment, // Référence publique iPay
+                          externalReference: transactionId, // Notre référence de transaction
+                          amount: orderTotal, // Montant payé
+                          paymentDate: Date.now(), // Date du paiement
+                        })
+                        .then((r) => console.log(r))
+                        .catch((err) => console.log(err));
+                      localStorage.removeItem("panier");
+                      localStorage.removeItem("orderTotal");
+                      localStorage.removeItem("paymentInfo");
+                      localStorage.removeItem("pendingOrder");
+                      navigation("/Commande");
+                    } else {
+                      setSubmitStatus({
+                        loading: false,
+                        error:
+                          response?.data?.rawResponse?.message ||
+                          "Une erreur est survenue",
+                        success: false,
+                      });
+                      await axios
+                        .post(`${BackendUrl}/payment_callback`, {
+                          status: "échec", // Statut du paiement (success/failed)
+                          customerName: user?.name, // Nom du client
+                          msisdn: mobileDetails.number, // Numéro de téléphone
+                          reference: "komipay", // Référence iPay
+                          publicReference: selectedPayment, // Référence publique iPay
+                          externalReference: transactionId, // Notre référence de transaction
+                          amount: orderTotal, // Montant payé
+                          paymentDate: Date.now(), // Date du paiement
+                        })
+                        .then((r) => console.log(r))
+                        .catch((err) => console.log(err));
+                      return;
+                    }
+                  })
+                  .catch((error) => {
+                    setSubmitStatus({
+                      loading: false,
+                      error:
+                        error?.response?.data?.message ||
+                        "Une erreur est survenue veuillez verifier vos informations",
+                      success: false,
+                    });
+                    console.error("Erreur lors de la requête : ", error);
+                  });
+              })
+              .catch((error) => {
+                setSubmitStatus({
+                  loading: false,
+                  error:
+                    error?.response?.data?.message || "Une erreur est survenue",
+                  success: false,
+                });
+                console.log(error);
+              });
+          }
+
+          ////////////////////////////////////getion du payment de la commande by ckomipay //////////////////////////////////
+
+          // // Stocker les informations de paiement
+          // localStorage.setItem(
+          //   "paymentInfo",
+          //   JSON.stringify({
+          //     amount: orderTotal,
+          //     transactionId: JSON.parse(localStorage.getItem("pendingOrder"))
+          //       .transactionId,
+          //   })
+          // );
+
+          // // Rediriger vers la page de paiement
+          // window.location.href = "/payment.html";
         } catch (error) {
           console.error("Erreur:", error);
           alert("Une erreur est survenue lors de la création de la commande");
+          setMessage(
+            "Une erreur est survenue lors de la création de la commande"
+          );
         }
       } else {
         // Paiement à la livraison
@@ -486,396 +907,331 @@ const OrderConfirmation = ({ onClose }) => {
     }
   };
 
-  const renderSelectedPaymentPage = () => {
+  const getPaymentDescription = () => {
     switch (selectedPayment) {
       case "master Card":
+        return "Paiement sécurisé immédiat. Vos données sont chiffrées.";
       case "Visa":
-        return (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mt-4 border-t pt-4"
-          >
-            <h2 className="text-xl sm:text-2xl font-semibold text-[#B17236] border-b-2 border-[#30A08B] pb-2">
-              Détails de la carte{" "}
-              {selectedPayment === "master Card" ? "MasterCard" : "Visa"}
-            </h2>
-            <div className="top">
-              <label htmlFor="number">Card Number</label>
-              <input
-                type="text"
-                value={cardDetails.number}
-                onChange={(e) =>
-                  setCardDetails({ ...cardDetails, number: e.target.value })
-                }
-                placeholder="Valid Card Number"
-                id="number"
-                className="mt-2 p-3 border border-gray-300 rounded-lg w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-              />
-            </div>
-            <div className="bottom">
-              <div className="left e">
-                <label htmlFor="date">Expiration Date</label>
-                <input
-                  id="date"
-                  onChange={(e) =>
-                    setCardDetails({ ...cardDetails, expiry: e.target.value })
-                  }
-                  type="date"
-                  className="p-3 border border-gray-300 rounded-lg w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-                />
-              </div>
-              <div className="right e">
-                <label htmlFor="password">CV CODE</label>
-                <input
-                  id="password"
-                  value={cardDetails.cvc}
-                  onChange={(e) =>
-                    setCardDetails({ ...cardDetails, cvc: e.target.value })
-                  }
-                  type="password"
-                  placeholder="CVC"
-                  className="p-3 border border-gray-300 rounded-lg w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-                />
-              </div>
-            </div>
-          </motion.div>
-        );
+        return "Paiement sécurisé immédiat. Vos données sont chiffrées.";
       case "Mobile Money":
-        return (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mt-4 border-t pt-4"
-          >
-            <h2 className="text-xl sm:text-2xl font-semibold text-[#B17236] border-b-2 border-[#30A08B] pb-2">
-              Mobile Money
-            </h2>
-            <div className="MC">
-              <div className="img flex justify-center gap-4 my-4">
-                <img src={Airtel} alt="Airtel" className="h-8" />
-                <img src={Moov} alt="Moov" className="h-8" />
-                <img src={Zamani} alt="Zamani" className="h-8" />
-                <img src={Mtn} alt="MTN" className="h-8" />
-              </div>
-            </div>
-            <form onSubmit={handlePaymentSubmit}>
-              <div className="num flex gap-2">
-                <select
-                  value={mobileDetails.operateur}
-                  onChange={(e) =>
-                    setMobileDetails({
-                      ...mobileDetails,
-                      operateur: e.target.value,
-                    })
-                  }
-                  className="mt-2 p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-                >
-                  <option value="227">227</option>
-                  <option value="229">229</option>
-                </select>
-                <input
-                  type="text"
-                  value={
-                    mobileDetails.number.length > 8 &&
-                    (mobileDetails.number.substring(0, 3) === "227" ||
-                      mobileDetails.number.substring(0, 3) === "229")
-                      ? mobileDetails.number.substring(3)
-                      : mobileDetails.number
-                  }
-                  onChange={(e) =>
-                    setMobileDetails({
-                      ...mobileDetails,
-                      number: e.target.value,
-                    })
-                  }
-                  placeholder="Numéro de téléphone"
-                  className="mt-2 p-3 border border-gray-300 rounded-lg w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-                />
-              </div>
-              <div className="btn mt-4">
-                {onSubmit ? (
-                  <div style={spinnerStyle}></div>
-                ) : (
-                  <button
-                    type="submit"
-                    className="w-full bg-[#30A08B] text-white py-2 rounded-lg font-semibold hover:bg-[#30A08B]/90 transition duration-200"
-                  >
-                    Confirmer
-                  </button>
-                )}
-              </div>
-            </form>
-          </motion.div>
-        );
+        return "Vous recevrez un code de confirmation par SMS.";
       case "Payment a domicile":
-        return (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mt-4 border-t pt-4"
-          >
-            <h2 className="text-xl sm:text-2xl font-semibold text-[#B17236] border-b-2 border-[#30A08B] pb-2">
-              Paiement à domicile
-            </h2>
-            <p className="text-gray-600 pt-3">
-              Un agent vous contactera pour organiser le paiement à votre
-              domicile.
-            </p>
-          </motion.div>
-        );
+        return "Un agent se déplacera sous 24-48h. Paiement en espèces ou carte.";
+      case "nita":
+        return "Notification via l'app MyNita pour finaliser le paiement.";
+      case "zeyna":
+        return "Code USSD envoyé sur votre téléphone pour finaliser.";
+      case "amana":
+        return "Lien de paiement envoyé par SMS. Confirmation instantanée.";
       default:
-        return null;
+        return "Sélectionnez un mode de paiement pour continuer.";
+    }
+  };
+  // Formater automatiquement le numéro de carte
+  const formatCardNumber = (value) => {
+    const v = String(value)
+      .replace(/\s+/g, "")
+      .replace(/[^0-9]/gi, "");
+    const matches = v.match(/\d{4,16}/g);
+    const match = (matches && matches[0]) || "";
+    const parts = [];
+
+    for (let i = 0, len = match.length; i < len; i += 4) {
+      parts.push(match.substring(i, i + 4));
+    }
+
+    if (parts.length) {
+      return parts.join(" ");
+    } else {
+      return value;
     }
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center">
-      <div className="container rounded-lg p-6 overflow-hidden">
-        {submitStatus.error && (
-          <div className={`mb-4 p-4 rounded bg-red-100 text-red-700`}>
-            <p className="flex items-center">
-              <AlertCircle className="mr-2 h-4 w-4" />
-              {submitStatus.error}
-            </p>
-          </div>
-        )}
-        {submitStatus.success && (
-          <div className={`mb-4 p-4 rounded bg-green-100 text-green-700`}>
-            <p className="flex items-center">
-              <Check className="mr-2 h-4 w-4" />
-              Commande enregistrée avec succès
-            </p>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-1 gap-4 mx-auto">
-          {/* Première carte - Informations de livraison */}
-          <div className="w-full p-4 sm:p-6 md:p-8 transition-all duration-300">
-            <h2 className="text-xl sm:text-2xl font-semibold text-[#B17236] border-b-2 border-[#30A08B] pb-2 mb-4">
-              Informations de livraison
-            </h2>
-            <div className="space-y-4">
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Nom complet
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={deliveryInfo.name}
-                  onChange={handleDeliveryChange}
-                  className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
-                  placeholder="Votre nom complet"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={deliveryInfo.email}
-                  onChange={handleDeliveryChange}
-                  className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
-                  placeholder="Votre email"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="numero"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Numéro de téléphone
-                </label>
-                <input
-                  type="tel"
-                  id="numero"
-                  name="numero"
-                  value={deliveryInfo.numero}
-                  onChange={handleDeliveryChange}
-                  className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
-                  placeholder="Votre numéro de téléphone"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="region"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Région
-                </label>
-                <input
-                  type="text"
-                  id="region"
-                  name="region"
-                  value={deliveryInfo.region}
-                  onChange={handleDeliveryChange}
-                  className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
-                  placeholder="Votre région"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="quartier"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Quartier
-                </label>
-                <input
-                  type="text"
-                  id="quartier"
-                  name="quartier"
-                  value={deliveryInfo.quartier}
-                  onChange={handleDeliveryChange}
-                  className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
-                  placeholder="Votre quartier"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="description"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Instructions de livraison
-                </label>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={deliveryInfo.description}
-                  onChange={handleDeliveryChange}
-                  rows="3"
-                  className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
-                  placeholder="Instructions supplémentaires pour la livraison"
-                ></textarea>
-              </div>
-            </div>
-          </div>
-
-          {/* Deuxième carte - Méthode de paiement */}
-          <div>
-            <div className="p-6 w-full transition-all duration-300">
-              <h1 className="text-xl sm:text-2xl font-semibold text-[#B17236] border-b-2 border-[#30A08B] pb-2">
-                Mode de paiement
-              </h1>
-              <div className="mt-5 grid grid-cols-2 gap-4">
-                {[
-                  {
-                    id: "master Card",
-                    logo: MasterCard,
-                    label: "MasterCard",
-                    color: "#30A08B",
-                  },
-                  {
-                    id: "Visa",
-                    logo: VisaCard,
-                    label: "Visa",
-                    color: "#B2905F",
-                  },
-                  {
-                    id: "Mobile Money",
-                    logo: MobileMoney,
-                    label: "Mobile Money",
-                    color: "#B17236",
-                  },
-                  {
-                    id: "Payment a domicile",
-                    logo: DomicileCard,
-                    label: "Domicile",
-                    color: "#30A08B",
-                  },
-                ].map(({ id, logo, label, color }) => (
-                  <motion.label
-                    key={id}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`flex flex-col items-center justify-center ${
-                      selectedPayment === id
-                        ? "bg-opacity-100"
-                        : "bg-opacity-50"
-                    } text-white p-4 rounded-lg transition-all duration-300 cursor-pointer`}
-                    style={{ backgroundColor: color }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedPayment === id}
-                      onChange={() => handlePress(id)}
-                      className="sr-only"
-                    />
-                    <div className="flex items-center justify-center mb-2">
-                      <div
-                        className={`w-5 h-5 border-2 rounded-full mr-2 flex items-center justify-center ${
-                          selectedPayment === id ? "bg-white" : "bg-transparent"
-                        }`}
-                      >
-                        {selectedPayment === id && (
-                          <div
-                            className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: color }}
-                          ></div>
-                        )}
-                      </div>
-                      <img src={logo} alt={label} className="h-8" />
-                    </div>
-                    <span className="text-sm">{label}</span>
-                  </motion.label>
-                ))}
-              </div>
-              {renderSelectedPaymentPage()}
-            </div>
-          </div>
-        </div>
-
-        <motion.button
-          onClick={handlePaymentSubmit}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="mt-6 bg-[#30A08B] text-white p-3 rounded-lg w-full shadow-md hover:bg-opacity-90 transition-all duration-300"
-        >
-          {submitStatus.loading ? (
-            <div style={spinnerStyle} className="animate-spin"></div>
-          ) : (
-            <span>Confirmer la commande {orderTotal} fcfa</span>
-          )}
-        </motion.button>
-
-        {paiementProduit && (
-          <div className="min-h-screen flex justify-center items-center bg-black bg-opacity-10 fixed inset-0 z-50">
-            <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm mx-auto text-center">
-              <div className="flex justify-center mb-4">
-                <Check className="h-12 w-12 text-green-600 animate-bounce" />
-              </div>
-              <h2 className="text-2xl font-semibold text-green-800 mb-2">
-                Commande confirmée !
-              </h2>
-              <p className="text-gray-700 mb-4">
-                Merci pour votre commande. Vous recevrez bientôt un e-mail de
-                confirmation.
+    <LoadingIndicator
+      text={message.length > 0 ? message : null}
+      loading={submitStatus.loading ? true : false}
+    >
+      <div className="min-h-screen flex justify-center items-center">
+        <div className="container rounded-lg p-6 overflow-hidden">
+          {submitStatus.error && (
+            <div className={`mb-4 p-4 rounded bg-red-100 text-red-700`}>
+              <p className="flex items-center">
+                <AlertCircle className="mr-2 h-4 w-4" />
+                {submitStatus.error}
               </p>
-              <button
-                onClick={() => navigation("/Commande")}
-                className="w-full bg-[#30A08B] text-white py-2 rounded-lg font-semibold hover:bg-[#30A08B]/90 transition duration-200"
-              >
-                Mes commandes
-              </button>
             </div>
+          )}
+          {submitStatus.success && (
+            <div className={`mb-4 p-4 rounded bg-green-100 text-green-700`}>
+              <p className="flex items-center">
+                <Check className="mr-2 h-4 w-4" />
+                Commande enregistrée avec succès
+              </p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-1 gap-4 mx-auto">
+            {/* Première carte - Informations de livraison */}
+            <div className="w-full p-4 sm:p-6 md:p-8 transition-all duration-300">
+              <h2 className="text-xl sm:text-2xl font-semibold text-[#B17236] border-b-2 border-[#30A08B] pb-2 mb-4">
+                Informations de livraison
+              </h2>
+              <div className="space-y-4">
+                <div>
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Nom complet
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={deliveryInfo.name}
+                    onChange={handleDeliveryChange}
+                    className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
+                    placeholder="Votre nom complet"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={deliveryInfo.email}
+                    onChange={handleDeliveryChange}
+                    className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
+                    placeholder="Votre email"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="numero"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Numéro de téléphone
+                  </label>
+                  <input
+                    type="tel"
+                    id="numero"
+                    name="numero"
+                    value={deliveryInfo.numero}
+                    onChange={handleDeliveryChange}
+                    className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
+                    placeholder="Votre numéro de téléphone"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="region"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Région
+                  </label>
+                  <input
+                    type="text"
+                    id="region"
+                    name="region"
+                    value={deliveryInfo.region}
+                    onChange={handleDeliveryChange}
+                    className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
+                    placeholder="Votre région"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="quartier"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Quartier
+                  </label>
+                  <input
+                    type="text"
+                    id="quartier"
+                    name="quartier"
+                    value={deliveryInfo.quartier}
+                    onChange={handleDeliveryChange}
+                    className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
+                    placeholder="Votre quartier"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="description"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Instructions de livraison
+                  </label>
+                  <textarea
+                    id="description"
+                    name="description"
+                    value={deliveryInfo.description}
+                    onChange={handleDeliveryChange}
+                    rows="3"
+                    className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
+                    placeholder="Instructions supplémentaires pour la livraison"
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+
+            {/* Deuxième carte - Méthode de paiement */}
+            <PaiementPage
+              selectedPayment={selectedPayment}
+              setSelectedPayment={setSelectedPayment}
+              cardDetails={cardDetails}
+              setCardDetails={setCardDetails}
+              mobileDetails={mobileDetails}
+              setMobileDetails={setMobileDetails}
+              submitStatus={submitStatus}
+              setSubmitStatus={setSubmitStatus}
+              onSubmit={onSubmit}
+              setOnSubmit={setOnSubmit}
+              validatePaymentInfo={validatePaymentInfo}
+              handlePress={handlePress}
+              handlePaymentSubmit={handlePaymentSubmit}
+              getPaymentDescription={getPaymentDescription}
+              formatCardNumber={formatCardNumber}
+            />
+            {/* <div>
+              <div className="p-6 w-full transition-all duration-300">
+                <h1 className="text-xl sm:text-2xl font-semibold text-[#B17236] border-b-2 border-[#30A08B] pb-2">
+                  Mode de paiement
+                </h1>
+                <div className="grid grid-cols-4 gap-2 mb-4">
+                  {[
+                    {
+                      id: "master Card",
+                      logo: MasterCard,
+                      label: "MasterCard",
+                      color: "#30A08B",
+                    },
+                    {
+                      id: "Visa",
+                      logo: VisaCard,
+                      label: "Visa",
+                      color: "#B2905F",
+                    },
+                    {
+                      id: "Mobile Money",
+                      logo: MobileMoney,
+                      label: "Mobile Money",
+                      color: "#B17236",
+                    },
+                    {
+                      id: "Payment a domicile",
+                      logo: DomicileCard,
+                      label: "Domicile",
+                      color: "#30A08B",
+                    },
+                  ].map(({ id, logo, label, color }) => (
+                    <motion.div
+                      key={id}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      className={`flex flex-col items-center justify-center ${
+                        selectedPayment === id ? "ring-2 ring-offset-1" : ""
+                      } text-white p-2 rounded-lg transition-all duration-200 cursor-pointer`}
+                      style={{ backgroundColor: color }}
+                      onClick={() => handlePress(id)}
+                    >
+                      <div className="flex items-center justify-center mb-1">
+                        <img src={logo} alt={label} className="h-6" />
+                      </div>
+                      <span className="text-xs">{label}</span>
+                    </motion.div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  {[
+                    {
+                      id: "nita",
+                      logo: nita,
+                      label: "MyNita",
+                      color: "#30A08B",
+                    },
+                    {
+                      id: "zeyna",
+                      logo: zeyna,
+                      label: "Zeyna",
+                      color: "#B2905F",
+                    },
+                    {
+                      id: "amana",
+                      logo: amana,
+                      label: "Amana",
+                      color: "#B17236",
+                    },
+                  ].map(({ id, logo, label, color }) => (
+                    <motion.div
+                      key={id}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      className={`flex flex-col items-center justify-center ${
+                        selectedPayment === id ? "ring-2 ring-offset-1" : ""
+                      } text-white p-2 rounded-lg transition-all duration-200 cursor-pointer`}
+                      style={{ backgroundColor: color }}
+                      onClick={() => handlePress(id)}
+                    >
+                      <div className="flex items-center justify-center mb-1">
+                        <img src={logo} alt={label} className="h-6" />
+                      </div>
+                      <span className="text-xs">{label}</span>
+                    </motion.div>
+                  ))}
+                </div>
+                {renderSelectedPaymentPage()}
+              </div>
+            </div> */}
           </div>
-        )}
+
+          <motion.button
+            onClick={handlePaymentSubmit}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="mt-6 bg-[#30A08B] text-white p-3 rounded-lg w-full shadow-md hover:bg-opacity-90 transition-all duration-300"
+          >
+            {submitStatus.loading ? (
+              <div style={spinnerStyle} className="animate-spin"></div>
+            ) : (
+              <span>Confirmer la commande {orderTotal} fcfa</span>
+            )}
+          </motion.button>
+
+          {paiementProduit && (
+            <div className="min-h-screen flex justify-center items-center bg-black bg-opacity-10 fixed inset-0 z-50">
+              <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm mx-auto text-center">
+                <div className="flex justify-center mb-4">
+                  <Check className="h-12 w-12 text-green-600 animate-bounce" />
+                </div>
+                <h2 className="text-2xl font-semibold text-green-800 mb-2">
+                  Commande confirmée !
+                </h2>
+                <p className="text-gray-700 mb-4">
+                  Merci pour votre commande. Vous recevrez bientôt un e-mail de
+                  confirmation.
+                </p>
+                <button
+                  onClick={() => navigation("/Commande")}
+                  className="w-full bg-[#30A08B] text-white py-2 rounded-lg font-semibold hover:bg-[#30A08B]/90 transition duration-200"
+                >
+                  Mes commandes
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </LoadingIndicator>
   );
 };
 

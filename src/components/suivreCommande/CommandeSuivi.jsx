@@ -238,13 +238,15 @@ export default function CommandeSuivi() {
               <></>
             )} */}
             {(order?.statusPayment === "échec" ||
-              order?.statusPayment !== "payé à la livraison") && (
+              (order?.statusPayment !== "payé à la livraison" &&
+                order?.statusPayment !== "payé")) && (
               <OrderPaymentHandler
-                panier={order?.prod ? order.prod : null}
-                pendingOrder={order?.reference ? order.reference : null}
-                id={order?._id ? order._id : null}
+                panier={order?.prod || null}
+                pendingOrder={order?.reference || null}
+                id={order?._id || null}
               />
             )}
+
             <div>
               <div className="flex items-center mb-2">
                 <h1 className="text-xl md:text-2xl font-bold text-gray-800 mr-4">
