@@ -39,9 +39,8 @@ const LoadingSpinner = ({ size = "default" }) => {
   }, []);
 
   return (
-    <div className="relative flex items-center justify-center h-full w-full">
+    <div className="relative flex items-center justify-center">
       <div className={`relative ${sizeClasses[size]}`}>
-        {/* Cercle externe - teal clair pour la bordure, teal principal pour l'accent */}
         <div
           className="absolute inset-0 rounded-full border-4"
           style={{
@@ -50,7 +49,6 @@ const LoadingSpinner = ({ size = "default" }) => {
             animation: "spin 1s linear infinite",
           }}
         />
-        {/* Cercle interne - brown pour l'effet de ping */}
         <div
           className={`absolute left-1/2 top-1/2 ${innerSizeClasses[size]} -translate-x-1/2 -translate-y-1/2 rounded-full`}
           style={{
@@ -58,7 +56,6 @@ const LoadingSpinner = ({ size = "default" }) => {
             animation: "ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite",
           }}
         />
-        {/* Point central - dark brown */}
         <div
           className={`absolute left-1/2 top-1/2 ${dotSizeClasses[size]} -translate-x-1/2 -translate-y-1/2 rounded-full`}
           style={{ backgroundColor: "#B17236" }}
@@ -73,13 +70,16 @@ const LoadingIndicator = ({
   loading,
   className = "",
   spinnerSize = "default",
+  text = "Chargement en cours...",
 }) => {
   if (loading) {
     return (
       <div
-        className="fixed inset-0 flex items-center justify-center"
-        style={{ backgroundColor: "rgba(48, 160, 139, 0.05)" }}
+        className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-teal-100/20 backdrop-blur-sm ${className}`}
       >
+        <p className="mb-4 text-lg font-medium text-teal-800 animate-pulse">
+          {text}
+        </p>
         <LoadingSpinner size={spinnerSize} />
       </div>
     );
