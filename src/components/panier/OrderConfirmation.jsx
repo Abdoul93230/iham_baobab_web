@@ -104,30 +104,30 @@ const OrderConfirmation = ({ onClose }) => {
         }
 
         // Récupérer la méthode de paiement
-        const paymentResponse = await axios.get(
-          `${BackendUrl}/getMoyentPaymentByClefUser/${userId}`
-        );
-        if (paymentResponse.data.paymentMethod) {
-          const payment = paymentResponse.data.paymentMethod;
-          if (payment.type) {
-            setSelectedPayment(payment.type);
-            if (payment.type === "Mobile Money") {
-              setMobileDetails({
-                number: payment.phone || "",
-                operateur: payment.operateur || "227",
-              });
-            } else if (
-              payment.type === "Visa" ||
-              payment.type === "master Card"
-            ) {
-              setCardDetails({
-                number: payment.numeroCard || "",
-                expiry: payment.expire || "",
-                cvc: payment.cvc || "",
-              });
-            }
-          }
-        }
+        // const paymentResponse = await axios.get(
+        //   `${BackendUrl}/getMoyentPaymentByClefUser/${userId}`
+        // );
+        // if (paymentResponse.data.paymentMethod) {
+        //   const payment = paymentResponse.data.paymentMethod;
+        //   if (payment.type) {
+        //     setSelectedPayment(payment.type);
+        //     if (payment.type === "Mobile Money") {
+        //       setMobileDetails({
+        //         number: payment.phone || "",
+        //         operateur: payment.operateur || "227",
+        //       });
+        //     } else if (
+        //       payment.type === "Visa" ||
+        //       payment.type === "master Card"
+        //     ) {
+        //       setCardDetails({
+        //         number: payment.numeroCard || "",
+        //         expiry: payment.expire || "",
+        //         cvc: payment.cvc || "",
+        //       });
+        //     }
+        //   }
+        // }
       } catch (error) {
         setSubmitStatus({
           loading: false,
@@ -140,29 +140,29 @@ const OrderConfirmation = ({ onClose }) => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    const loadIPayScript = () => {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement("script");
-        script.src = "https://i-pay.money/checkout.js";
-        script.async = true;
-        script.onload = resolve;
-        script.onerror = reject;
-        document.body.appendChild(script);
-      });
-    };
+  // useEffect(() => {
+  //   const loadIPayScript = () => {
+  //     return new Promise((resolve, reject) => {
+  //       const script = document.createElement("script");
+  //       script.src = "https://i-pay.money/checkout.js";
+  //       script.async = true;
+  //       script.onload = resolve;
+  //       script.onerror = reject;
+  //       document.body.appendChild(script);
+  //     });
+  //   };
 
-    loadIPayScript().catch(console.error);
+  //   loadIPayScript().catch(console.error);
 
-    return () => {
-      const script = document.querySelector(
-        'script[src="https://i-pay.money/checkout.js"]'
-      );
-      if (script) {
-        document.body.removeChild(script);
-      }
-    };
-  }, []);
+  //   return () => {
+  //     const script = document.querySelector(
+  //       'script[src="https://i-pay.money/checkout.js"]'
+  //     );
+  //     if (script) {
+  //       document.body.removeChild(script);
+  //     }
+  //   };
+  // }, []);
 
   const validateDeliveryInfo = () => {
     const errors = [];
@@ -572,6 +572,7 @@ const OrderConfirmation = ({ onClose }) => {
                     });
                     console.error("Erreur lors de la requête : ", error);
                   });
+                setOnSubmit(false);
               })
               .catch((error) => {
                 setSubmitStatus({
@@ -580,6 +581,7 @@ const OrderConfirmation = ({ onClose }) => {
                     error?.response?.data?.message || "Une erreur est survenue",
                   success: false,
                 });
+                setOnSubmit(false);
                 console.log(error);
               });
 
@@ -612,6 +614,9 @@ const OrderConfirmation = ({ onClose }) => {
                     securityCodereq?.data?.message || "Une erreur est survenue",
                   success: false,
                 });
+                setMessage(
+                  securityCodereq?.data?.message || "Une erreur est survenue"
+                );
                 return;
               }
             }
@@ -708,6 +713,7 @@ const OrderConfirmation = ({ onClose }) => {
                         "Une erreur est survenue veuillez verifier vos informations",
                       success: false,
                     });
+                    setOnSubmit(false);
                     console.error("Erreur lors de la requête : ", error);
                   });
               })
@@ -718,6 +724,7 @@ const OrderConfirmation = ({ onClose }) => {
                     error?.response?.data?.message || "Une erreur est survenue",
                   success: false,
                 });
+                setOnSubmit(false);
                 console.log(error);
               });
           } else if ("Mobile Money") {
@@ -810,6 +817,7 @@ const OrderConfirmation = ({ onClose }) => {
                         "Une erreur est survenue veuillez verifier vos informations",
                       success: false,
                     });
+                    setOnSubmit(false);
                     console.error("Erreur lors de la requête : ", error);
                   });
               })
@@ -820,6 +828,7 @@ const OrderConfirmation = ({ onClose }) => {
                     error?.response?.data?.message || "Une erreur est survenue",
                   success: false,
                 });
+                setOnSubmit(false);
                 console.log(error);
               });
           }
@@ -840,10 +849,22 @@ const OrderConfirmation = ({ onClose }) => {
           // window.location.href = "/payment.html";
         } catch (error) {
           console.error("Erreur:", error);
-          alert("Une erreur est survenue lors de la création de la commande");
-          setMessage(
-            "Une erreur est survenue lors de la création de la commande"
+          setSubmitStatus({
+            loading: false,
+            error:
+              error?.response?.data?.message ||
+              "Une erreur est survenue lors de la création de la commande",
+            success: false,
+          });
+          alert(
+            error?.response?.data?.message ||
+              "Une erreur est survenue lors de la création de la commande"
           );
+          setMessage(
+            error?.response?.data?.message ||
+              "Une erreur est survenue lors de la création de la commande"
+          );
+          setOnSubmit(false);
         }
       } else {
         // Paiement à la livraison
@@ -953,9 +974,9 @@ const OrderConfirmation = ({ onClose }) => {
       loading={submitStatus.loading ? true : false}
     >
       <div className="min-h-screen flex justify-center items-center">
-        <div className="container rounded-lg p-6 overflow-hidden">
+        <div className="container rounded-lg p-2 overflow-hidden">
           {submitStatus.error && (
-            <div className={`mb-4 p-4 rounded bg-red-100 text-red-700`}>
+            <div className={`mb-4 p-1 rounded bg-red-100 text-red-700`}>
               <p className="flex items-center">
                 <AlertCircle className="mr-2 h-4 w-4" />
                 {submitStatus.error}
@@ -963,7 +984,7 @@ const OrderConfirmation = ({ onClose }) => {
             </div>
           )}
           {submitStatus.success && (
-            <div className={`mb-4 p-4 rounded bg-green-100 text-green-700`}>
+            <div className={`mb-4 p-1 rounded bg-green-100 text-green-700`}>
               <p className="flex items-center">
                 <Check className="mr-2 h-4 w-4" />
                 Commande enregistrée avec succès
@@ -973,7 +994,7 @@ const OrderConfirmation = ({ onClose }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-1 gap-4 mx-auto">
             {/* Première carte - Informations de livraison */}
-            <div className="w-full p-4 sm:p-6 md:p-8 transition-all duration-300">
+            <div className="w-full p-4 sm:p-6 md:p-3 transition-all duration-300">
               <h2 className="text-xl sm:text-2xl font-semibold text-[#B17236] border-b-2 border-[#30A08B] pb-2 mb-4">
                 Informations de livraison
               </h2>
@@ -1102,96 +1123,6 @@ const OrderConfirmation = ({ onClose }) => {
               getPaymentDescription={getPaymentDescription}
               formatCardNumber={formatCardNumber}
             />
-            {/* <div>
-              <div className="p-6 w-full transition-all duration-300">
-                <h1 className="text-xl sm:text-2xl font-semibold text-[#B17236] border-b-2 border-[#30A08B] pb-2">
-                  Mode de paiement
-                </h1>
-                <div className="grid grid-cols-4 gap-2 mb-4">
-                  {[
-                    {
-                      id: "master Card",
-                      logo: MasterCard,
-                      label: "MasterCard",
-                      color: "#30A08B",
-                    },
-                    {
-                      id: "Visa",
-                      logo: VisaCard,
-                      label: "Visa",
-                      color: "#B2905F",
-                    },
-                    {
-                      id: "Mobile Money",
-                      logo: MobileMoney,
-                      label: "Mobile Money",
-                      color: "#B17236",
-                    },
-                    {
-                      id: "Payment a domicile",
-                      logo: DomicileCard,
-                      label: "Domicile",
-                      color: "#30A08B",
-                    },
-                  ].map(({ id, logo, label, color }) => (
-                    <motion.div
-                      key={id}
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                      className={`flex flex-col items-center justify-center ${
-                        selectedPayment === id ? "ring-2 ring-offset-1" : ""
-                      } text-white p-2 rounded-lg transition-all duration-200 cursor-pointer`}
-                      style={{ backgroundColor: color }}
-                      onClick={() => handlePress(id)}
-                    >
-                      <div className="flex items-center justify-center mb-1">
-                        <img src={logo} alt={label} className="h-6" />
-                      </div>
-                      <span className="text-xs">{label}</span>
-                    </motion.div>
-                  ))}
-                </div>
-                <div className="grid grid-cols-3 gap-2 mb-4">
-                  {[
-                    {
-                      id: "nita",
-                      logo: nita,
-                      label: "MyNita",
-                      color: "#30A08B",
-                    },
-                    {
-                      id: "zeyna",
-                      logo: zeyna,
-                      label: "Zeyna",
-                      color: "#B2905F",
-                    },
-                    {
-                      id: "amana",
-                      logo: amana,
-                      label: "Amana",
-                      color: "#B17236",
-                    },
-                  ].map(({ id, logo, label, color }) => (
-                    <motion.div
-                      key={id}
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                      className={`flex flex-col items-center justify-center ${
-                        selectedPayment === id ? "ring-2 ring-offset-1" : ""
-                      } text-white p-2 rounded-lg transition-all duration-200 cursor-pointer`}
-                      style={{ backgroundColor: color }}
-                      onClick={() => handlePress(id)}
-                    >
-                      <div className="flex items-center justify-center mb-1">
-                        <img src={logo} alt={label} className="h-6" />
-                      </div>
-                      <span className="text-xs">{label}</span>
-                    </motion.div>
-                  ))}
-                </div>
-                {renderSelectedPaymentPage()}
-              </div>
-            </div> */}
           </div>
 
           <motion.button
