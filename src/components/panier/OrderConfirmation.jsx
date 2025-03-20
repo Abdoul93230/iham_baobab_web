@@ -9,6 +9,53 @@ import PaiementPage from "./PaiementPage";
 
 const BackendUrl = process.env.REACT_APP_Backend_Url;
 
+const SecurityCodeModal = ({ isOpen, onClose, onSubmit, error }) => {
+  const [code, setCode] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(code);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h2 className="text-xl font-semibold mb-4">Code de sécurité</h2>
+        <p className="text-gray-600 mb-4">
+          Veuillez entrer le code qui vous a été envoyé par SMS
+        </p>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded mb-4"
+            placeholder="Entrez le code"
+            autoFocus
+          />
+          {error && <p className="text-red-500 mb-4">{error}</p>}
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Valider
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 const OrderConfirmation = ({ onClose }) => {
   const navigation = useNavigate();
   const [selectedPayment, setSelectedPayment] = useState("");
@@ -26,6 +73,12 @@ const OrderConfirmation = ({ onClose }) => {
     expiry: "",
     cvc: "",
   });
+  const [securityCodeModal, setSecurityCodeModal] = useState({
+    isOpen: false,
+    code: "",
+    error: "",
+  });
+  const [handleSecuritySubmit, setHandleSecuritySubmit] = useState(null);
   const [mobileDetails, setMobileDetails] = useState({
     number: "",
     operateur: "227",
@@ -263,20 +316,382 @@ const OrderConfirmation = ({ onClose }) => {
     // console.log(paymentMethod);
   };
 
+  // const processCardPayment = async (transactionId) => {
+  //   const cardData = {
+  //     cardNumber:
+  //       String(cardDetails.number || "")
+  //         .replace(/\s|-/g, "")
+  //         .match(/.{1,4}/g)
+  //         ?.join("-") || "",
+  //     expiryDate: cardDetails.expiry,
+  //     cvv: cardDetails.cvc,
+  //     amount: 100,
+  //     payerName: JSON.parse(localStorage.getItem("userEcomme"))?.name,
+  //     externalRef: transactionId,
+  //     browserInfo: {
+  //       javaEnabled: false,
+  //       javascriptEnabled: true,
+  //       screenHeight: window.screen.height,
+  //       screenWidth: window.screen.width,
+  //       TZ: new Date().getTimezoneOffset() / -60,
+  //       challengeWindowSize: "05",
+  //     },
+  //   };
+
+  //   const response = await axios.post(`${BackendUrl}/pay-with-card`, cardData);
+  //   if (response.data.success && response.data.redirectUrl) {
+  //     window.open(
+  //       response.data.redirectUrl,
+  //       "_blank",
+  //       "width=800,height=600,scrollbars=yes,resizable=yes"
+  //     );
+  //   }
+  //   return response;
+  // };
+
+  const processCardPayment = async (transactionId) => {
+    const cardData = {
+      cardNumber:
+        String(cardDetails.number || "")
+          .replace(/\s|-/g, "")
+          .match(/.{1,4}/g)
+          ?.join("-") || "",
+      expiryDate: cardDetails.expiry,
+      cvv: cardDetails.cvc,
+      amount: 100,
+      payerName: JSON.parse(localStorage.getItem("userEcomme"))?.name,
+      externalRef: transactionId,
+      browserInfo: {
+        javaEnabled: false,
+        javascriptEnabled: true,
+        screenHeight: window.screen.height,
+        screenWidth: window.screen.width,
+        TZ: new Date().getTimezoneOffset() / -60,
+        challengeWindowSize: "05",
+      },
+    };
+
+    try {
+      // Informer l'utilisateur que la fenêtre va s'ouvrir
+      alert(
+        "Une fenêtre de paiement va s'ouvrir. Veuillez autoriser les popups si nécessaire."
+      );
+
+      const response = await axios.post(
+        `${BackendUrl}/pay-with-card`,
+        cardData
+      );
+
+      if (response.data.success && response.data.redirectUrl) {
+        // Tentative d'ouverture de la fenêtre
+        const paymentWindow = window.open(
+          response.data.redirectUrl,
+          "_blank",
+          "width=800,height=600,scrollbars=yes,resizable=yes,top=50,left=50"
+        );
+
+        if (
+          !paymentWindow ||
+          paymentWindow.closed ||
+          typeof paymentWindow.closed == "undefined"
+        ) {
+          // Utiliser un composant modal ou une autre méthode plutôt que confirm
+          // Alternative à confirm
+          const userResponse =
+            window.confirm !== undefined
+              ? window.confirm(
+                  "La fenêtre de paiement n'a pas pu s'ouvrir automatiquement. Cliquez OK pour ouvrir la page de paiement."
+                )
+              : true; // Fallback si confirm n'est pas disponible
+
+          if (userResponse) {
+            window.location.href = response.data.redirectUrl;
+          } else {
+            setSubmitStatus({
+              loading: false,
+              error:
+                "Impossible d'ouvrir la fenêtre de paiement. Veuillez autoriser les popups pour ce site.",
+              success: false,
+            });
+            return;
+          }
+        }
+
+        // Vérifier périodiquement si la fenêtre est toujours ouverte
+        const checkWindow = setInterval(() => {
+          if (paymentWindow && paymentWindow.closed) {
+            clearInterval(checkWindow);
+            // Vérifier le statut du paiement
+            checkTransactionStatus(transactionId);
+          }
+        }, 1000);
+      } else {
+        setSubmitStatus({
+          loading: false,
+          error:
+            "Aucune URL de redirection n'a été fournie par le serveur de paiement.",
+          success: false,
+        });
+        return;
+      }
+
+      return response;
+    } catch (error) {
+      console.error("Erreur lors du paiement:", error);
+      // setSubmitStatus({
+      //   loading: false,
+      //   error:
+      //     "Une erreur est survenue lors de l'initialisation du paiement. Veuillez vérifier que les popups sont autorisés et réessayer.",
+      //   success: false,
+      // });
+      setSubmitStatus({
+        loading: false,
+        error:
+          error?.response?.data?.message ||
+          "Une erreur est survenue lors de l'initialisation du paiement. Veuillez vérifier que les popups sont autorisés et réessayer.",
+        success: false,
+      });
+    }
+  };
+
+  const processMobilePayment = async (transactionId) => {
+    const paymentData = {
+      option: selectedPayment,
+      phoneNumber: "+" + mobileDetails.operateur + mobileDetails.number,
+      country: "niger",
+      amount: 100,
+      externalRef: transactionId,
+      staType: selectedPayment,
+    };
+
+    try {
+      if (selectedPayment === "zeyna") {
+        const securityCodeReq = await axios.post(
+          `${BackendUrl}/requestZeynaCashSecurityCode`,
+          {
+            phoneNumber: paymentData.phoneNumber,
+          }
+        );
+
+        if (securityCodeReq.data.success) {
+          return new Promise((resolve, reject) => {
+            const handleSubmit = async (code) => {
+              try {
+                if (!code) {
+                  setSecurityCodeModal((prev) => ({
+                    ...prev,
+                    error: "Le code est requis",
+                  }));
+                  return;
+                }
+                if (code.trim().length < 4) {
+                  setSecurityCodeModal((prev) => ({
+                    ...prev,
+                    error: "le code n'est pqs valid",
+                  }));
+                  return;
+                }
+
+                paymentData.securityCode = code;
+                const response = await axios.post(
+                  `${BackendUrl}/processSTAPayment`,
+                  paymentData
+                );
+                setSecurityCodeModal({ isOpen: false, code: "", error: "" });
+                setHandleSecuritySubmit(null); // Réinitialiser le handler
+
+                // setOnSubmit(false);
+
+                resolve(response);
+              } catch (error) {
+                setSecurityCodeModal({
+                  isOpen: true,
+                  code: error?.response?.data?.code || "",
+                  error:
+                    error?.response?.data?.message ||
+                    "Code invalide. Veuillez réessayer.",
+                });
+                setHandleSecuritySubmit(null); // Réinitialiser le handler
+                console.log(error);
+                // setOnSubmit(false);
+                setSecurityCodeModal((prev) => ({
+                  ...prev,
+                  error:
+                    error?.response?.data?.message ||
+                    "Code invalide. Veuillez réessayer.",
+                }));
+                // setSubmitStatus({
+                //   loading: false,
+                //   error:
+                //     error?.response?.data?.message ||
+                //     "Code invalide. Veuillez réessayer.",
+                //   success: false,
+                // });
+                // setOnSubmit(false);
+                // return;
+              }
+            };
+
+            setHandleSecuritySubmit(() => handleSubmit); // Stocker le handler dans l'état
+            setSecurityCodeModal({ isOpen: true, code: "", error: "" });
+          });
+        } else {
+          setSubmitStatus({
+            loading: false,
+            error:
+              securityCodeReq.data.message ||
+              "Erreur lors de l'envoi du code de sécurité",
+            success: false,
+          });
+          return;
+        }
+      }
+
+      const response = await axios.post(
+        `${BackendUrl}/processSTAPayment`,
+        paymentData
+      );
+      if (response.data.code_validation) {
+        const message = `${response.data.message} Votre code de validation : ${response.data.code_validation}`;
+        alert(message);
+        setMessage(message);
+      }
+      return response;
+    } catch (error) {
+      console.error("Erreur lors du paiement mobile:", error);
+      throw error;
+    }
+  };
+
+  // Traitement des paiements Mobile Money
+  const processMobileMoneyPayment = async (transactionId) => {
+    const paymentData = {
+      operator: "airtel",
+      amount: 100,
+      phoneNumber: mobileDetails.number,
+      payerName: JSON.parse(localStorage.getItem("userEcomme"))?.name,
+      externalRef: transactionId,
+    };
+
+    const response = await axios.post(
+      `${BackendUrl}/processMobilePayment`,
+      paymentData
+    );
+    alert(response.data.message);
+    setMessage(response.data.message);
+    return response;
+  };
+
+  // Fonction utilitaire pour gérer les callbacks de paiement
+  const handlePaymentCallback = async (status, transactionId) => {
+    await axios.post(`${BackendUrl}/payment_callback`, {
+      status,
+      customerName: JSON.parse(localStorage.getItem("userEcomme"))?.name,
+      msisdn: mobileDetails.number,
+      reference: "komipay",
+      publicReference: selectedPayment,
+      externalReference: transactionId,
+      amount: orderTotal,
+      paymentDate: Date.now(),
+    });
+  };
+
+  // Fonction utilitaire pour vérifier le statut
+  const checkTransactionStatus = async (transactionId) => {
+    try {
+      const response = await axios.get(`${BackendUrl}/payment_status_card`, {
+        params: {
+          externalRef: transactionId,
+        },
+      });
+
+      if (
+        response?.data?.rawResponse?.code === 200 ||
+        response?.data?.rawResponse?.code === 201
+      ) {
+        // Succès du paiement
+        await handlePaymentCallback("success", transactionId);
+        return "complete";
+      } else {
+        // Échec du paiement
+        await handlePaymentCallback("échec", transactionId);
+        return "echec";
+      }
+    } catch (error) {
+      console.error("Erreur lors de la vérification du statut:", error);
+      return "echec";
+    }
+  };
+  // Dans useEffect pour vérifier au rechargement
+  useEffect(() => {
+    const checkPendingPayment = async () => {
+      const pendingPayment = localStorage.getItem("paymentInitiated");
+      if (pendingPayment) {
+        setSubmitStatus({ loading: true, error: null, success: false });
+        const { transactionId } = JSON.parse(pendingPayment);
+        try {
+          const status = await checkTransactionStatus(transactionId);
+          if (status === "complete") {
+            // Nettoyage
+            localStorage.removeItem("panier");
+            localStorage.removeItem("orderTotal");
+            localStorage.removeItem("paymentInfo");
+            localStorage.removeItem("pendingOrder");
+
+            if (orderCodeP?.isValide) {
+              await axios.put(`${BackendUrl}/updateCodePromo`, {
+                codePromoId: orderCodeP._id,
+                isValide: false,
+              });
+              localStorage.removeItem("orderCodeP");
+            }
+
+            setSubmitStatus({
+              loading: false,
+              error: "Paiement effectué avec succès",
+              success: true,
+            });
+            setPaiementProduit(true);
+            navigation("/Commande");
+          } else {
+            setSubmitStatus({
+              loading: false,
+              error: "Le paiement a échoué. Veuillez réessayer.",
+              success: false,
+            });
+            setOnSubmit(false);
+          }
+        } finally {
+          setSubmitStatus({ loading: false, error: null, success: false });
+          localStorage.removeItem("paymentInitiated");
+        }
+      }
+    };
+
+    checkPendingPayment();
+  }, []);
+
   const handlePaymentSubmit = async (e) => {
     e.preventDefault();
     setSubmitStatus({ loading: true, error: null, success: false });
+    setMessage("veuillez patienter...");
     setOnSubmit(true);
+    let transactionId = null;
 
     try {
+      // 1. Vérification utilisateur
       const userId = JSON.parse(localStorage.getItem("userEcomme"))?.id;
       if (!userId) {
-        throw new Error(
-          "ID utilisateur non trouvé. Veuillez vous reconnecter."
-        );
+        setSubmitStatus({
+          loading: false,
+          error: "ID utilisateur non trouvé. Veuillez vous reconnecter.",
+          success: false,
+        });
+        setOnSubmit(false);
+        return;
       }
 
-      // Valider les informations
+      // 2. Validation des données
       const deliveryErrors = validateDeliveryInfo();
       const paymentErrors = validatePaymentInfo();
       if (deliveryErrors.length > 0 || paymentErrors.length > 0) {
@@ -289,51 +704,151 @@ const OrderConfirmation = ({ onClose }) => {
         return;
       }
 
-      // Sauvegarder l'adresse
-      await axios.post(`${BackendUrl}/createOrUpdateAddress`, {
-        ...deliveryInfo,
-        email: deliveryInfo.email !== "" ? deliveryInfo.email : null,
-        clefUser: userId,
-      });
+      // 3. Vérification de commande existante
+      const existingOrder = localStorage.getItem("pendingOrder");
+      let commandeId;
 
-      // Sauvegarder le mode de paiement
-      const paymentData = { clefUser: userId };
-      if (selectedPayment === "Visa" || selectedPayment === "master Card") {
-        paymentData.option = selectedPayment;
-        paymentData.numeroCard = cardDetails.number;
-        paymentData.cvc = cardDetails.cvc;
-        paymentData.expire = cardDetails.expiry;
-      } else if (
-        selectedPayment === "zeyna" ||
-        selectedPayment === "nita" ||
-        selectedPayment === "amana"
-      ) {
-        paymentData.option = selectedPayment;
-      } else if (selectedPayment === "Mobile Money") {
-        paymentData.option = "Mobile Money";
-        paymentData.numero =
-          mobileDetails.number.length === 8
-            ? mobileDetails.operateur + mobileDetails.number
-            : mobileDetails.number;
-        paymentData.operateur = mobileDetails.operateur;
+      if (existingOrder) {
+        // Utiliser la commande existante mais générer un nouveau transactionId
+        const orderData = JSON.parse(existingOrder);
+        commandeId = orderData.commandeId;
+        const currentReference = orderData.transactionId;
+
+        // Initialiser la nouvelle transaction
+        const transactionResponse = await axios.post(
+          `${BackendUrl}/api/initiate-transaction`,
+          {
+            userId,
+            amount: orderTotal,
+            paymentMethod: selectedPayment,
+          }
+        );
+
+        if (!transactionResponse.data.success) {
+          setSubmitStatus({
+            loading: false,
+            error: "Échec de l'initiation du paiement",
+            success: false,
+          });
+          setOnSubmit(false);
+          return;
+        }
+
+        transactionId = transactionResponse.data.transactionId;
+
+        // Mettre à jour la commande avec le nouveau transactionId
+        await axios.put(`${BackendUrl}/updateCommande`, {
+          clefUser: userId,
+          nbrProduits: JSON.parse(localStorage.getItem("panier")).map(
+            (item) => ({
+              produit: item._id,
+              quantite: item.quantity,
+              tailles: item.sizes,
+              couleurs: item.colors,
+            })
+          ),
+          prix: orderTotal,
+          oldReference: currentReference,
+          newReference: transactionId,
+          livraisonDetails: {
+            customerName: deliveryInfo.name,
+            email: deliveryInfo.email,
+            region: deliveryInfo.region,
+            quartier: deliveryInfo.quartier,
+            numero: deliveryInfo.numero,
+            description: deliveryInfo.description,
+          },
+          prod: JSON.parse(localStorage.getItem("panier")),
+          ...(orderCodeP?.isValide && {
+            codePro: true,
+            idCodePro: orderCodeP._id,
+          }),
+        });
+
+        localStorage.setItem(
+          "pendingOrder",
+          JSON.stringify({
+            commandeId,
+            transactionId,
+            timestamp: new Date().getTime(),
+          })
+        );
       } else {
-        paymentData.option = "Payment a domicile";
+        // 4. Sauvegarde de l'adresse
+        await axios.post(`${BackendUrl}/createOrUpdateAddress`, {
+          ...deliveryInfo,
+          email: deliveryInfo.email !== "" ? deliveryInfo.email : null,
+          clefUser: userId,
+        });
+
+        // 5. Vérification du panier
+        const panier = JSON.parse(localStorage.getItem("panier"));
+        if (!panier || panier.length === 0) {
+          setSubmitStatus({
+            loading: false,
+            error: "Aucun produit n'est sélectionné.",
+            success: false,
+          });
+          setOnSubmit(false);
+          return;
+        }
+
+        // 6. Création de la transaction
+        transactionId = generateUniqueID();
+        const commandeData = {
+          clefUser: userId,
+          nbrProduits: panier.map((item) => ({
+            produit: item._id,
+            quantite: item.quantity,
+            tailles: item.sizes,
+            couleurs: item.colors,
+          })),
+          prix: orderTotal,
+          statusPayment: "en_attente",
+          reference: transactionId,
+          livraisonDetails: {
+            customerName: deliveryInfo.name,
+            email: deliveryInfo.email,
+            region: deliveryInfo.region,
+            quartier: deliveryInfo.quartier,
+            numero: deliveryInfo.numero,
+            description: deliveryInfo.description,
+          },
+          prod: panier,
+          ...(orderCodeP?.isValide && {
+            codePro: true,
+            idCodePro: orderCodeP._id,
+          }),
+        };
+
+        const orderResponse = await axios.post(
+          `${BackendUrl}/createCommande`,
+          commandeData
+        );
+        commandeId = orderResponse.data._id;
+
+        localStorage.setItem(
+          "pendingOrder",
+          JSON.stringify({
+            commandeId,
+            transactionId,
+            timestamp: new Date().getTime(),
+          })
+        );
       }
-      // await axios.post(`${BackendUrl}/createMoyentPayment`, paymentData);
 
-      // Préparer les données de la commande
-      const panier = JSON.parse(localStorage.getItem("panier"));
-      if (!panier || panier.length === 0) {
-        throw new Error("Aucun produit n'est sélectionné.");
-      }
+      // Avant de lancer le paiement
+      localStorage.setItem(
+        "paymentInitiated",
+        JSON.stringify({
+          transactionId,
+          commandeId,
+          timestamp: new Date().getTime(),
+        })
+      );
 
-      const produits = panier.map((item) => ({
-        produit: item._id,
-        quantite: item.quantity,
-        tailles: item.sizes,
-        couleurs: item.colors,
-      }));
-
+      // 7. Traitement du paiement selon la méthode
+      // 7. Traitement du paiement selon la méthode
       if (
         [
           "Visa",
@@ -345,583 +860,77 @@ const OrderConfirmation = ({ onClose }) => {
         ].includes(selectedPayment)
       ) {
         try {
-          // Vérifier si une commande en attente existe déjà
-          const existingOrder = localStorage.getItem("pendingOrder");
-          let commandeId;
-
-          if (existingOrder) {
-            // Utiliser la commande existante mais générer un nouveau transactionId
-            const orderData = JSON.parse(existingOrder);
-            commandeId = orderData.commandeId;
-
-            // Obtenir la référence actuelle
-            const currentReference = orderData.transactionId;
-
-            // Générer un nouveau transactionId
-            const newTransactionReference = generateUniqueID();
-
-            // Mettre à jour la commande avec le nouveau transactionId
-            await axios.put(
-              `${process.env.REACT_APP_Backend_Url}/updateCommande`,
-              {
-                clefUser: userId,
-                nbrProduits: produits,
-                prix: orderTotal,
-                oldReference: currentReference,
-                newReference: newTransactionReference,
-                livraisonDetails: {
-                  customerName: deliveryInfo.name,
-                  email: deliveryInfo.email,
-                  region: deliveryInfo.region,
-                  quartier: deliveryInfo.quartier,
-                  numero: deliveryInfo.numero,
-                  description: deliveryInfo.description,
-                },
-                prod: panier,
-                ...(orderCodeP?.isValide && {
-                  codePro: true,
-                  idCodePro: orderCodeP._id,
-                }),
-              }
-            );
-
-            // Sauvegarder les informations de la commande avec le nouveau transactionId
-            localStorage.setItem(
-              "pendingOrder",
-              JSON.stringify({
-                commandeId,
-                transactionId: newTransactionReference,
-                timestamp: new Date().getTime(),
-              })
-            );
-          } else {
-            // Créer une nouvelle commande avec le transactionId
-            const transactionId = generateUniqueID();
-            const commandeData = {
-              clefUser: userId,
-              nbrProduits: produits,
-              prix: orderTotal,
-              statusPayment: "en attente",
-              livraisonDetails: {
-                customerName: deliveryInfo.name,
-                email: deliveryInfo.email,
-                region: deliveryInfo.region,
-                quartier: deliveryInfo.quartier,
-                numero: deliveryInfo.numero,
-                description: deliveryInfo.description,
-              },
-              prod: panier,
-              reference: transactionId,
-              ...(orderCodeP?.isValide && {
-                codePro: true,
-                idCodePro: orderCodeP._id,
-              }),
-            };
-
-            const response = await axios.post(
-              `${BackendUrl}/createCommande`,
-              commandeData
-            );
-            commandeId = response.data._id;
-
-            // Sauvegarder les informations de la commande
-            localStorage.setItem(
-              "pendingOrder",
-              JSON.stringify({
-                commandeId,
-                transactionId,
-                timestamp: new Date().getTime(),
-              })
-            );
-          }
-
-          ////////////////////////////////////getion du payment de la commande by ckomipay //////////////////////////////////
-
           if (selectedPayment === "Visa" || selectedPayment === "master Card") {
-            const transactionId = JSON.parse(
-              localStorage.getItem("pendingOrder")
-            ).transactionId;
-            const paymentData = {
-              orderTotal,
-              transactionId,
-              orderId: commandeId,
-              paymentMethod: selectedPayment,
-              cardNumber: cardDetails.number,
-              cardCvc: cardDetails.cvc,
-              cardExpiration: cardDetails.expiry,
-            };
-
-            const rawNum = String(cardDetails.number || "").replace(
-              /\s|-/g,
-              ""
-            );
-            const formattedNum = rawNum.match(/.{1,4}/g)?.join("-") || "";
-            const data_to_send = {
-              cardNumber: formattedNum,
-              expiryDate: cardDetails.expiry,
-              cvv: cardDetails.cvc,
-              amount: orderTotal,
-              payerName: JSON.parse(localStorage.getItem("userEcomme"))?.name,
-              externalRef: transactionId,
-              browserInfo: {
-                javaEnabled: false,
-                javascriptEnabled: true,
-                screenHeight: 900,
-                screenWidth: 1440,
-                TZ: 1,
-                challengeWindowSize: "05",
-              },
-            };
-
-            axios
-              .post(`${BackendUrl}/pay-with-card`, data_to_send)
-              .then((respose) => {
-                const reference = respose.data.transactionData.reference;
-                const externalReference =
-                  respose.data.transactionData.externalReference;
-                const redirectUrl = respose.data.redirectUrl;
-
-                console.log(respose.data);
-
-                if (respose.data.success && respose.data.redirectUrl) {
-                  window.open(
-                    respose.data.redirectUrl, // URL à ouvrir
-                    "_blank", // Ouvre dans une nouvelle fenêtre
-                    "width=800,height=600,scrollbars=yes,resizable=yes"
-                  );
-                }
-                axios
-                  .get(`${BackendUrl}/payment_status_card`, {
-                    params: {
-                      externalRef: externalReference,
-                    },
-                  })
-                  .then(async (response) => {
-                    console.log("Réponse de la requête : ", response.data);
-                    // échec
-                    if (
-                      response?.data?.rawResponse?.code === 200 ||
-                      response?.data?.rawResponse?.code === 201
-                    ) {
-                      setSubmitStatus({
-                        loading: false,
-                        error:
-                          response?.data?.rawResponse?.message ||
-                          "payment effectuer avec succes",
-                        success: true,
-                      });
-                      alert(
-                        response?.data?.rawResponse?.message ||
-                          "payment effectuer avec succes"
-                      );
-                      setMessage(
-                        response?.data?.rawResponse?.message ||
-                          "payment effectuer avec succes"
-                      );
-                      await axios
-                        .post(`${BackendUrl}/payment_callback`, {
-                          status: "success", // Statut du paiement (success/failed)
-                          customerName: user?.name, // Nom du client
-                          msisdn: mobileDetails.number, // Numéro de téléphone
-                          reference: "komipay", // Référence iPay
-                          publicReference: selectedPayment, // Référence publique iPay
-                          externalReference: transactionId, // Notre référence de transaction
-                          amount: orderTotal, // Montant payé
-                          paymentDate: Date.now(), // Date du paiement
-                        })
-                        .then((r) => console.log(r))
-                        .catch((err) => console.log(err));
-                      localStorage.removeItem("panier");
-                      localStorage.removeItem("orderTotal");
-                      localStorage.removeItem("paymentInfo");
-                      localStorage.removeItem("pendingOrder");
-                      navigation("/Commande");
-                    } else {
-                      setSubmitStatus({
-                        loading: false,
-                        error:
-                          response?.data?.rawResponse?.message ||
-                          "Une erreur est survenue",
-                        success: false,
-                      });
-
-                      await axios
-                        .post(`${BackendUrl}/payment_callback`, {
-                          status: "échec", // Statut du paiement (success/failed)
-                          customerName: user?.name, // Nom du client
-                          msisdn: mobileDetails.number, // Numéro de téléphone
-                          reference: "komipay", // Référence iPay
-                          publicReference: selectedPayment, // Référence publique iPay
-                          externalReference: transactionId, // Notre référence de transaction
-                          amount: orderTotal, // Montant payé
-                          paymentDate: Date.now(), // Date du paiement
-                        })
-                        .then((r) => console.log(r))
-                        .catch((err) => console.log(err));
-
-                      return;
-                    }
-                  })
-                  .catch((error) => {
-                    setSubmitStatus({
-                      loading: false,
-                      error:
-                        error?.response?.data?.message ||
-                        "Une erreur est survenue veuillez verifier vos informations",
-                      success: false,
-                    });
-                    console.error("Erreur lors de la requête : ", error);
-                  });
-                setOnSubmit(false);
-              })
-              .catch((error) => {
-                setSubmitStatus({
-                  loading: false,
-                  error:
-                    error?.response?.data?.message || "Une erreur est survenue",
-                  success: false,
-                });
-                setOnSubmit(false);
-                console.log(error);
-              });
-
-            ////////////// recuperation de l'url de confirmation de code via le backend /////////////////
-          } else if (
-            selectedPayment === "zeyna" ||
-            selectedPayment === "nita" ||
-            selectedPayment === "amana"
-          ) {
-            const paymentDataSend = {};
-            paymentDataSend.option = selectedPayment;
-            if (selectedPayment === "zeyna") {
-              const securityCodereq = await axios.post(
-                `${BackendUrl}/requestZeynaCashSecurityCode`,
-                {
-                  phoneNumber:
-                    "+" + mobileDetails.operateur + mobileDetails.number,
-                }
-              );
-              if (securityCodereq.data.success === true) {
-                const securityCode =
-                  prompt(
-                    "veuiller rentrer le code qui vous a ete envoyer par sms"
-                  ) || null;
-                paymentDataSend.securityCode = securityCode || null;
-              } else {
-                setSubmitStatus({
-                  loading: false,
-                  error:
-                    securityCodereq?.data?.message || "Une erreur est survenue",
-                  success: false,
-                });
-                setMessage(
-                  securityCodereq?.data?.message || "Une erreur est survenue"
-                );
-                return;
-              }
-            }
-            const transactionId = JSON.parse(
-              localStorage.getItem("pendingOrder")
-            )?.transactionId;
-
-            paymentDataSend.phoneNumber =
-              "+" + mobileDetails.operateur + mobileDetails.number;
-            paymentDataSend.country = "niger";
-            paymentDataSend.amount = "100";
-            // paymentDataSend.amount = orderTotal;
-            paymentDataSend.externalRef = transactionId;
-            paymentDataSend.staType = selectedPayment;
-            console.log(paymentDataSend);
-            await axios
-              .post(`${BackendUrl}/processSTAPayment`, paymentDataSend)
-              .then((respose) => {
-                alert(
-                  `${respose?.data?.message} voici votre code de validation : ${respose?.data?.code_validation}`
-                );
-                setMessage(
-                  `${respose?.data?.message} voici votre code de validation : ${respose?.data?.code_validation}`
-                );
-                console.log(respose?.data);
-                axios
-                  .get(`${BackendUrl}/payment_status_card`, {
-                    params: {
-                      externalRef: transactionId,
-                    },
-                  })
-                  .then(async (response) => {
-                    console.log("Réponse de la requête : ", response.data);
-                    if (
-                      response?.data?.rawResponse?.code === 200 ||
-                      response?.data?.rawResponse?.code === 201
-                    ) {
-                      setSubmitStatus({
-                        loading: false,
-                        error:
-                          response?.data?.rawResponse?.message ||
-                          "payment effectuer avec succes",
-                        success: true,
-                      });
-                      alert(response?.data?.rawResponse?.message);
-                      setMessage(response?.data?.rawResponse?.message);
-                      await axios
-                        .post(`${BackendUrl}/payment_callback`, {
-                          status: "success", // Statut du paiement (success/failed)
-                          customerName: user?.name, // Nom du client
-                          msisdn: mobileDetails.number, // Numéro de téléphone
-                          reference: "komipay", // Référence iPay
-                          publicReference: selectedPayment, // Référence publique iPay
-                          externalReference: transactionId, // Notre référence de transaction
-                          amount: orderTotal, // Montant payé
-                          paymentDate: Date.now(), // Date du paiement
-                        })
-                        .then((r) => console.log(r))
-                        .catch((err) => console.log(err));
-                      localStorage.removeItem("panier");
-                      localStorage.removeItem("orderTotal");
-                      localStorage.removeItem("paymentInfo");
-                      localStorage.removeItem("pendingOrder");
-                      navigation("/Commande");
-                    } else {
-                      setSubmitStatus({
-                        loading: false,
-                        error:
-                          response?.data?.rawResponse?.message ||
-                          "Une erreur est survenue",
-                        success: false,
-                      });
-                      await axios
-                        .post(`${BackendUrl}/payment_callback`, {
-                          status: "échec", // Statut du paiement (success/failed)
-                          customerName: user?.name, // Nom du client
-                          msisdn: mobileDetails.number, // Numéro de téléphone
-                          reference: "komipay", // Référence iPay
-                          publicReference: selectedPayment, // Référence publique iPay
-                          externalReference: transactionId, // Notre référence de transaction
-                          amount: orderTotal, // Montant payé
-                          paymentDate: Date.now(), // Date du paiement
-                        })
-                        .then((r) => console.log(r))
-                        .catch((err) => console.log(err));
-                      return;
-                    }
-                  })
-                  .catch((error) => {
-                    setSubmitStatus({
-                      loading: false,
-                      error:
-                        error?.response?.data?.message ||
-                        "Une erreur est survenue veuillez verifier vos informations",
-                      success: false,
-                    });
-                    setOnSubmit(false);
-                    console.error("Erreur lors de la requête : ", error);
-                  });
-              })
-              .catch((error) => {
-                setSubmitStatus({
-                  loading: false,
-                  error:
-                    error?.response?.data?.message || "Une erreur est survenue",
-                  success: false,
-                });
-                setOnSubmit(false);
-                console.log(error);
-              });
-          } else if ("Mobile Money") {
-            const transactionId = JSON.parse(
-              localStorage.getItem("pendingOrder")
-            )?.transactionId;
-            const paymentDataSend = {
-              operator: "airtel",
-              amount: "100",
-              phoneNumber: mobileDetails.number,
-              payerName: user?.name,
-              externalRef: transactionId,
-            };
-
-            await axios
-              .post(`${BackendUrl}/processMobilePayment`, paymentDataSend)
-              .then((respose) => {
-                alert(`${respose?.data?.message}`);
-                setMessage(`${respose?.data?.message}`);
-                console.log(respose?.data);
-                axios
-                  .get(`${BackendUrl}/payment_status_card`, {
-                    params: {
-                      externalRef: transactionId,
-                    },
-                  })
-                  .then(async (response) => {
-                    console.log("Réponse de la requête : ", response.data);
-                    if (
-                      response?.data?.rawResponse?.code === 200 ||
-                      response?.data?.rawResponse?.code === 201
-                    ) {
-                      setSubmitStatus({
-                        loading: false,
-                        error:
-                          response?.data?.rawResponse?.message ||
-                          "payment effectuer avec succes",
-                        success: true,
-                      });
-                      alert(response?.data?.rawResponse?.message);
-                      setMessage(response?.data?.rawResponse?.message);
-
-                      await axios
-                        .post(`${BackendUrl}/payment_callback`, {
-                          status: "success", // Statut du paiement (success/failed)
-                          customerName: user?.name, // Nom du client
-                          msisdn: mobileDetails.number, // Numéro de téléphone
-                          reference: "komipay", // Référence iPay
-                          publicReference: selectedPayment, // Référence publique iPay
-                          externalReference: transactionId, // Notre référence de transaction
-                          amount: orderTotal, // Montant payé
-                          paymentDate: Date.now(), // Date du paiement
-                        })
-                        .then((r) => console.log(r))
-                        .catch((err) => console.log(err));
-                      localStorage.removeItem("panier");
-                      localStorage.removeItem("orderTotal");
-                      localStorage.removeItem("paymentInfo");
-                      localStorage.removeItem("pendingOrder");
-                      navigation("/Commande");
-                    } else {
-                      setSubmitStatus({
-                        loading: false,
-                        error:
-                          response?.data?.rawResponse?.message ||
-                          "Une erreur est survenue",
-                        success: false,
-                      });
-                      await axios
-                        .post(`${BackendUrl}/payment_callback`, {
-                          status: "échec", // Statut du paiement (success/failed)
-                          customerName: user?.name, // Nom du client
-                          msisdn: mobileDetails.number, // Numéro de téléphone
-                          reference: "komipay", // Référence iPay
-                          publicReference: selectedPayment, // Référence publique iPay
-                          externalReference: transactionId, // Notre référence de transaction
-                          amount: orderTotal, // Montant payé
-                          paymentDate: Date.now(), // Date du paiement
-                        })
-                        .then((r) => console.log(r))
-                        .catch((err) => console.log(err));
-                      return;
-                    }
-                  })
-                  .catch((error) => {
-                    setSubmitStatus({
-                      loading: false,
-                      error:
-                        error?.response?.data?.message ||
-                        "Une erreur est survenue veuillez verifier vos informations",
-                      success: false,
-                    });
-                    setOnSubmit(false);
-                    console.error("Erreur lors de la requête : ", error);
-                  });
-              })
-              .catch((error) => {
-                setSubmitStatus({
-                  loading: false,
-                  error:
-                    error?.response?.data?.message || "Une erreur est survenue",
-                  success: false,
-                });
-                setOnSubmit(false);
-                console.log(error);
-              });
+            await processCardPayment(transactionId);
+          } else if (["zeyna", "nita", "amana"].includes(selectedPayment)) {
+            await processMobilePayment(transactionId);
+          } else if (selectedPayment === "Mobile Money") {
+            await processMobileMoneyPayment(transactionId);
           }
 
-          ////////////////////////////////////getion du payment de la commande by ckomipay //////////////////////////////////
+          // Vérification unique du statut
+          const status = await checkTransactionStatus(transactionId);
 
-          // // Stocker les informations de paiement
-          // localStorage.setItem(
-          //   "paymentInfo",
-          //   JSON.stringify({
-          //     amount: orderTotal,
-          //     transactionId: JSON.parse(localStorage.getItem("pendingOrder"))
-          //       .transactionId,
-          //   })
-          // );
+          if (status === "complete") {
+            // Nettoyage
+            localStorage.removeItem("panier");
+            localStorage.removeItem("orderTotal");
+            localStorage.removeItem("paymentInfo");
+            localStorage.removeItem("pendingOrder");
 
-          // // Rediriger vers la page de paiement
-          // window.location.href = "/payment.html";
+            if (orderCodeP?.isValide) {
+              await axios.put(`${BackendUrl}/updateCodePromo`, {
+                codePromoId: orderCodeP._id,
+                isValide: false,
+              });
+              localStorage.removeItem("orderCodeP");
+            }
+
+            setSubmitStatus({
+              loading: false,
+              error: "Paiement effectué avec succès",
+              success: true,
+            });
+            setPaiementProduit(true);
+            navigation("/Commande");
+          } else {
+            setSubmitStatus({
+              loading: false,
+              error: "Le paiement a échoué. Veuillez réessayer.",
+              success: false,
+            });
+            setOnSubmit(false);
+          }
         } catch (error) {
-          console.error("Erreur:", error);
           setSubmitStatus({
             loading: false,
             error:
-              error?.response?.data?.message ||
-              "Une erreur est survenue lors de la création de la commande",
+              error.response?.data?.message ||
+              "Une erreur est survenue lors du paiement",
             success: false,
           });
-          alert(
-            error?.response?.data?.message ||
-              "Une erreur est survenue lors de la création de la commande"
-          );
-          setMessage(
-            error?.response?.data?.message ||
-              "Une erreur est survenue lors de la création de la commande"
-          );
           setOnSubmit(false);
         }
       } else {
         // Paiement à la livraison
-        const transactionId = generateUniqueID();
-        const commandeData = {
-          clefUser: userId,
-          nbrProduits: produits,
-          prix: orderTotal,
-          statusPayment: "payé à la livraison",
-          livraisonDetails: {
-            customerName: deliveryInfo.name,
-            email: deliveryInfo.email,
-            region: deliveryInfo.region,
-            quartier: deliveryInfo.quartier,
-            numero: deliveryInfo.numero,
-            description: deliveryInfo.description,
-          },
-          reference: transactionId,
-          prod: panier,
-          ...(orderCodeP?.isValide && {
-            codePro: true,
-            idCodePro: orderCodeP._id,
-          }),
-        };
+        localStorage.removeItem("panier");
+        localStorage.removeItem("orderTotal");
 
-        const response = await axios.post(
-          `${BackendUrl}/createCommande`,
-          commandeData
-        );
-
-        if (response.status === 200) {
-          localStorage.removeItem("panier");
-          localStorage.removeItem("orderTotal");
-
-          if (orderCodeP?.isValide) {
-            await axios.put(`${BackendUrl}/updateCodePromo`, {
-              codePromoId: orderCodeP._id,
-              isValide: false,
-            });
-            localStorage.removeItem("orderCodeP");
-          }
-
-          setSubmitStatus({
-            loading: false,
-            error: null,
-            success: true,
+        if (orderCodeP?.isValide) {
+          await axios.put(`${BackendUrl}/updateCodePromo`, {
+            codePromoId: orderCodeP._id,
+            isValide: false,
           });
-          setPaiementProduit(true);
+          localStorage.removeItem("orderCodeP");
         }
-      }
 
-      setOnSubmit(false);
+        setSubmitStatus({ loading: false, error: null, success: true });
+        setPaiementProduit(true);
+      }
     } catch (error) {
-      console.error("Erreur:", error);
       setSubmitStatus({
         loading: false,
-        error: error.message || "Une erreur est survenue",
+        error: error.response?.data?.message || "Une erreur est survenue",
         success: false,
       });
       setOnSubmit(false);
@@ -969,200 +978,215 @@ const OrderConfirmation = ({ onClose }) => {
   };
 
   return (
-    <LoadingIndicator
-      text={message.length > 0 ? message : null}
-      loading={submitStatus.loading ? true : false}
-    >
-      <div className="min-h-screen flex justify-center items-center">
-        <div className="container rounded-lg p-2 overflow-hidden">
-          {submitStatus.error && (
-            <div className={`mb-4 p-1 rounded bg-red-100 text-red-700`}>
-              <p className="flex items-center">
-                <AlertCircle className="mr-2 h-4 w-4" />
-                {submitStatus.error}
-              </p>
-            </div>
-          )}
-          {submitStatus.success && (
-            <div className={`mb-4 p-1 rounded bg-green-100 text-green-700`}>
-              <p className="flex items-center">
-                <Check className="mr-2 h-4 w-4" />
-                Commande enregistrée avec succès
-              </p>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-1 gap-4 mx-auto">
-            {/* Première carte - Informations de livraison */}
-            <div className="w-full p-4 sm:p-6 md:p-3 transition-all duration-300">
-              <h2 className="text-xl sm:text-2xl font-semibold text-[#B17236] border-b-2 border-[#30A08B] pb-2 mb-4">
-                Informations de livraison
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Nom complet
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={deliveryInfo.name}
-                    onChange={handleDeliveryChange}
-                    className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
-                    placeholder="Votre nom complet"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={deliveryInfo.email}
-                    onChange={handleDeliveryChange}
-                    className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
-                    placeholder="Votre email"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="numero"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Numéro de téléphone
-                  </label>
-                  <input
-                    type="tel"
-                    id="numero"
-                    name="numero"
-                    value={deliveryInfo.numero}
-                    onChange={handleDeliveryChange}
-                    className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
-                    placeholder="Votre numéro de téléphone"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="region"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Région
-                  </label>
-                  <input
-                    type="text"
-                    id="region"
-                    name="region"
-                    value={deliveryInfo.region}
-                    onChange={handleDeliveryChange}
-                    className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
-                    placeholder="Votre région"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="quartier"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Quartier
-                  </label>
-                  <input
-                    type="text"
-                    id="quartier"
-                    name="quartier"
-                    value={deliveryInfo.quartier}
-                    onChange={handleDeliveryChange}
-                    className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
-                    placeholder="Votre quartier"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="description"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Instructions de livraison
-                  </label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    value={deliveryInfo.description}
-                    onChange={handleDeliveryChange}
-                    rows="3"
-                    className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
-                    placeholder="Instructions supplémentaires pour la livraison"
-                  ></textarea>
-                </div>
-              </div>
-            </div>
-
-            {/* Deuxième carte - Méthode de paiement */}
-            <PaiementPage
-              selectedPayment={selectedPayment}
-              setSelectedPayment={setSelectedPayment}
-              cardDetails={cardDetails}
-              setCardDetails={setCardDetails}
-              mobileDetails={mobileDetails}
-              setMobileDetails={setMobileDetails}
-              submitStatus={submitStatus}
-              setSubmitStatus={setSubmitStatus}
-              onSubmit={onSubmit}
-              setOnSubmit={setOnSubmit}
-              validatePaymentInfo={validatePaymentInfo}
-              handlePress={handlePress}
-              handlePaymentSubmit={handlePaymentSubmit}
-              getPaymentDescription={getPaymentDescription}
-              formatCardNumber={formatCardNumber}
-            />
-          </div>
-
-          <motion.button
-            onClick={handlePaymentSubmit}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="mt-6 bg-[#30A08B] text-white p-3 rounded-lg w-full shadow-md hover:bg-opacity-90 transition-all duration-300"
-          >
-            {submitStatus.loading ? (
-              <div style={spinnerStyle} className="animate-spin"></div>
-            ) : (
-              <span>Confirmer la commande {orderTotal} fcfa</span>
-            )}
-          </motion.button>
-
-          {paiementProduit && (
-            <div className="min-h-screen flex justify-center items-center bg-black bg-opacity-10 fixed inset-0 z-50">
-              <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm mx-auto text-center">
-                <div className="flex justify-center mb-4">
-                  <Check className="h-12 w-12 text-green-600 animate-bounce" />
-                </div>
-                <h2 className="text-2xl font-semibold text-green-800 mb-2">
-                  Commande confirmée !
-                </h2>
-                <p className="text-gray-700 mb-4">
-                  Merci pour votre commande. Vous recevrez bientôt un e-mail de
-                  confirmation.
+    <>
+      <LoadingIndicator
+        text={message.length > 0 ? message : null}
+        loading={submitStatus.loading ? true : false}
+      >
+        <div className="min-h-screen flex justify-center items-center">
+          <div className="container rounded-lg p-2 overflow-hidden">
+            {submitStatus.error && (
+              <div className={`mb-4 p-1 rounded bg-red-100 text-red-700`}>
+                <p className="flex items-center">
+                  <AlertCircle className="mr-2 h-4 w-4" />
+                  {submitStatus.error}
                 </p>
-                <button
-                  onClick={() => navigation("/Commande")}
-                  className="w-full bg-[#30A08B] text-white py-2 rounded-lg font-semibold hover:bg-[#30A08B]/90 transition duration-200"
-                >
-                  Mes commandes
-                </button>
               </div>
+            )}
+            {submitStatus.success && (
+              <div className={`mb-4 p-1 rounded bg-green-100 text-green-700`}>
+                <p className="flex items-center">
+                  <Check className="mr-2 h-4 w-4" />
+                  Commande enregistrée avec succès
+                </p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-1 gap-4 mx-auto">
+              {/* Première carte - Informations de livraison */}
+              <div className="w-full p-4 sm:p-6 md:p-3 transition-all duration-300">
+                <h2 className="text-xl sm:text-2xl font-semibold text-[#B17236] border-b-2 border-[#30A08B] pb-2 mb-4">
+                  Informations de livraison
+                </h2>
+                <div className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="name"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Nom complet
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={deliveryInfo.name}
+                      onChange={handleDeliveryChange}
+                      className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
+                      placeholder="Votre nom complet"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={deliveryInfo.email}
+                      onChange={handleDeliveryChange}
+                      className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
+                      placeholder="Votre email"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="numero"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Numéro de téléphone
+                    </label>
+                    <input
+                      type="tel"
+                      id="numero"
+                      name="numero"
+                      value={deliveryInfo.numero}
+                      onChange={handleDeliveryChange}
+                      className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
+                      placeholder="Votre numéro de téléphone"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="region"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Région
+                    </label>
+                    <input
+                      type="text"
+                      id="region"
+                      name="region"
+                      value={deliveryInfo.region}
+                      onChange={handleDeliveryChange}
+                      className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
+                      placeholder="Votre région"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="quartier"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Quartier
+                    </label>
+                    <input
+                      type="text"
+                      id="quartier"
+                      name="quartier"
+                      value={deliveryInfo.quartier}
+                      onChange={handleDeliveryChange}
+                      className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
+                      placeholder="Votre quartier"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="description"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Instructions de livraison
+                    </label>
+                    <textarea
+                      id="description"
+                      name="description"
+                      value={deliveryInfo.description}
+                      onChange={handleDeliveryChange}
+                      rows="3"
+                      className="mt-1 p-3 border border-gray-300 rounded-lg w-full"
+                      placeholder="Instructions supplémentaires pour la livraison"
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+
+              {/* Deuxième carte - Méthode de paiement */}
+              <PaiementPage
+                selectedPayment={selectedPayment}
+                setSelectedPayment={setSelectedPayment}
+                cardDetails={cardDetails}
+                setCardDetails={setCardDetails}
+                mobileDetails={mobileDetails}
+                setMobileDetails={setMobileDetails}
+                submitStatus={submitStatus}
+                setSubmitStatus={setSubmitStatus}
+                onSubmit={onSubmit}
+                setOnSubmit={setOnSubmit}
+                validatePaymentInfo={validatePaymentInfo}
+                handlePress={handlePress}
+                handlePaymentSubmit={handlePaymentSubmit}
+                getPaymentDescription={getPaymentDescription}
+                formatCardNumber={formatCardNumber}
+              />
             </div>
-          )}
+
+            <motion.button
+              onClick={handlePaymentSubmit}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="mt-6 bg-[#30A08B] text-white p-3 rounded-lg w-full shadow-md hover:bg-opacity-90 transition-all duration-300"
+            >
+              {submitStatus.loading ? (
+                <div style={spinnerStyle} className="animate-spin"></div>
+              ) : (
+                <span>Confirmer la commande {orderTotal} fcfa</span>
+              )}
+            </motion.button>
+
+            {paiementProduit && (
+              <div className="min-h-screen flex justify-center items-center bg-black bg-opacity-10 fixed inset-0 z-50">
+                <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm mx-auto text-center">
+                  <div className="flex justify-center mb-4">
+                    <Check className="h-12 w-12 text-green-600 animate-bounce" />
+                  </div>
+                  <h2 className="text-2xl font-semibold text-green-800 mb-2">
+                    Commande confirmée !
+                  </h2>
+                  <p className="text-gray-700 mb-4">
+                    Merci pour votre commande. Vous recevrez bientôt un e-mail
+                    de confirmation.
+                  </p>
+                  <button
+                    onClick={() => navigation("/Commande")}
+                    className="w-full bg-[#30A08B] text-white py-2 rounded-lg font-semibold hover:bg-[#30A08B]/90 transition duration-200"
+                  >
+                    Mes commandes
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </LoadingIndicator>
+      </LoadingIndicator>
+      <SecurityCodeModal
+        isOpen={securityCodeModal.isOpen}
+        onClose={() => {
+          setSubmitStatus({
+            loading: false,
+            error: "payment annuler",
+            success: false,
+          });
+          setSecurityCodeModal({ isOpen: false, code: "", error: "" });
+        }}
+        onSubmit={handleSecuritySubmit}
+        error={securityCodeModal.error}
+      />
+    </>
   );
 };
 
