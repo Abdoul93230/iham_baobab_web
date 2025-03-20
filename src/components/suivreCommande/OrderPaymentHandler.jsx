@@ -19,6 +19,16 @@ const OrderPaymentHandler = ({ panier, pendingOrder, id }) => {
           })
         );
 
+      if (pendingOrder !== null && id !== null)
+        localStorage.setItem(
+          "paymentInitiated",
+          JSON.stringify({
+            transactionId: pendingOrder,
+            commandeId: id,
+            timestamp: new Date().getTime(),
+          })
+        );
+
       // Rediriger vers la page panier
       navigate("/panier");
     }
