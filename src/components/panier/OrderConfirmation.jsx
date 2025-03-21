@@ -454,6 +454,117 @@ const OrderConfirmation = ({ onClose }) => {
     }
   };
 
+  // const processMobilePayment = async (transactionId) => {
+  //   const paymentData = {
+  //     option: selectedPayment,
+  //     phoneNumber: "+" + mobileDetails.operateur + mobileDetails.number,
+  //     country: "niger",
+  //     amount: 100,
+  //     externalRef: transactionId,
+  //     staType: selectedPayment,
+  //   };
+
+  //   try {
+  //     if (selectedPayment === "zeyna") {
+  //       const securityCodeReq = await axios.post(
+  //         `${BackendUrl}/requestZeynaCashSecurityCode`,
+  //         {
+  //           phoneNumber: paymentData.phoneNumber,
+  //         }
+  //       );
+
+  //       if (securityCodeReq.data.success) {
+  //         return new Promise((resolve, reject) => {
+  //           const handleSubmit = async (code) => {
+  //             try {
+  //               if (!code) {
+  //                 setSecurityCodeModal((prev) => ({
+  //                   ...prev,
+  //                   error: "Le code est requis",
+  //                 }));
+  //                 return;
+  //               }
+  //               if (code.trim().length < 4) {
+  //                 setSecurityCodeModal((prev) => ({
+  //                   ...prev,
+  //                   error: "le code n'est pqs valid",
+  //                 }));
+  //                 return;
+  //               }
+
+  //               paymentData.securityCode = code;
+  //               const response = await axios.post(
+  //                 `${BackendUrl}/processSTAPayment`,
+  //                 paymentData
+  //               );
+  //               setSecurityCodeModal({ isOpen: false, code: "", error: "" });
+  //               setHandleSecuritySubmit(null); // Réinitialiser le handler
+
+  //               // setOnSubmit(false);
+
+  //               resolve(response);
+  //             } catch (error) {
+  //               setSecurityCodeModal({
+  //                 isOpen: true,
+  //                 code: error?.response?.data?.code || "",
+  //                 error:
+  //                   error?.response?.data?.message ||
+  //                   "Code invalide. Veuillez réessayer.",
+  //               });
+  //               setHandleSecuritySubmit(null); // Réinitialiser le handler
+  //               console.log(error);
+  //               // setOnSubmit(false);
+  //               setSecurityCodeModal((prev) => ({
+  //                 ...prev,
+  //                 error:
+  //                   error?.response?.data?.message ||
+  //                   "Code invalide. Veuillez réessayer.",
+  //               }));
+  //               // setSubmitStatus({
+  //               //   loading: false,
+  //               //   error:
+  //               //     error?.response?.data?.message ||
+  //               //     "Code invalide. Veuillez réessayer.",
+  //               //   success: false,
+  //               // });
+  //               // setOnSubmit(false);
+  //               // return;
+  //             }
+  //           };
+
+  //           setHandleSecuritySubmit(() => handleSubmit); // Stocker le handler dans l'état
+  //           setSecurityCodeModal({ isOpen: true, code: "", error: "" });
+  //         });
+  //       } else {
+  //         setSubmitStatus({
+  //           loading: false,
+  //           error:
+  //             securityCodeReq.data.message ||
+  //             "Erreur lors de l'envoi du code de sécurité",
+  //           success: false,
+  //         });
+  //         return;
+  //       }
+  //     }
+
+  //     const response = await axios.post(
+  //       `${BackendUrl}/processSTAPayment`,
+  //       paymentData
+  //     );
+  //     if (response.data.code_validation) {
+  //       const message = `${response.data.message} Votre code de validation : ${response.data.code_validation}`;
+  //       alert(message);
+  //       setMessage(message);
+  //     }
+  //     return response;
+  //   } catch (error) {
+  //     console.error("Erreur lors du paiement mobile:", error);
+  //     throw error;
+  //   }
+  // };
+
+  // Traitement des paiements Mobile Money
+
   const processMobilePayment = async (transactionId) => {
     const paymentData = {
       option: selectedPayment,
@@ -465,105 +576,196 @@ const OrderConfirmation = ({ onClose }) => {
     };
 
     try {
+      // Sauvegarder les informations de transaction
+      const transactionInfo = {
+        id: transactionId,
+        startTime: Date.now(),
+        paymentType: selectedPayment,
+        checkCount: 0,
+        lastCheckTime: Date.now(),
+      };
+      localStorage.setItem(
+        "currentTransaction",
+        JSON.stringify(transactionInfo)
+      );
+
+      // Traitement spécial pour Zeyna qui nécessite un code de sécurité
       if (selectedPayment === "zeyna") {
         const securityCodeReq = await axios.post(
           `${BackendUrl}/requestZeynaCashSecurityCode`,
-          {
-            phoneNumber: paymentData.phoneNumber,
-          }
+          { phoneNumber: paymentData.phoneNumber }
         );
 
         if (securityCodeReq.data.success) {
           return new Promise((resolve, reject) => {
             const handleSubmit = async (code) => {
               try {
-                if (!code) {
+                if (!code || code.trim().length < 4) {
                   setSecurityCodeModal((prev) => ({
                     ...prev,
-                    error: "Le code est requis",
-                  }));
-                  return;
-                }
-                if (code.trim().length < 4) {
-                  setSecurityCodeModal((prev) => ({
-                    ...prev,
-                    error: "le code n'est pqs valid",
+                    error: "Code invalide",
                   }));
                   return;
                 }
 
                 paymentData.securityCode = code;
-                const response = await axios.post(
-                  `${BackendUrl}/processSTAPayment`,
-                  paymentData
+                const response = await processSTAPayment(
+                  paymentData,
+                  transactionId
                 );
                 setSecurityCodeModal({ isOpen: false, code: "", error: "" });
-                setHandleSecuritySubmit(null); // Réinitialiser le handler
-
-                // setOnSubmit(false);
-
                 resolve(response);
               } catch (error) {
-                setSecurityCodeModal({
-                  isOpen: true,
-                  code: error?.response?.data?.code || "",
-                  error:
-                    error?.response?.data?.message ||
-                    "Code invalide. Veuillez réessayer.",
-                });
-                setHandleSecuritySubmit(null); // Réinitialiser le handler
-                console.log(error);
-                // setOnSubmit(false);
                 setSecurityCodeModal((prev) => ({
                   ...prev,
                   error:
-                    error?.response?.data?.message ||
-                    "Code invalide. Veuillez réessayer.",
+                    error?.response?.data?.message || "Erreur lors du paiement",
                 }));
-                // setSubmitStatus({
-                //   loading: false,
-                //   error:
-                //     error?.response?.data?.message ||
-                //     "Code invalide. Veuillez réessayer.",
-                //   success: false,
-                // });
-                // setOnSubmit(false);
-                // return;
               }
             };
-
-            setHandleSecuritySubmit(() => handleSubmit); // Stocker le handler dans l'état
+            setHandleSecuritySubmit(() => handleSubmit);
             setSecurityCodeModal({ isOpen: true, code: "", error: "" });
           });
-        } else {
-          setSubmitStatus({
-            loading: false,
-            error:
-              securityCodeReq.data.message ||
-              "Erreur lors de l'envoi du code de sécurité",
-            success: false,
-          });
-          return;
         }
+      } else {
+        // Pour les autres STA (Nita, Amana, etc.)
+        return await processSTAPayment(paymentData, transactionId);
       }
-
-      const response = await axios.post(
-        `${BackendUrl}/processSTAPayment`,
-        paymentData
-      );
-      if (response.data.code_validation) {
-        const message = `${response.data.message} Votre code de validation : ${response.data.code_validation}`;
-        alert(message);
-        setMessage(message);
-      }
-      return response;
     } catch (error) {
       console.error("Erreur lors du paiement mobile:", error);
       throw error;
     }
   };
 
-  // Traitement des paiements Mobile Money
+  const processSTAPayment = async (paymentData, transactionId) => {
+    const response = await axios.post(
+      `${BackendUrl}/processSTAPayment`,
+      paymentData
+    );
+
+    if (response.data.code_validation) {
+      const message = `${response.data.message} Votre code de validation : ${response.data.code_validation}`;
+      alert(message);
+      setMessage(message);
+    }
+
+    // Démarrer la vérification progressive
+    startProgressiveChecks(transactionId);
+
+    return response;
+  };
+
+  const startProgressiveChecks = (transactionId) => {
+    let checkCount = 0;
+    const maxChecks = 10; // Nombre maximum de vérifications
+    const initialDelay = 10000; // 10 secondes
+
+    const progressiveCheck = async () => {
+      try {
+        const transactionInfo = JSON.parse(
+          localStorage.getItem("currentTransaction")
+        );
+        if (!transactionInfo || transactionInfo.id !== transactionId) return;
+
+        checkCount++;
+        const status = await checkTransactionStatus(transactionId);
+
+        if (status.isCompleted) {
+          if (status.isSuccessful) {
+            await handlePaymentCallback("success", transactionId);
+            setSubmitStatus({
+              loading: false,
+              error: null,
+              success: true,
+            });
+          } else {
+            setSubmitStatus({
+              loading: false,
+              error: "Le paiement n'a pas été complété",
+              success: false,
+            });
+          }
+          localStorage.removeItem("currentTransaction");
+          return;
+        }
+
+        // Calcul du délai progressif
+        if (checkCount < maxChecks) {
+          const nextDelay = initialDelay * Math.pow(1.5, checkCount - 1);
+          setTimeout(progressiveCheck, nextDelay);
+        }
+      } catch (error) {
+        console.error("Erreur lors de la vérification:", error);
+      }
+    };
+
+    // Première vérification après 10 secondes
+    setTimeout(progressiveCheck, initialDelay);
+  };
+
+  // Effet pour gérer le retour de l'application mobile
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (!document.hidden) {
+        const transactionInfo = JSON.parse(
+          localStorage.getItem("currentTransaction")
+        );
+        if (!transactionInfo) return;
+
+        // Vérifier si la transaction n'est pas expirée (15 minutes max)
+        const timeElapsed = Date.now() - transactionInfo.startTime;
+        if (timeElapsed > 900000) {
+          // 15 minutes
+          localStorage.removeItem("currentTransaction");
+          setSubmitStatus({
+            loading: false,
+            error: "Le délai de paiement a expiré",
+            success: false,
+          });
+          return;
+        }
+
+        // Éviter les vérifications trop fréquentes
+        const timeSinceLastCheck = Date.now() - transactionInfo.lastCheckTime;
+        if (timeSinceLastCheck < 5000) return; // Minimum 5 secondes entre les vérifications
+
+        try {
+          const status = await checkTransactionStatus(transactionInfo.id);
+          transactionInfo.lastCheckTime = Date.now();
+          localStorage.setItem(
+            "currentTransaction",
+            JSON.stringify(transactionInfo)
+          );
+
+          if (status.isCompleted) {
+            if (status.isSuccessful) {
+              await handlePaymentCallback("success", transactionInfo.id);
+              setSubmitStatus({
+                loading: false,
+                error: null,
+                success: true,
+              });
+            } else {
+              setSubmitStatus({
+                loading: false,
+                error: "Le paiement n'a pas été complété",
+                success: false,
+              });
+            }
+            localStorage.removeItem("currentTransaction");
+          }
+        } catch (error) {
+          console.error("Erreur lors de la vérification au retour:", error);
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
   const processMobileMoneyPayment = async (transactionId) => {
     const paymentData = {
       operator: "airtel",
@@ -670,6 +872,51 @@ const OrderConfirmation = ({ onClose }) => {
 
     checkPendingPayment();
   }, []);
+
+  const checkPendingPayment2 = async () => {
+    const pendingPayment = localStorage.getItem("paymentInitiated");
+    if (pendingPayment) {
+      setSubmitStatus({ loading: true, error: null, success: false });
+      setMessage("verification du payment en cours");
+      const { transactionId } = JSON.parse(pendingPayment);
+      try {
+        const status = await checkTransactionStatus(transactionId);
+        if (status === "complete") {
+          // Nettoyage
+          localStorage.removeItem("panier");
+          localStorage.removeItem("orderTotal");
+          localStorage.removeItem("paymentInfo");
+          localStorage.removeItem("pendingOrder");
+
+          if (orderCodeP?.isValide) {
+            await axios.put(`${BackendUrl}/updateCodePromo`, {
+              codePromoId: orderCodeP._id,
+              isValide: false,
+            });
+            localStorage.removeItem("orderCodeP");
+          }
+
+          setSubmitStatus({
+            loading: false,
+            error: "Paiement effectué avec succès",
+            success: true,
+          });
+          setPaiementProduit(true);
+          navigation("/Commande");
+        } else {
+          setSubmitStatus({
+            loading: false,
+            error: "Le paiement a échoué. Veuillez réessayer.",
+            success: false,
+          });
+          setOnSubmit(false);
+        }
+      } finally {
+        setSubmitStatus({ loading: false, error: null, success: false });
+        localStorage.removeItem("paymentInitiated");
+      }
+    }
+  };
 
   const handlePaymentSubmit = async (e) => {
     e.preventDefault();
