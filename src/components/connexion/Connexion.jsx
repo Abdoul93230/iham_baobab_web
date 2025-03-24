@@ -50,8 +50,8 @@ const Connexion = ({ chg }) => {
   const navigateBasedOnLocation = () => {
     const location = new URLSearchParams(window.location.search);
     const destinations = {
-      fromCart: "/NotificationHeader",
-      fromProfile: "/Profile",
+      fromCart: "/OrderConfirmation",
+      fromProfile: "/Compte",
       fromMore: "/More",
       fromMessages: "/Messages",
     };

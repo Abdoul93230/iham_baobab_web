@@ -35,8 +35,14 @@ import Alert from "../../pages/Alert";
 import { useNavigate } from "react-router-dom";
 import AppPromo from "./AppPromo ";
 
+// Fonction utilitaire pour combiner les classes CSS
+function cn(...classes) {
+  return classes.filter(Boolean).join(" ");
+}
+
 function ProduitDetailMain({ panierchg }) {
   const navigation = useNavigate();
+  const params = useParams();
   const swiperRef = useRef(null);
   const [isZoomed, setIsZoomed] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -44,6 +50,9 @@ function ProduitDetailMain({ panierchg }) {
   const [selectedSizeImage, setSelectedSizeImage] = useState(null);
   const [quantity, setQuantity] = useState(0);
   const [liked, setLiked] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const [notificationType, setNotificationType] = useState("success");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalOpen1, setIsModalOpen1] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -101,7 +110,62 @@ function ProduitDetailMain({ panierchg }) {
   const DATA_Categories = useSelector((state) => state.products.categories);
   const DATA_Pubs = useSelector((state) => state.products.products_Pubs);
 
-  const params = useParams();
+  const API_URL = process.env.REACT_APP_Backend_Url;
+  const userId = JSON.parse(localStorage.getItem("userEcomme"))?.id;
+
+  // Vérifier si le produit est liké au chargement
+  useEffect(() => {
+    if (userId && params.id) {
+      checkIfProductLiked();
+    }
+  }, [userId, params.id]);
+
+  const checkIfProductLiked = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/likes/user/${userId}`);
+      const likedProducts = new Set(
+        response.data.map((like) => like.produit._id)
+      );
+      setLiked(likedProducts.has(params.id));
+    } catch (error) {
+      console.error("Erreur lors de la vérification des likes:", error);
+    }
+  };
+
+  const showToast = (message, type = "success") => {
+    setNotificationMessage(message);
+    setNotificationType(type);
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 3000);
+  };
+
+  const handleLikeClick = async () => {
+    if (!userId) {
+      showToast("Veuillez vous connecter pour ajouter des favoris", "error");
+      return;
+    }
+
+    try {
+      if (liked) {
+        // Supprimer le like
+        await axios.delete(`${API_URL}/likes/${userId}/${params.id}`);
+        setLiked(false);
+        showToast("Produit retiré des favoris");
+      } else {
+        // Ajouter le like
+        await axios.post(`${API_URL}/likes`, {
+          userId,
+          produitId: params.id,
+        });
+        setLiked(true);
+        showToast("Produit ajouté aux favoris");
+      }
+    } catch (error) {
+      showToast("Une erreur est survenue", "error");
+      console.error("Erreur:", error);
+    }
+  };
+
   const produit = DATA_Products.find((item) => item._id === params.id);
 
   const [selectedVariant, setSelectedVariant] = useState(produit?.variants[0]);
@@ -838,6 +902,19 @@ function ProduitDetailMain({ panierchg }) {
         </script>
       </Helmet>
 
+      {showNotification && (
+        <div
+          className={cn(
+            "fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg transition-all duration-300",
+            notificationType === "success"
+              ? "bg-green-100 border-green-400 text-green-700"
+              : "bg-red-100 border-red-400 text-red-700"
+          )}
+        >
+          <p className="text-sm">{notificationMessage}</p>
+        </div>
+      )}
+
       <div className="flex flex-col lg:flex-row gap-2">
         {/* Galerie de miniatures */}
         <div
@@ -1021,6 +1098,21 @@ function ProduitDetailMain({ panierchg }) {
                   </div>
                 </div>
               ) : null}
+
+              <button
+                onClick={handleLikeClick}
+                className={cn(
+                  "p-2 rounded-full transition-all duration-300",
+                  liked ? "bg-red-50 hover:bg-red-100" : "hover:bg-gray-100"
+                )}
+              >
+                <Heart
+                  className={cn(
+                    "w-6 h-6 transition-all duration-300",
+                    liked ? "text-red-500 fill-red-500" : "text-gray-400"
+                  )}
+                />
+              </button>
             </div>
           </div>
         </div>
@@ -1355,7 +1447,12 @@ function ProduitDetailMain({ panierchg }) {
           </div>
         </div>
       </div>
-      <ProduitSimilaires titre={"Articles similaires"} produits={products} />
+      <ProduitSimilaires
+        titre={"Articles similaires"}
+        produits={products}
+        userId={userId}
+        onLike={handleLikeClick}
+      />
 
       <div className="py-3">
         <div className="border-t border-gray-300 mb-4" />
@@ -1376,7 +1473,12 @@ function ProduitDetailMain({ panierchg }) {
       <AppPromo />
       {/* ////////////////////////////////////// */}
 
-      <ProduitSimilaires titre={"Autres Articles"} produits={productsAutres} />
+      <ProduitSimilaires
+        titre={"Autres Articles"}
+        produits={productsAutres}
+        userId={userId}
+        onLike={handleLikeClick}
+      />
       <CommentaireProduit
         name={produit?.name}
         img={[produit?.image1, produit?.image2, produit?.image3]}

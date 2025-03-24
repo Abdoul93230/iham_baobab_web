@@ -20,21 +20,8 @@ import {
 import LogoText from "../../image/LogoText.png";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-const comments = [
-  {
-    id: 1,
-    name: "Acheteur Ihambaobab",
-    date: "20 août 2024",
-    color: "white",
-    size: "45(27.5CM)",
-    review:
-      "Pour le prix qu'ils ont, un peu plus peut être commandé. Ils sont très légers; Maille, donc ils ne font pas mal et ne transpiration pas; Taille appropriée. Apparemment, ils sont à l'aise. Espérons qu'ils résistent suffisamment.",
-    images: [
-      "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
-      "https://ae-pic-a1.aliexpress-media.com/kf/S8f80b025da62482a9580f41ebec80c88B.jpg_80x80.jpg_.webp",
-    ],
-  },
-];
+import axios from "axios";
+
 const DetailHomme = ({ setCartCount, paniernbr }) => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -43,10 +30,16 @@ const DetailHomme = ({ setCartCount, paniernbr }) => {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [testSearch, setTextSearch] = useState("");
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const [notificationType, setNotificationType] = useState("success");
 
   const [likedProducts, setLikedProducts] = useState(new Set());
   const [ptAll, setPtAll] = useState([]);
   const params = useParams();
+
+  const API_URL = process.env.REACT_APP_Backend_Url;
+  const userId = JSON.parse(localStorage.getItem("userEcomme"))?.id;
   const navigation = useNavigate();
   ////////////////////////////////recuperation des donnees /////////////////////////////////////////////////////
   const DATA_Products = useSelector((state) => state.products.data);
@@ -83,6 +76,65 @@ const DetailHomme = ({ setCartCount, paniernbr }) => {
     ) || [];
 
   // console.log( filterComments)
+
+  // Charger les likes au montage du composant
+  useEffect(() => {
+    if (userId) {
+      fetchUserLikes();
+    }
+  }, [userId]);
+
+  const fetchUserLikes = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/likes/user/${userId}`);
+      const likedIds = new Set(response.data.map((like) => like.produit._id));
+      setLikedProducts(likedIds);
+    } catch (error) {
+      console.error("Erreur lors du chargement des likes:", error);
+    }
+  };
+
+  const showToast = (message, type = "success") => {
+    setNotificationMessage(message);
+    setNotificationType(type);
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 3000);
+  };
+
+  const handleLikeClick = async (product) => {
+    if (!userId) {
+      showToast("Veuillez vous connecter pour ajouter des favoris", "error");
+      return;
+    }
+
+    try {
+      if (likedProducts.has(product._id)) {
+        // Supprimer le like
+        await axios.delete(`${API_URL}/likes/${userId}/${product._id}`);
+        setLikedProducts((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(product._id);
+          return newSet;
+        });
+        showToast("Produit retiré des favoris");
+      } else {
+        // Ajouter le like
+        await axios.post(`${API_URL}/likes`, {
+          userId,
+          produitId: product._id,
+        });
+        setLikedProducts((prev) => new Set([...prev, product._id]));
+        showToast("Produit ajouté aux favoris");
+      }
+    } catch (error) {
+      showToast("Une erreur est survenue", "error");
+      console.error("Erreur:", error);
+    }
+  };
+  // Fonction utilitaire pour combiner les classes CSS
+  function cn(...classes) {
+    return classes.filter(Boolean).join(" ");
+  }
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -191,17 +243,17 @@ const DetailHomme = ({ setCartCount, paniernbr }) => {
     );
   };
 
-  const handleLikeClick = (productId) => {
-    setLikedProducts((prevLiked) => {
-      const newLiked = new Set(prevLiked);
-      if (newLiked.has(productId)) {
-        newLiked.delete(productId);
-      } else {
-        newLiked.add(productId);
-      }
-      return newLiked;
-    });
-  };
+  // const handleLikeClick = (productId) => {
+  //   setLikedProducts((prevLiked) => {
+  //     const newLiked = new Set(prevLiked);
+  //     if (newLiked.has(productId)) {
+  //       newLiked.delete(productId);
+  //     } else {
+  //       newLiked.add(productId);
+  //     }
+  //     return newLiked;
+  //   });
+  // };
   const [isAnimating, setIsAnimating] = useState(false);
 
   const handleClick = (id) => {
@@ -283,6 +335,20 @@ const DetailHomme = ({ setCartCount, paniernbr }) => {
   );
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Notification Toast */}
+      {showNotification && (
+        <div
+          className={cn(
+            "fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg transition-all duration-300",
+            notificationType === "success"
+              ? "bg-green-100 border-green-400 text-green-700"
+              : "bg-red-100 border-red-400 text-red-700"
+          )}
+          style={{ zIndex: 100 }}
+        >
+          <p className="text-sm">{notificationMessage}</p>
+        </div>
+      )}
       {/* Top Banner */}
       <div className="bg-[#30A08B] text-white text-center py-2 text-sm lg:text-base">
         Livraison gratuite pour toute commande supérieure ou égale à 30 000 F
@@ -485,7 +551,7 @@ const DetailHomme = ({ setCartCount, paniernbr }) => {
                   alt={product.name}
                   className="w-full h-48 sm:h-56 md:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                <button
+                {/* <button
                   className={`absolute top-4 right-4 p-2 bg-white rounded-full shadow-md transition-colors duration-300 
         ${
           likedProducts.has(product._id)
@@ -510,6 +576,28 @@ const DetailHomme = ({ setCartCount, paniernbr }) => {
               : "text-[#B17236]"
           }
           ${isAnimating ? "scale-100" : "scale-100"}`}
+                  />
+                </button> */}
+                {/* Like Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleLikeClick(product);
+                  }}
+                  className={cn(
+                    "absolute top-3 left-3 p-2 rounded-full shadow-lg transition-all duration-300 z-20",
+                    likedProducts.has(product._id)
+                      ? "bg-red-50 hover:bg-red-100"
+                      : "bg-white hover:bg-emerald-50"
+                  )}
+                >
+                  <Heart
+                    className={cn(
+                      "w-5 h-5 transition-colors duration-300",
+                      likedProducts.has(product._id)
+                        ? "text-red-500 fill-red-500"
+                        : "text-emerald-600"
+                    )}
                   />
                 </button>
 
@@ -621,123 +709,6 @@ const DetailHomme = ({ setCartCount, paniernbr }) => {
           </div>
         )}
       </main>
-
-      {/* Newsletter */}
-      {/* <section className="bg-gradient-to-r from-[#30A08B] to-[#B17236] py-12 md:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h3 className="text-2xl md:text-3xl font-bold mb-4 text-white">
-            Restez informé
-          </h3>
-          <p className="mb-6 text-white opacity-90">
-            Inscrivez-vous à notre newsletter pour recevoir nos dernières offres
-          </p>
-
-          <div className="relative max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="Votre email"
-              className="w-full px-4 py-2 pr-16 rounded-lg text-sm md:text-base border border-white bg-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
-            />
-            <button className="absolute right-0 top-0 h-full bg-[#30A08B] text-white px-4 rounded-r-lg hover:bg-[#B17236] transition-colors text-sm md:text-base">
-              S'inscrire
-            </button>
-          </div>
-        </div>
-      </section> */}
-
-      {/* Footer */}
-      {/* <footer className="bg-gradient-to-r from-[#B2905F] to-[#30A08B] bg-opacity-100 text-white py-12 md:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            
-            <div>
-              <h4 className="text-lg font-bold mb-4">À propos</h4>
-              <ul className="space-y-2 text-sm md:text-base">
-                <li className="hover:text-[#B2905F] cursor-pointer transition-colors">
-                  Qui sommes-nous
-                </li>
-                <li className="hover:text-[#B2905F] cursor-pointer transition-colors">
-                  Nos magasins
-                </li>
-                <li className="hover:text-[#B2905F] cursor-pointer transition-colors">
-                  Carrières
-                </li>
-              </ul>
-            </div>
-
-            
-            <div className="max-w-2xl">
-              <h4 className="text-lg font-bold mb-4">Service client</h4>
-              <ul className="space-y-2 text-sm md:text-base">
-                <li className="hover:text-[#B2905F] cursor-pointer transition-colors">
-                  Contact
-                </li>
-                <li className="hover:text-[#B2905F] cursor-pointer transition-colors">
-                  Livraison
-                </li>
-                <li className="hover:text-[#B2905F] cursor-pointer transition-colors">
-                  Retours
-                </li>
-                <li className="hover:text-[#B2905F] cursor-pointer transition-colors">
-                  FAQ
-                </li>
-              </ul>
-            </div>
-
-           
-            <div>
-              <h4 className="text-lg font-bold mb-4">Légal</h4>
-              <ul className="space-y-2 text-sm md:text-base">
-                <li className="hover:text-[#B2905F] cursor-pointer transition-colors">
-                  Conditions générales
-                </li>
-                <li className="hover:text-[#B2905F] cursor-pointer transition-colors">
-                  Politique de confidentialité
-                </li>
-                <li className="hover:text-[#B2905F] cursor-pointer transition-colors">
-                  Cookies
-                </li>
-              </ul>
-            </div>
-
-            
-            <div>
-              <h4 className="text-lg font-bold mb-4">Suivez-nous</h4>
-              <ul className="flex flex-wrap space-x-4">
-                <li className="hover:text-[#B2905F] cursor-pointer transition-colors text-lg">
-                  <FaWhatsapp />
-                </li>
-                <li className="hover:text-[#B2905F] cursor-pointer transition-colors text-lg">
-                  <FaFacebook />
-                </li>
-                <li className="hover:text-[#B2905F] cursor-pointer transition-colors text-lg">
-                  <FaInstagram />
-                </li>
-                <li className="hover:text-[#B2905F] cursor-pointer transition-colors text-lg">
-                  <FaTwitter />
-                </li>
-                <li className="hover:text-[#B2905F] cursor-pointer transition-colors text-lg">
-                  <FaLinkedin />
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          
-          <div className="mt-8 text-center text-sm md:text-base">
-            <p
-              style={{
-                background: "linear-gradient(90deg, #B17236, #3A3A3A)",
-                WebkitBackgroundClip: "text",
-                color: "transparent",
-              }}
-            >
-              &copy; {new Date().getFullYear()} IHAM Baobab Tous droits
-              réservés.
-            </p>
-          </div>
-        </div>
-      </footer> */}
     </div>
   );
 };

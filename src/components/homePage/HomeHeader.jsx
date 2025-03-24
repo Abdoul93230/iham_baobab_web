@@ -50,10 +50,30 @@ function HomeHeader({ paniernbr, acces }) {
   const dropdownRef = useRef(null);
   const [produits, setProduits] = useState(0);
   const [nbr, setNbr] = useState(0);
+  const [likedProducts, setLikedProducts] = useState(new Set());
 
   const a = JSON.parse(localStorage.getItem(`userEcomme`));
   const BackendUrl = process.env.REACT_APP_Backend_Url;
   const socket = io(BackendUrl);
+
+  const userId = JSON.parse(localStorage.getItem("userEcomme"))?.id;
+
+  useEffect(() => {
+    if (userId) {
+      fetchUserLikes();
+    }
+  }, [userId]);
+
+  const fetchUserLikes = async () => {
+    try {
+      const response = await axios.get(`${BackendUrl}/likes/user/${userId}`);
+      const likedIds = new Set(response.data.map((like) => like.produit._id));
+      setLikedProducts(likedIds);
+      // console.log(likedIds.size);
+    } catch (error) {
+      console.error("Erreur lors du chargement des likes:", error);
+    }
+  };
 
   useEffect(() => {
     if (a) {
@@ -156,30 +176,6 @@ function HomeHeader({ paniernbr, acces }) {
     </button>
   );
   const renderDropdownContent = (dropdown) => {
-    const categories = [
-      { icon: Home, label: "Homme", onClick: () => navigate("/Homme") },
-      {
-        icon: Smartphone,
-        label: "Électronique",
-        onClick: () => navigate("/Homme"),
-      },
-      { icon: Sparkles, label: "Beauté", onClick: () => navigate("/Homme") },
-      {
-        icon: UtensilsCrossed,
-        label: "Cuisine & Ustensiles",
-        onClick: () => navigate("/Homme"),
-      },
-      {
-        icon: Plug,
-        label: "Électroménager",
-        onClick: () => navigate("/Homme"),
-      },
-      {
-        icon: MoreHorizontal,
-        label: "Voir plus",
-        onClick: () => navigate("/Voir-plus"),
-      },
-    ];
     const accountOptions = [
       ...(acces === "non"
         ? [
@@ -191,7 +187,11 @@ function HomeHeader({ paniernbr, acces }) {
           ]
         : []),
 
-      { icon: Home, label: "Mon compte", onClick: () => navigate("/Compte") },
+      {
+        icon: Home,
+        label: "Mon compte",
+        onClick: () => navigate("/Compte?fromProfile=true"),
+      },
       {
         icon: Package,
         label: "Mes commandes",
@@ -235,11 +235,11 @@ function HomeHeader({ paniernbr, acces }) {
         label: "Adresse de livraison",
         onClick: () => navigate("/Livraison"),
       },
-      {
-        icon: CreditCard,
-        label: "Mode de paiement",
-        onClick: () => navigate("/Paement"),
-      },
+      // {
+      //   icon: CreditCard,
+      //   label: "Mode de paiement",
+      //   onClick: () => navigate("/Paement"),
+      // },
       {
         icon: Bell,
         label: "Paramètre de notification",
@@ -465,7 +465,7 @@ function HomeHeader({ paniernbr, acces }) {
                   <Menu className="w-6 h-6 md:w-8 md:h-8" />
                 </button>
                 {/* Notification Button */}
-                <button className="bg-green-500 w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
+                {/* <button className="bg-green-500 w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
                   <div
                     className="relative text-amber-800 hover:text-amber-900"
                     aria-label="Notifications"
@@ -476,7 +476,7 @@ function HomeHeader({ paniernbr, acces }) {
                       3
                     </span>
                   </div>
-                </button>
+                </button> */}
                 <button className="bg-red-500 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg transform transition-transform duration-300 hover:scale-125 hover:shadow-2xl">
                   <div
                     className="relative text-amber-800 hover:text-amber-900"
@@ -485,7 +485,7 @@ function HomeHeader({ paniernbr, acces }) {
                   >
                     <Heart className="h-5 w-5 md:h-6 md:w-6" />
                     <span className="absolute -top-1 -right-1 bg-emerald-500 rounded-full w-3 h-3 md:w-4 md:h-4 text-[10px] md:text-xs text-white flex items-center justify-center">
-                      5
+                      {likedProducts?.size}
                     </span>
                   </div>
                 </button>
@@ -611,18 +611,17 @@ function HomeHeader({ paniernbr, acces }) {
               {activeDropdown === "help" && renderDropdownContent("help")}
             </div>
 
-            <button
+            {/* <button
               onClick={() => navigate("/NotificationHeader")}
               className="relative text-amber-800 hover:text-amber-900"
               aria-label="Notifications"
             >
-              {/* Je veux que tu me créer un contenu pour mon panier si une fois je clique sur cette button  */}
               <Bell className="h-6 w-6" />
 
               <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-4 h-4 text-xs text-white flex items-center justify-center">
                 {5}
               </span>
-            </button>
+            </button> */}
 
             <button
               className="relative text-amber-800 hover:text-amber-900"
@@ -631,7 +630,7 @@ function HomeHeader({ paniernbr, acces }) {
             >
               <Heart className="h-6 w-6" />
               <span className="absolute -top-1 -right-1 bg-emerald-500 rounded-full w-4 h-4 text-xs text-white flex items-center justify-center">
-                5
+                {likedProducts?.size}
               </span>
             </button>
             <div onClick={() => navigate("/Panier")} className="relative">

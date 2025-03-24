@@ -1,29 +1,81 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Heart, ShoppingCart, Star } from "lucide-react";
+import axios from "axios";
 
 const ProduitPage = ({ name, products }) => {
   const navigate = useNavigate();
   const [likedProducts, setLikedProducts] = useState(new Set());
   const [showAlert, setShowAlert] = useState(false);
-  const [alertProduct, setAlertProduct] = useState(null);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertType, setAlertType] = useState("success"); // success ou error
+
+  const API_URL = process.env.REACT_APP_Backend_Url;
+  const userId = JSON.parse(localStorage.getItem("userEcomme"))?.id;
+
+  // Charger les likes de l'utilisateur au montage du composant
+  useEffect(() => {
+    if (userId) {
+      fetchUserLikes();
+    }
+  }, [userId]);
+
+  const fetchUserLikes = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/likes/user/${userId}`);
+      const likedIds = new Set(response.data.map((like) => like.produit._id));
+      setLikedProducts(likedIds);
+    } catch (error) {
+      console.error("Erreur lors du chargement des likes:", error);
+    }
+  };
+
+  const showNotification = (message, type = "success") => {
+    setAlertMessage(message);
+    setAlertType(type);
+    setShowAlert(true);
+    setTimeout(() => setShowAlert(false), 3000);
+  };
 
   const handleAddToCart = (product, e) => {
     e.stopPropagation();
-    setAlertProduct(product);
-    setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 2000);
+    showNotification(`${product.name} a été ajouté au panier !`);
   };
 
-  const handleLikeClick = (productId, e) => {
+  const handleLikeClick = async (product, e) => {
     e.stopPropagation();
-    setLikedProducts((prev) => {
-      const newSet = new Set(prev);
-      if (!newSet.has(productId)) {
-        newSet.add(productId);
+
+    if (!userId) {
+      showNotification(
+        "Veuillez vous connecter pour ajouter des favoris",
+        "error"
+      );
+      return;
+    }
+
+    try {
+      if (likedProducts.has(product._id)) {
+        // Supprimer le like
+        await axios.delete(`${API_URL}/likes/${userId}/${product._id}`);
+        setLikedProducts((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(product._id);
+          return newSet;
+        });
+        showNotification("Produit retiré des favoris");
+      } else {
+        // Ajouter le like
+        await axios.post(`${API_URL}/likes`, {
+          userId,
+          produitId: product._id,
+        });
+        setLikedProducts((prev) => new Set([...prev, product._id]));
+        showNotification("Produit ajouté aux favoris");
       }
-      return newSet;
-    });
+    } catch (error) {
+      showNotification("Une erreur est survenue", "error");
+      console.error("Erreur:", error);
+    }
   };
 
   const RatingStars = ({ rating = 4 }) => {
@@ -52,16 +104,20 @@ const ProduitPage = ({ name, products }) => {
         <h3 className="text-center font-bold text-amber-800">{name}</h3>
       </div>
 
-      {showAlert && alertProduct && (
-        <div className="fixed top-4 right-4 z-50 max-w-md bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-lg">
-          <p className="text-sm">
-            {alertProduct.name} a été ajouté au panier !
-          </p>
+      {showAlert && (
+        <div
+          className={`fixed top-4 right-4 z-50 max-w-md ${
+            alertType === "success"
+              ? "bg-green-100 border-green-400 text-green-700"
+              : "bg-red-100 border-red-400 text-red-700"
+          } border px-4 py-3 rounded shadow-lg transition-all duration-300`}
+        >
+          <p className="text-sm">{alertMessage}</p>
         </div>
       )}
 
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {products.map((product, index) => {
+        {products.map((product) => {
           const discountedPrice = product.prixPromo || product.prix?.toFixed(2);
           const discount =
             product.prixPromo && product.prix
@@ -92,25 +148,26 @@ const ProduitPage = ({ name, products }) => {
                 <button
                   className={`absolute z-10 p-2 rounded-full top-3 right-3 shadow-lg 
                     ${
-                      likedProducts.has(index + 1)
-                        ? "bg-white cursor-not-allowed"
+                      !userId
+                        ? "bg-gray-100 cursor-not-allowed"
                         : "bg-white hover:bg-gray-100"
                     }
                     transition-all duration-300`}
-                  onClick={(e) => handleLikeClick(index + 1, e)}
-                  disabled={likedProducts.has(index + 1)}
+                  onClick={(e) => handleLikeClick(product, e)}
                   title={
-                    likedProducts.has(index + 1)
-                      ? "Déjà liké"
-                      : "Liker ce produit"
+                    !userId
+                      ? "Connectez-vous pour liker"
+                      : likedProducts.has(product._id)
+                      ? "Retirer des favoris"
+                      : "Ajouter aux favoris"
                   }
                 >
                   <Heart
                     className={`w-5 h-5 transition-all duration-300 
                       ${
-                        likedProducts.has(index + 1)
-                          ? "text-[#30A08B] scale-125 fill-current"
-                          : "text-[#B17236]"
+                        likedProducts.has(product._id)
+                          ? "text-red-500 scale-125 fill-current"
+                          : "text-gray-400"
                       }`}
                   />
                 </button>
@@ -141,10 +198,9 @@ const ProduitPage = ({ name, products }) => {
                 </div>
 
                 <button
-                  //  onClick={() => handleAddToCart(product)}
-                  onClick={() => navigate(`/ProduitDétail/${product._id}`)}
+                  onClick={(e) => handleAddToCart(product, e)}
                   className="mt-2 flex justify-around items-center w-full bg-[#30A08B] text-white py-2
-                                       rounded-full hover:bg-opacity-90 transition transition-colors duration-200 text-sm md:text-base shadow-md hover:shadow-lg"
+                           rounded-full hover:bg-opacity-90 transition transition-colors duration-200 text-sm md:text-base shadow-md hover:shadow-lg"
                 >
                   Ajouter au panier
                   <ShoppingCart size={16} />

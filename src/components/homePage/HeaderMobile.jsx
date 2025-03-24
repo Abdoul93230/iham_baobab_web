@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   X,
   ChevronUp,
@@ -11,12 +11,33 @@ import {
 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 const HeaderMobile = ({ setIsMobileMenuOpen, navigate, nbr, paniernbr }) => {
   const [openSection, setOpenSection] = useState(null);
   const [hoveredItem, setHoveredItem] = useState(null);
   const navigation = useNavigate();
   const DATA_Types = useSelector((state) => state.products.types);
   const DATA_Categories = useSelector((state) => state.products.categories);
+  const [likedProducts, setLikedProducts] = useState(new Set());
+  const BackendUrl = process.env.REACT_APP_Backend_Url;
+  const userId = JSON.parse(localStorage.getItem("userEcomme"))?.id;
+
+  useEffect(() => {
+    if (userId) {
+      fetchUserLikes();
+    }
+  }, [userId]);
+
+  const fetchUserLikes = async () => {
+    try {
+      const response = await axios.get(`${BackendUrl}/likes/user/${userId}`);
+      const likedIds = new Set(response.data.map((like) => like.produit._id));
+      setLikedProducts(likedIds);
+      // console.log(likedIds);
+    } catch (error) {
+      console.error("Erreur lors du chargement des likes:", error);
+    }
+  };
 
   const toggleSection = (sectionId) => {
     setOpenSection(openSection === sectionId ? null : sectionId);
@@ -55,7 +76,7 @@ const HeaderMobile = ({ setIsMobileMenuOpen, navigate, nbr, paniernbr }) => {
         "/Inviter les amis",
         "/Livraison",
         "/Suggestion",
-        "/Se déconnecter",
+        "/Home",
       ],
     },
     {
@@ -64,7 +85,7 @@ const HeaderMobile = ({ setIsMobileMenuOpen, navigate, nbr, paniernbr }) => {
       answers: [
         "Centre d'aide",
         "Address de livraison",
-        "Mode de paeiment",
+        // "Mode de paeiment",
         "Paramètre de notification",
         "Avis de confidentialité",
         "Question fréquemment possées",
@@ -73,7 +94,7 @@ const HeaderMobile = ({ setIsMobileMenuOpen, navigate, nbr, paniernbr }) => {
       links: [
         "/service",
         "/Livraison",
-        "/Paement",
+        // "/Paement",
         "/Paramètre de notification",
         "/Avis de confidentialité",
         "/Question Fréquement possées",
@@ -82,17 +103,17 @@ const HeaderMobile = ({ setIsMobileMenuOpen, navigate, nbr, paniernbr }) => {
     },
   ];
   const bottomIcons = [
-    {
-      icon: Bell,
-      count: 3,
-      bgColor: "from-green-400 to-green-600",
-      countBg: "bg-red-500",
-      label: "Notifications",
-      onClick: () => navigate("/Notification header"),
-    },
+    // {
+    //   icon: Bell,
+    //   count: 3,
+    //   bgColor: "from-green-400 to-green-600",
+    //   countBg: "bg-red-500",
+    //   label: "Notifications",
+    //   onClick: () => navigate("/Notification header"),
+    // },
     {
       icon: Heart,
-      count: 5,
+      count: likedProducts?.size,
       bgColor: "from-red-400 to-red-600",
       countBg: "bg-emerald-500",
       label: "Wishlist",
