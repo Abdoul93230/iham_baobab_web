@@ -39,6 +39,7 @@ const PanierPage = ({
   const [rond, setRond] = useState(false);
   const [groupedArticles, setGroupedArticles] = useState({});
   const [expandedGroups, setExpandedGroups] = useState({});
+  const [loding, setLoading] = useState(false);
   const [alert, setAlert] = useState({
     visible: false,
     type: "",
@@ -216,6 +217,7 @@ const PanierPage = ({
   useEffect(() => {
     const panierItems = JSON.parse(localStorage.getItem("panier")) || [];
     const detecterRegion = async () => {
+      setLoading(true);
       try {
         // const response = await axios.get("https://ipapi.co/json/");
         const response = await axios.get(`${BackendUrl}/proxy/ip-api`);
@@ -225,6 +227,7 @@ const PanierPage = ({
         const pays = response.data.country || "Niger";
         setRegionClient(region.toLowerCase());
         setPays(pays);
+        setLoading(false);
 
         // Grouper les articles et calculer les frais d'expédition
         const grouped = groupArticles(panierItems);
@@ -254,6 +257,7 @@ const PanierPage = ({
         // console.error("Erreur de détection de région", error);
         // setArticles(panierItems);
         // calculerTotal();
+        setLoading(false);
         console.error("Erreur de détection de région", error);
         const grouped = groupArticles(panierItems);
         setGroupedArticles(grouped);
@@ -360,7 +364,7 @@ const PanierPage = ({
     if (acces === "non") {
       handleWarning("Veuiller Vous connecter d'abord");
       setTimeout(() => {
-        navigation("/Connexion");
+        navigation("/Connexion?fromCart=true");
       }, 500);
       return;
     }
@@ -583,7 +587,12 @@ const PanierPage = ({
   // Remplacer la section de rendu des articles par ceci dans le return
   const renderArticlesSection = () => {
     if (Object.keys(groupedArticles).length === 0) {
-      return (
+      return loding === true ? (
+        <div className="flex flex-col items-center justify-center space-y-4 p-8 bg-white rounded-lg shadow-sm">
+          <ShoppingCart className="h-12 w-12 text-[#30A08B] animate-bounce" />
+          <p className="text-lg text-[#30A08B]">Patientez .....</p>
+        </div>
+      ) : (
         <div className="flex flex-col items-center justify-center space-y-4 p-8 bg-white rounded-lg shadow-sm">
           <ShoppingCart className="h-12 w-12 text-[#30A08B] animate-bounce" />
           <p className="text-lg text-[#30A08B]">Votre panier est vide</p>
@@ -714,10 +723,17 @@ const PanierPage = ({
         )}
 
         {articles.length === 0 ? (
-          <div className="flex flex-col items-center justify-center space-y-4 p-8 bg-white rounded-lg shadow-sm">
-            <ShoppingCart className="h-12 w-12 text-[#30A08B] animate-bounce" />
-            <p className="text-lg text-[#30A08B]">Votre panier est vide</p>
-          </div>
+          loding === true ? (
+            <div className="flex flex-col items-center justify-center space-y-4 p-8 bg-white rounded-lg shadow-sm">
+              <ShoppingCart className="h-12 w-12 text-[#30A08B] animate-bounce" />
+              <p className="text-lg text-[#30A08B]">Patientez .....</p>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center space-y-4 p-8 bg-white rounded-lg shadow-sm">
+              <ShoppingCart className="h-12 w-12 text-[#30A08B] animate-bounce" />
+              <p className="text-lg text-[#30A08B]">Votre panier est vide</p>
+            </div>
+          )
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Liste des articles */}
@@ -864,10 +880,10 @@ const PanierPage = ({
                 if (acces === "non") {
                   handleWarning("Veuiller Vous connecter d'abord");
                   setTimeout(() => {
-                    navigation("/OrderConfirmation");
+                    navigation("/OrderConfirmation?fromCart=true");
                   }, 1000);
                 } else {
-                  navigation("/OrderConfirmation");
+                  navigation("/OrderConfirmation?fromCart=true");
                 }
               }}
               // onClick={handlePayment}
@@ -899,10 +915,10 @@ const PanierPage = ({
                   if (acces === "non") {
                     handleWarning("Veuiller Vous connecter d'abord");
                     setTimeout(() => {
-                      navigation("/OrderConfirmation");
+                      navigation("/OrderConfirmation?fromCart=true");
                     }, 1000);
                   } else {
-                    navigation("/OrderConfirmation");
+                    navigation("/OrderConfirmation?fromCart=true");
                   }
                 }}
                 // onClick={handlePayment}

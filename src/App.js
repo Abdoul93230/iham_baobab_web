@@ -242,7 +242,7 @@ function App() {
                   )
                 }
               />
-              <Route
+              {/* <Route
                 path="/Paement"
                 element={
                   acces === "oui" ? (
@@ -251,7 +251,7 @@ function App() {
                     <Connexion chg={changeA} />
                   )
                 }
-              />
+              /> */}
               <Route
                 path="/Service"
                 element={

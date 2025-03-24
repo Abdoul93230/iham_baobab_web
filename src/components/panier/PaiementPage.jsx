@@ -244,7 +244,7 @@ const PaiementPage = ({
             </div>
           </motion.div>
         );
-      case "Payment a domicile":
+      case "payé à la livraison":
         return (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -345,7 +345,7 @@ const PaiementPage = ({
               color: "#B17236",
             },
             {
-              id: "Payment a domicile",
+              id: "payé à la livraison",
               logo: DomicileCard,
               label: "Domicile",
               color: "#30A08B",
