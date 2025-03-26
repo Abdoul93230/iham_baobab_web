@@ -373,25 +373,70 @@ const PanierPage = ({
       return;
     }
     setRond(true);
-
+    const userId = JSON.parse(localStorage.getItem("userEcomme"))?.id;
     axios
       .get(`${BackendUrl}/getCodePromoByHashedCode`, {
         params: {
           hashedCode: codePromo,
+          welcom: codePromo === "BIENVENUE20" ? true : false,
+          id: userId,
         },
       })
       .then((code) => {
         setRond(false);
+        // if (code.data.data.isValide) {
+        //   if (code.data.data?.isWelcomeCode === true) {
+        //     let reduction =
+        //       (calculerTotal() * code.data.data?.prixReduiction) / 100;
+
+        //     // Appliquer la limite de réduction à 2000 F
+        //     reduction = Math.min(reduction, 2000);
+
+        //     setReduction(reduction);
+        //   } else {
+        //     setReduction(code.data.data?.prixReduiction);
+        //   }
+
+        //   setCodeP(code.data.data);
+        //   // Sauvegarder le code promo dans localStorage
+        //   localStorage.setItem("orderCodeP", JSON.stringify(code.data.data));
+        //   setMessage("Code promo appliqué avec succès !");
+        //   // Recalculer le total après application du code promo
+        //   calculerTotal();
+        // } else {
+        //   handleWarning("ce code la a expire.");
+        //   setReduction(0);
+        //   localStorage.removeItem("orderCodeP");
+        //   calculerTotal();
+        // }
+
         if (code.data.data.isValide) {
-          setReduction(code.data.data?.prixReduiction);
-          setCodeP(code.data.data);
-          // Sauvegarder le code promo dans localStorage
-          localStorage.setItem("orderCodeP", JSON.stringify(code.data.data));
-          setMessage("Code promo appliqué avec succès !");
-          // Recalculer le total après application du code promo
-          calculerTotal();
+          if (!codeP || codeP.code !== code.data.data.code) {
+            // Vérifie si le code promo a déjà été appliqué
+            if (code.data.data?.isWelcomeCode === true) {
+              let reduction =
+                (calculerTotal() * code.data.data?.prixReduiction) / 100;
+
+              // Appliquer la limite de réduction à 2000 F
+              reduction = Math.min(reduction, 2000);
+
+              setReduction(reduction);
+            } else {
+              setReduction(code.data.data?.prixReduiction);
+            }
+
+            setCodeP(code.data.data);
+            // Sauvegarder le code promo dans localStorage
+            localStorage.setItem("orderCodeP", JSON.stringify(code.data.data));
+            setMessage("Code promo appliqué avec succès !");
+
+            // Recalculer le total après application du code promo
+            setTimeout(() => calculerTotal(), 100); // Donne le temps à setReduction de se mettre à jour
+          } else {
+            setMessage("Ce code promo est déjà appliqué.");
+          }
         } else {
-          handleWarning("ce code la a expire.");
+          handleWarning("Ce code a expiré.");
           setReduction(0);
           localStorage.removeItem("orderCodeP");
           calculerTotal();

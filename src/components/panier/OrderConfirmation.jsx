@@ -9,6 +9,14 @@ import PaiementPage from "./PaiementPage";
 
 const BackendUrl = process.env.REACT_APP_Backend_Url;
 
+// Utilitaires
+const PaymentMethods = {
+  CARD: ["Visa", "master Card"],
+  MOBILE_WALLET: ["zeyna", "nita", "amana"],
+  MOBILE_MONEY: ["Mobile Money"],
+  CASH_ON_DELIVERY: ["payé à la livraison"],
+};
+
 const SecurityCodeModal = ({ isOpen, onClose, onSubmit, error }) => {
   const [code, setCode] = useState("");
 
@@ -182,11 +190,12 @@ const OrderConfirmation = ({ onClose }) => {
         //   }
         // }
       } catch (error) {
-        setSubmitStatus({
-          loading: false,
-          error: "Erreur lors du chargement des données",
-          success: false,
-        });
+        console.log(error)
+        // setSubmitStatus({
+        //   loading: false,
+        //   error: "Erreur lors du chargement des données",
+        //   success: false,
+        // });
       }
     };
 
@@ -316,326 +325,7 @@ const OrderConfirmation = ({ onClose }) => {
     // console.log(paymentMethod);
   };
 
-  // const processCardPayment = async (transactionId) => {
-  //   const cardData = {
-  //     cardNumber:
-  //       String(cardDetails.number || "")
-  //         .replace(/\s|-/g, "")
-  //         .match(/.{1,4}/g)
-  //         ?.join("-") || "",
-  //     expiryDate: cardDetails.expiry,
-  //     cvv: cardDetails.cvc,
-  //     amount: 100,
-  //     payerName: JSON.parse(localStorage.getItem("userEcomme"))?.name,
-  //     externalRef: transactionId,
-  //     browserInfo: {
-  //       javaEnabled: false,
-  //       javascriptEnabled: true,
-  //       screenHeight: window.screen.height,
-  //       screenWidth: window.screen.width,
-  //       TZ: new Date().getTimezoneOffset() / -60,
-  //       challengeWindowSize: "05",
-  //     },
-  //   };
-
-  //   const response = await axios.post(`${BackendUrl}/pay-with-card`, cardData);
-  //   if (response.data.success && response.data.redirectUrl) {
-  //     window.open(
-  //       response.data.redirectUrl,
-  //       "_blank",
-  //       "width=800,height=600,scrollbars=yes,resizable=yes"
-  //     );
-  //   }
-  //   return response;
-  // };
-
-  const processCardPayment = async (transactionId) => {
-    const cardData = {
-      cardNumber:
-        String(cardDetails.number || "")
-          .replace(/\s|-/g, "")
-          .match(/.{1,4}/g)
-          ?.join("-") || "",
-      expiryDate: cardDetails.expiry,
-      cvv: cardDetails.cvc,
-      amount: orderTotal,
-      payerName: JSON.parse(localStorage.getItem("userEcomme"))?.name,
-      externalRef: transactionId,
-      browserInfo: {
-        javaEnabled: false,
-        javascriptEnabled: true,
-        screenHeight: window.screen.height,
-        screenWidth: window.screen.width,
-        TZ: new Date().getTimezoneOffset() / -60,
-        challengeWindowSize: "05",
-      },
-    };
-
-    try {
-      // Informer l'utilisateur que la fenêtre va s'ouvrir
-      alert(
-        "Une fenêtre de paiement va s'ouvrir. Veuillez autoriser les popups si nécessaire."
-      );
-
-      const response = await axios.post(
-        `${BackendUrl}/pay-with-card`,
-        cardData
-      );
-
-      if (response.data.success && response.data.redirectUrl) {
-        // Tentative d'ouverture de la fenêtre
-        const paymentWindow = window.open(
-          response.data.redirectUrl,
-          "_blank",
-          "width=800,height=600,scrollbars=yes,resizable=yes,top=50,left=50"
-        );
-
-        if (
-          !paymentWindow ||
-          paymentWindow.closed ||
-          typeof paymentWindow.closed == "undefined"
-        ) {
-          // Utiliser un composant modal ou une autre méthode plutôt que confirm
-          // Alternative à confirm
-          const userResponse =
-            window.confirm !== undefined
-              ? window.confirm(
-                  "La fenêtre de paiement n'a pas pu s'ouvrir automatiquement. Cliquez OK pour ouvrir la page de paiement."
-                )
-              : true; // Fallback si confirm n'est pas disponible
-
-          if (userResponse) {
-            window.location.href = response.data.redirectUrl;
-          } else {
-            setSubmitStatus({
-              loading: false,
-              error:
-                "Impossible d'ouvrir la fenêtre de paiement. Veuillez autoriser les popups pour ce site.",
-              success: false,
-            });
-            return;
-          }
-        }
-
-        // Vérifier périodiquement si la fenêtre est toujours ouverte
-        const checkWindow = setInterval(() => {
-          if (paymentWindow && paymentWindow.closed) {
-            clearInterval(checkWindow);
-            // Vérifier le statut du paiement
-            checkTransactionStatus(transactionId);
-          }
-        }, 1000);
-      } else {
-        setSubmitStatus({
-          loading: false,
-          error:
-            "Aucune URL de redirection n'a été fournie par le serveur de paiement.",
-          success: false,
-        });
-        return;
-      }
-
-      return response;
-    } catch (error) {
-      console.error("Erreur lors du paiement:", error);
-      // setSubmitStatus({
-      //   loading: false,
-      //   error:
-      //     "Une erreur est survenue lors de l'initialisation du paiement. Veuillez vérifier que les popups sont autorisés et réessayer.",
-      //   success: false,
-      // });
-      setSubmitStatus({
-        loading: false,
-        error:
-          error?.response?.data?.message ||
-          "Une erreur est survenue lors de l'initialisation du paiement. Veuillez vérifier que les popups sont autorisés et réessayer.",
-        success: false,
-      });
-    }
-  };
-
-  const processMobilePayment = async (transactionId) => {
-    const paymentData = {
-      option: selectedPayment,
-      phoneNumber: "+" + mobileDetails.operateur + mobileDetails.number,
-      country: "niger",
-      amount: orderTotal,
-      externalRef: transactionId,
-      staType: selectedPayment,
-    };
-
-    try {
-      if (selectedPayment === "zeyna") {
-        const securityCodeReq = await axios.post(
-          `${BackendUrl}/requestZeynaCashSecurityCode`,
-          {
-            phoneNumber: paymentData.phoneNumber,
-          }
-        );
-
-        if (securityCodeReq.data.success) {
-          return new Promise((resolve, reject) => {
-            const handleSubmit = async (code) => {
-              try {
-                if (!code) {
-                  setSecurityCodeModal((prev) => ({
-                    ...prev,
-                    error: "Le code est requis",
-                  }));
-                  return;
-                }
-                if (code.trim().length < 4) {
-                  setSecurityCodeModal((prev) => ({
-                    ...prev,
-                    error: "le code n'est pqs valid",
-                  }));
-                  return;
-                }
-
-                paymentData.securityCode = code;
-                const response = await axios.post(
-                  `${BackendUrl}/processSTAPayment`,
-                  paymentData
-                );
-                setSecurityCodeModal({ isOpen: false, code: "", error: "" });
-                setHandleSecuritySubmit(null); // Réinitialiser le handler
-
-                // setOnSubmit(false);
-
-                resolve(response);
-              } catch (error) {
-                setSecurityCodeModal({
-                  isOpen: true,
-                  code: error?.response?.data?.code || "",
-                  error:
-                    error?.response?.data?.message ||
-                    "Code invalide. Veuillez réessayer.",
-                });
-                setHandleSecuritySubmit(null); // Réinitialiser le handler
-                console.log(error);
-                // setOnSubmit(false);
-                setSecurityCodeModal((prev) => ({
-                  ...prev,
-                  error:
-                    error?.response?.data?.message ||
-                    "Code invalide. Veuillez réessayer.",
-                }));
-                // setSubmitStatus({
-                //   loading: false,
-                //   error:
-                //     error?.response?.data?.message ||
-                //     "Code invalide. Veuillez réessayer.",
-                //   success: false,
-                // });
-                // setOnSubmit(false);
-                // return;
-              }
-            };
-
-            setHandleSecuritySubmit(() => handleSubmit); // Stocker le handler dans l'état
-            setSecurityCodeModal({ isOpen: true, code: "", error: "" });
-          });
-        } else {
-          setSubmitStatus({
-            loading: false,
-            error:
-              securityCodeReq.data.message ||
-              "Erreur lors de l'envoi du code de sécurité",
-            success: false,
-          });
-          return;
-        }
-      }
-
-      const response = await axios.post(
-        `${BackendUrl}/processSTAPayment`,
-        paymentData
-      );
-      if (response.data.code_validation) {
-        const message = `${response.data.message} Votre code de validation : ${response.data.code_validation}`;
-        alert(message);
-        setMessage(message);
-      }
-      return response;
-    } catch (error) {
-      console.error("Erreur lors du paiement mobile:", error);
-      throw error;
-    }
-  };
-
   // Traitement des paiements Mobile Money
-
-  // const processMobilePayment = async (transactionId) => {
-  //   const paymentData = {
-  //     option: selectedPayment,
-  //     phoneNumber: "+" + mobileDetails.operateur + mobileDetails.number,
-  //     country: "niger",
-  //     amount: 100,
-  //     externalRef: transactionId,
-  //     staType: selectedPayment,
-  //   };
-
-  //   try {
-  //     // Sauvegarder les informations de transaction
-  //     const transactionInfo = {
-  //       id: transactionId,
-  //       startTime: Date.now(),
-  //       paymentType: selectedPayment,
-  //       checkCount: 0,
-  //       lastCheckTime: Date.now(),
-  //     };
-  //     localStorage.setItem(
-  //       "currentTransaction",
-  //       JSON.stringify(transactionInfo)
-  //     );
-
-  //     // Traitement spécial pour Zeyna qui nécessite un code de sécurité
-  //     if (selectedPayment === "zeyna") {
-  //       const securityCodeReq = await axios.post(
-  //         `${BackendUrl}/requestZeynaCashSecurityCode`,
-  //         { phoneNumber: paymentData.phoneNumber }
-  //       );
-
-  //       if (securityCodeReq.data.success) {
-  //         return new Promise((resolve, reject) => {
-  //           const handleSubmit = async (code) => {
-  //             try {
-  //               if (!code || code.trim().length < 4) {
-  //                 setSecurityCodeModal((prev) => ({
-  //                   ...prev,
-  //                   error: "Code invalide",
-  //                 }));
-  //                 return;
-  //               }
-
-  //               paymentData.securityCode = code;
-  //               const response = await processSTAPayment(
-  //                 paymentData,
-  //                 transactionId
-  //               );
-  //               setSecurityCodeModal({ isOpen: false, code: "", error: "" });
-  //               resolve(response);
-  //             } catch (error) {
-  //               setSecurityCodeModal((prev) => ({
-  //                 ...prev,
-  //                 error:
-  //                   error?.response?.data?.message || "Erreur lors du paiement",
-  //               }));
-  //             }
-  //           };
-  //           setHandleSecuritySubmit(() => handleSubmit);
-  //           setSecurityCodeModal({ isOpen: true, code: "", error: "" });
-  //         });
-  //       }
-  //     } else {
-  //       // Pour les autres STA (Nita, Amana, etc.)
-  //       return await processSTAPayment(paymentData, transactionId);
-  //     }
-  //   } catch (error) {
-  //     console.error("Erreur lors du paiement mobile:", error);
-  //     throw error;
-  //   }
-  // };
 
   const processSTAPayment = async (paymentData, transactionId) => {
     const response = await axios.post(
@@ -765,24 +455,754 @@ const OrderConfirmation = ({ onClose }) => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
-
-  const processMobileMoneyPayment = async (transactionId) => {
-    const paymentData = {
-      operator: "airtel",
-      amount: orderTotal,
-      phoneNumber: mobileDetails.number,
-      payerName: JSON.parse(localStorage.getItem("userEcomme"))?.name,
-      externalRef: transactionId,
-    };
-
-    const response = await axios.post(
-      `${BackendUrl}/processMobilePayment`,
-      paymentData
-    );
-    alert(response.data.message);
-    setMessage(response.data.message);
-    return response;
+  /////////////////////////////////////////////////////////////////////////////////////////
+  // Service pour la gestion des codes promo
+  // Utilitaire pour la gestion des messages
+  const AlertService = {
+    showAlert(setSubmitStatus, message, type = "error") {
+      setSubmitStatus({
+        loading: false,
+        error: message,
+        success: type === "success",
+      });
+      setOnSubmit(false);
+    },
   };
+
+  // Service pour la gestion des codes promo
+  const PromoCodeService = {
+    async validateAndApply(codePromo, orderTotal, setSubmitStatus) {
+      if (!codePromo?.isValide) return orderTotal;
+
+      try {
+        const response = await axios.get(
+          `${BackendUrl}/getCodePromoById/${codePromo._id}`
+        );
+        const promoDetails = response.data.data;
+
+        if (
+          !promoDetails.isValide ||
+          new Date(promoDetails.dateExpirate) < new Date()
+        ) {
+          AlertService.showAlert(
+            setSubmitStatus,
+            "Code promo expiré ou invalide"
+          );
+          return orderTotal;
+        }
+        if (promoDetails?.isWelcomeCode === true) {
+          const reduction = (orderTotal * promoDetails?.prixReduiction) / 100;
+          return orderTotal - reduction;
+        }
+
+        return orderTotal - promoDetails.prixReduiction;
+      } catch (error) {
+        console.error("Erreur validation code promo:", error);
+        AlertService.showAlert(
+          setSubmitStatus,
+          "Erreur lors de la validation du code promo"
+        );
+        return orderTotal;
+      }
+    },
+
+    async invalidatePromoCode(codePromoId) {
+      if (!codePromoId) return;
+
+      try {
+        await axios.put(`${BackendUrl}/updateCodePromo`, {
+          codePromoId,
+          isValide: false,
+        });
+        localStorage.removeItem("orderCodeP");
+      } catch (error) {
+        console.error("Erreur invalidation code promo:", error);
+      }
+    },
+  };
+
+  // Gestionnaire principal des commandes
+  const OrderManager = {
+    async createOrUpdateOrder(orderData, existingOrder = null) {
+      const endpoint = existingOrder
+        ? `${BackendUrl}/updateCommande`
+        : `${BackendUrl}/createCommande`;
+
+      const method = existingOrder ? "put" : "post";
+
+      try {
+        const response = await axios[method](endpoint, orderData);
+        return response.data;
+      } catch (error) {
+        console.error("Erreur gestion commande:", error);
+        return {
+          error:
+            error.response?.data?.message ||
+            "Erreur lors de la création de la commande",
+        };
+      }
+    },
+
+    async processPayment(paymentMethod, transactionId, orderTotal) {
+      if (PaymentMethods.CARD.includes(paymentMethod)) {
+        return processCardPayment(transactionId);
+      } else if (PaymentMethods.MOBILE_WALLET.includes(paymentMethod)) {
+        return processMobilePayment(transactionId);
+      } else if (PaymentMethods.MOBILE_MONEY.includes(paymentMethod)) {
+        return processMobileMoneyPayment(transactionId);
+      }
+      return Promise.resolve({ status: "complete" });
+    },
+  };
+
+  // Version optimisée de handlePaymentSubmit avec gestion des alertes
+  const handlePaymentSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitStatus({ loading: true, error: null, success: false });
+    setMessage("Veuillez patienter...");
+    setOnSubmit(true);
+
+    // 1. Validation initiale
+    const userId = JSON.parse(localStorage.getItem("userEcomme"))?.id;
+    if (!userId) {
+      AlertService.showAlert(
+        setSubmitStatus,
+        "Veuillez vous connecter pour continuer"
+      );
+      return;
+    }
+
+    const validationErrors = [
+      ...validateDeliveryInfo(),
+      ...validatePaymentInfo(),
+    ];
+    if (validationErrors.length > 0) {
+      AlertService.showAlert(setSubmitStatus, validationErrors.join(", "));
+      return;
+    }
+
+    // 2. Vérification du panier
+    const panier = JSON.parse(localStorage.getItem("panier"));
+    if (!panier?.length) {
+      AlertService.showAlert(setSubmitStatus, "Votre panier est vide");
+      return;
+    }
+
+    try {
+      // 3. Application du code promo
+      const finalOrderTotal = await PromoCodeService.validateAndApply(
+        orderCodeP,
+        orderTotal,
+        setSubmitStatus
+      );
+
+      // 4. Création ou mise à jour de la commande
+      const existingOrder = JSON.parse(localStorage.getItem("pendingOrder"));
+      const transactionId = generateUniqueID();
+
+      const orderData = {
+        clefUser: userId,
+        nbrProduits: panier.map((item) => ({
+          produit: item._id,
+          quantite: item.quantity,
+          tailles: item.sizes,
+          couleurs: item.colors,
+        })),
+        prix: finalOrderTotal,
+        statusPayment: PaymentMethods.CASH_ON_DELIVERY.includes(selectedPayment)
+          ? "payé à la livraison"
+          : "en_attente",
+        reference: transactionId,
+        livraisonDetails: {
+          customerName: deliveryInfo.name,
+          email: deliveryInfo.email || null,
+          region: deliveryInfo.region,
+          quartier: deliveryInfo.quartier,
+          numero: deliveryInfo.numero,
+          description: deliveryInfo.description,
+        },
+        prod: panier,
+        ...(orderCodeP?.isValide && {
+          codePro: true,
+          idCodePro: orderCodeP._id,
+        }),
+      };
+
+      if (existingOrder) {
+        orderData.oldReference = existingOrder.transactionId;
+        orderData.newReference = transactionId;
+      }
+
+      await axios.post(`${BackendUrl}/createOrUpdateAddress`, {
+        ...deliveryInfo,
+        email: deliveryInfo.email !== "" ? deliveryInfo.email : null,
+        clefUser: userId,
+      });
+
+      const orderResult = await OrderManager.createOrUpdateOrder(
+        orderData,
+        existingOrder
+      );
+      if (orderResult.error) {
+        AlertService.showAlert(setSubmitStatus, orderResult.error);
+        return;
+      }
+
+      // 5. Traitement du paiement
+      if (!PaymentMethods.CASH_ON_DELIVERY.includes(selectedPayment)) {
+        const paymentStatus = await OrderManager.processPayment(
+          selectedPayment,
+          transactionId,
+          finalOrderTotal
+        );
+
+        if (paymentStatus.status !== "complete") {
+          AlertService.showAlert(
+            setSubmitStatus,
+            "Le paiement a échoué. Veuillez réessayer."
+          );
+          return;
+        }
+      }
+
+      // 6. Finalisation
+      await PromoCodeService.invalidatePromoCode(orderCodeP?._id);
+
+      // 7. Nettoyage
+      ["panier", "orderTotal", "paymentInfo", "pendingOrder"].forEach((key) =>
+        localStorage.removeItem(key)
+      );
+
+      // 8. Succès
+      setSubmitStatus({
+        loading: false,
+        error: null,
+        success: true,
+      });
+      setPaiementProduit(true);
+
+      AlertService.showAlert(
+        setSubmitStatus,
+        "Commande effectuée avec succès!",
+        "success"
+      );
+
+      if (PaymentMethods.CASH_ON_DELIVERY.includes(selectedPayment)) {
+        navigation("/Commande");
+      }
+    } catch (error) {
+      AlertService.showAlert(
+        setSubmitStatus,
+        error.response?.data?.message ||
+          "Une erreur est survenue lors du traitement de votre commande"
+      );
+    }
+  };
+
+  // Service de paiement unifié
+  const PaymentService = {
+    // Gestionnaire d'erreurs commun
+    handlePaymentError(error, setSubmitStatus, customMessage = null) {
+      console.error("Erreur de paiement:", error);
+      setSubmitStatus({
+        loading: false,
+        error:
+          error?.response?.data?.message ||
+          customMessage ||
+          "Une erreur est survenue lors du paiement",
+        success: false,
+      });
+    },
+
+    // Gestionnaire de messages
+    showPaymentMessage(message, type = "info") {
+      if (type === "alert") {
+        alert(message);
+      }
+      setMessage(message);
+    },
+
+    // Paiement par carte
+    async processCardPayment(
+      transactionId,
+      cardDetails,
+      orderTotal,
+      setSubmitStatus
+    ) {
+      const cardData = {
+        cardNumber:
+          String(cardDetails.number || "")
+            .replace(/\s|-/g, "")
+            .match(/.{1,4}/g)
+            ?.join("-") || "",
+        expiryDate: cardDetails.expiry,
+        cvv: cardDetails.cvc,
+        amount: orderTotal,
+        payerName: JSON.parse(localStorage.getItem("userEcomme"))?.name,
+        externalRef: transactionId,
+        browserInfo: {
+          javaEnabled: false,
+          javascriptEnabled: true,
+          screenHeight: window.screen.height,
+          screenWidth: window.screen.width,
+          TZ: new Date().getTimezoneOffset() / -60,
+          challengeWindowSize: "05",
+        },
+      };
+
+      try {
+        this.showPaymentMessage(
+          "Une fenêtre de paiement va s'ouvrir. Veuillez autoriser les popups si nécessaire.",
+          "alert"
+        );
+
+        const response = await axios.post(
+          `${BackendUrl}/pay-with-card`,
+          cardData
+        );
+
+        if (!response.data.success || !response.data.redirectUrl) {
+          throw new Error("Aucune URL de redirection n'a été fournie");
+        }
+
+        const paymentWindow = window.open(
+          response.data.redirectUrl,
+          "_blank",
+          "width=800,height=600,scrollbars=yes,resizable=yes,top=50,left=50"
+        );
+
+        if (!paymentWindow || paymentWindow.closed) {
+          const shouldRedirect = window.confirm(
+            "La fenêtre de paiement n'a pas pu s'ouvrir automatiquement. Cliquez OK pour ouvrir la page de paiement."
+          );
+
+          if (shouldRedirect) {
+            window.location.href = response.data.redirectUrl;
+          } else {
+            throw new Error("Impossible d'ouvrir la fenêtre de paiement");
+          }
+        }
+
+        // Surveillance de la fenêtre de paiement
+        return new Promise((resolve) => {
+          const checkWindow = setInterval(() => {
+            if (paymentWindow && paymentWindow.closed) {
+              clearInterval(checkWindow);
+              resolve(response);
+            }
+          }, 1000);
+        });
+      } catch (error) {
+        this.handlePaymentError(
+          error,
+          setSubmitStatus,
+          "Erreur lors du paiement par carte. Vérifiez vos informations et réessayez."
+        );
+        return null;
+      }
+    },
+
+    // Paiement mobile
+    async processMobilePayment(
+      transactionId,
+      selectedPayment,
+      mobileDetails,
+      orderTotal,
+      setSubmitStatus,
+      setSecurityCodeModal
+    ) {
+      const paymentData = {
+        option: selectedPayment,
+        phoneNumber: "+" + mobileDetails.operateur + mobileDetails.number,
+        country: "niger",
+        amount: orderTotal,
+        externalRef: transactionId,
+        staType: selectedPayment,
+      };
+
+      try {
+        if (selectedPayment === "zeyna") {
+          return await this.handleZeynaPayment(
+            paymentData,
+            setSecurityCodeModal,
+            setSubmitStatus
+          );
+        }
+
+        const response = await axios.post(
+          `${BackendUrl}/processSTAPayment`,
+          paymentData
+        );
+
+        if (response.data.code_validation) {
+          this.showPaymentMessage(
+            `${response.data.message} Votre code de validation : ${response.data.code_validation}`,
+            "alert"
+          );
+        }
+
+        return response;
+      } catch (error) {
+        this.handlePaymentError(
+          error,
+          setSubmitStatus,
+          "Erreur lors du paiement mobile. Vérifiez votre numéro et réessayez."
+        );
+        return null;
+      }
+    },
+
+    // Gestion spécifique pour Zeyna
+    async handleZeynaPayment(
+      paymentData,
+      setSecurityCodeModal,
+      setSubmitStatus
+    ) {
+      try {
+        const securityCodeReq = await axios.post(
+          `${BackendUrl}/requestZeynaCashSecurityCode`,
+          { phoneNumber: paymentData.phoneNumber }
+        );
+
+        if (!securityCodeReq.data.success) {
+          throw new Error(
+            securityCodeReq.data.message || "Erreur lors de l'envoi du code"
+          );
+        }
+
+        return new Promise((resolve) => {
+          const handleSecurityCode = async (code) => {
+            try {
+              if (!code?.trim() || code.trim().length < 4) {
+                setSecurityCodeModal((prev) => ({
+                  ...prev,
+                  error: "Code invalide ou manquant",
+                }));
+                return;
+              }
+
+              const response = await axios.post(
+                `${BackendUrl}/processSTAPayment`,
+                { ...paymentData, securityCode: code }
+              );
+
+              setSecurityCodeModal({ isOpen: false, code: "", error: "" });
+              resolve(response);
+            } catch (error) {
+              setSecurityCodeModal((prev) => ({
+                ...prev,
+                error: error?.response?.data?.message || "Code invalide",
+              }));
+            }
+          };
+
+          setSecurityCodeModal({
+            isOpen: true,
+            code: "",
+            error: "",
+            onSubmit: handleSecurityCode,
+          });
+        });
+      } catch (error) {
+        this.handlePaymentError(error, setSubmitStatus);
+        return null;
+      }
+    },
+
+    // Paiement Mobile Money
+    async processMobileMoneyPayment(
+      transactionId,
+      mobileDetails,
+      orderTotal,
+      setSubmitStatus
+    ) {
+      try {
+        const paymentData = {
+          operator: "airtel",
+          amount: orderTotal,
+          phoneNumber: mobileDetails.number,
+          payerName: JSON.parse(localStorage.getItem("userEcomme"))?.name,
+          externalRef: transactionId,
+        };
+
+        const response = await axios.post(
+          `${BackendUrl}/processMobilePayment`,
+          paymentData
+        );
+
+        this.showPaymentMessage(response.data.message, "alert");
+        return response;
+      } catch (error) {
+        this.handlePaymentError(
+          error,
+          setSubmitStatus,
+          "Erreur lors du paiement Mobile Money. Vérifiez votre numéro et réessayez."
+        );
+        return null;
+      }
+    },
+  };
+
+  // Utilisation
+  const processCardPayment = (transactionId) =>
+    PaymentService.processCardPayment(
+      transactionId,
+      cardDetails,
+      orderTotal,
+      setSubmitStatus
+    );
+
+  const processMobilePayment = (transactionId) =>
+    PaymentService.processMobilePayment(
+      transactionId,
+      selectedPayment,
+      mobileDetails,
+      orderTotal,
+      setSubmitStatus,
+      setSecurityCodeModal
+    );
+
+  const processMobileMoneyPayment = (transactionId) =>
+    PaymentService.processMobileMoneyPayment(
+      transactionId,
+      mobileDetails,
+      orderTotal,
+      setSubmitStatus
+    );
+
+  /////////////////////////////////////////////////////////////////////////////////////////
+
+  // const processCardPayment = async (transactionId) => {
+  //   const cardData = {
+  //     cardNumber:
+  //       String(cardDetails.number || "")
+  //         .replace(/\s|-/g, "")
+  //         .match(/.{1,4}/g)
+  //         ?.join("-") || "",
+  //     expiryDate: cardDetails.expiry,
+  //     cvv: cardDetails.cvc,
+  //     amount: orderTotal,
+  //     payerName: JSON.parse(localStorage.getItem("userEcomme"))?.name,
+  //     externalRef: transactionId,
+  //     browserInfo: {
+  //       javaEnabled: false,
+  //       javascriptEnabled: true,
+  //       screenHeight: window.screen.height,
+  //       screenWidth: window.screen.width,
+  //       TZ: new Date().getTimezoneOffset() / -60,
+  //       challengeWindowSize: "05",
+  //     },
+  //   };
+
+  //   try {
+  //     // Informer l'utilisateur que la fenêtre va s'ouvrir
+  //     alert(
+  //       "Une fenêtre de paiement va s'ouvrir. Veuillez autoriser les popups si nécessaire."
+  //     );
+
+  //     const response = await axios.post(
+  //       `${BackendUrl}/pay-with-card`,
+  //       cardData
+  //     );
+
+  //     if (response.data.success && response.data.redirectUrl) {
+  //       // Tentative d'ouverture de la fenêtre
+  //       const paymentWindow = window.open(
+  //         response.data.redirectUrl,
+  //         "_blank",
+  //         "width=800,height=600,scrollbars=yes,resizable=yes,top=50,left=50"
+  //       );
+
+  //       if (
+  //         !paymentWindow ||
+  //         paymentWindow.closed ||
+  //         typeof paymentWindow.closed == "undefined"
+  //       ) {
+  //         // Utiliser un composant modal ou une autre méthode plutôt que confirm
+  //         // Alternative à confirm
+  //         const userResponse =
+  //           window.confirm !== undefined
+  //             ? window.confirm(
+  //                 "La fenêtre de paiement n'a pas pu s'ouvrir automatiquement. Cliquez OK pour ouvrir la page de paiement."
+  //               )
+  //             : true; // Fallback si confirm n'est pas disponible
+
+  //         if (userResponse) {
+  //           window.location.href = response.data.redirectUrl;
+  //         } else {
+  //           setSubmitStatus({
+  //             loading: false,
+  //             error:
+  //               "Impossible d'ouvrir la fenêtre de paiement. Veuillez autoriser les popups pour ce site.",
+  //             success: false,
+  //           });
+  //           return;
+  //         }
+  //       }
+
+  //       // Vérifier périodiquement si la fenêtre est toujours ouverte
+  //       const checkWindow = setInterval(() => {
+  //         if (paymentWindow && paymentWindow.closed) {
+  //           clearInterval(checkWindow);
+  //           // Vérifier le statut du paiement
+  //           checkTransactionStatus(transactionId);
+  //         }
+  //       }, 1000);
+  //     } else {
+  //       setSubmitStatus({
+  //         loading: false,
+  //         error:
+  //           "Aucune URL de redirection n'a été fournie par le serveur de paiement.",
+  //         success: false,
+  //       });
+  //       return;
+  //     }
+
+  //     return response;
+  //   } catch (error) {
+  //     console.error("Erreur lors du paiement:", error);
+  //     // setSubmitStatus({
+  //     //   loading: false,
+  //     //   error:
+  //     //     "Une erreur est survenue lors de l'initialisation du paiement. Veuillez vérifier que les popups sont autorisés et réessayer.",
+  //     //   success: false,
+  //     // });
+  //     setSubmitStatus({
+  //       loading: false,
+  //       error:
+  //         error?.response?.data?.message ||
+  //         "Une erreur est survenue lors de l'initialisation du paiement. Veuillez vérifier que les popups sont autorisés et réessayer.",
+  //       success: false,
+  //     });
+  //   }
+  // };
+
+  // const processMobilePayment = async (transactionId) => {
+  //   const paymentData = {
+  //     option: selectedPayment,
+  //     phoneNumber: "+" + mobileDetails.operateur + mobileDetails.number,
+  //     country: "niger",
+  //     amount: orderTotal,
+  //     externalRef: transactionId,
+  //     staType: selectedPayment,
+  //   };
+
+  //   try {
+  //     if (selectedPayment === "zeyna") {
+  //       const securityCodeReq = await axios.post(
+  //         `${BackendUrl}/requestZeynaCashSecurityCode`,
+  //         {
+  //           phoneNumber: paymentData.phoneNumber,
+  //         }
+  //       );
+
+  //       if (securityCodeReq.data.success) {
+  //         return new Promise((resolve, reject) => {
+  //           const handleSubmit = async (code) => {
+  //             try {
+  //               if (!code) {
+  //                 setSecurityCodeModal((prev) => ({
+  //                   ...prev,
+  //                   error: "Le code est requis",
+  //                 }));
+  //                 return;
+  //               }
+  //               if (code.trim().length < 4) {
+  //                 setSecurityCodeModal((prev) => ({
+  //                   ...prev,
+  //                   error: "le code n'est pqs valid",
+  //                 }));
+  //                 return;
+  //               }
+
+  //               paymentData.securityCode = code;
+  //               const response = await axios.post(
+  //                 `${BackendUrl}/processSTAPayment`,
+  //                 paymentData
+  //               );
+  //               setSecurityCodeModal({ isOpen: false, code: "", error: "" });
+  //               setHandleSecuritySubmit(null); // Réinitialiser le handler
+
+  //               // setOnSubmit(false);
+
+  //               resolve(response);
+  //             } catch (error) {
+  //               setSecurityCodeModal({
+  //                 isOpen: true,
+  //                 code: error?.response?.data?.code || "",
+  //                 error:
+  //                   error?.response?.data?.message ||
+  //                   "Code invalide. Veuillez réessayer.",
+  //               });
+  //               setHandleSecuritySubmit(null); // Réinitialiser le handler
+  //               console.log(error);
+  //               // setOnSubmit(false);
+  //               setSecurityCodeModal((prev) => ({
+  //                 ...prev,
+  //                 error:
+  //                   error?.response?.data?.message ||
+  //                   "Code invalide. Veuillez réessayer.",
+  //               }));
+  //               // setSubmitStatus({
+  //               //   loading: false,
+  //               //   error:
+  //               //     error?.response?.data?.message ||
+  //               //     "Code invalide. Veuillez réessayer.",
+  //               //   success: false,
+  //               // });
+  //               // setOnSubmit(false);
+  //               // return;
+  //             }
+  //           };
+
+  //           setHandleSecuritySubmit(() => handleSubmit); // Stocker le handler dans l'état
+  //           setSecurityCodeModal({ isOpen: true, code: "", error: "" });
+  //         });
+  //       } else {
+  //         setSubmitStatus({
+  //           loading: false,
+  //           error:
+  //             securityCodeReq.data.message ||
+  //             "Erreur lors de l'envoi du code de sécurité",
+  //           success: false,
+  //         });
+  //         return;
+  //       }
+  //     }
+
+  //     const response = await axios.post(
+  //       `${BackendUrl}/processSTAPayment`,
+  //       paymentData
+  //     );
+  //     if (response.data.code_validation) {
+  //       const message = `${response.data.message} Votre code de validation : ${response.data.code_validation}`;
+  //       alert(message);
+  //       setMessage(message);
+  //     }
+  //     return response;
+  //   } catch (error) {
+  //     console.error("Erreur lors du paiement mobile:", error);
+  //     throw error;
+  //   }
+  // };
+
+  // const processMobileMoneyPayment = async (transactionId) => {
+  //   const paymentData = {
+  //     operator: "airtel",
+  //     amount: orderTotal,
+  //     phoneNumber: mobileDetails.number,
+  //     payerName: JSON.parse(localStorage.getItem("userEcomme"))?.name,
+  //     externalRef: transactionId,
+  //   };
+
+  //   const response = await axios.post(
+  //     `${BackendUrl}/processMobilePayment`,
+  //     paymentData
+  //   );
+  //   alert(response.data.message);
+  //   setMessage(response.data.message);
+  //   return response;
+  // };
 
   // Fonction utilitaire pour gérer les callbacks de paiement
   const handlePaymentCallback = async (status, transactionId) => {
@@ -921,275 +1341,275 @@ const OrderConfirmation = ({ onClose }) => {
     }
   };
 
-  const handlePaymentSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitStatus({ loading: true, error: null, success: false });
-    setMessage("veuillez patienter...");
-    setOnSubmit(true);
-    let transactionId = null;
+  // const handlePaymentSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setSubmitStatus({ loading: true, error: null, success: false });
+  //   setMessage("veuillez patienter...");
+  //   setOnSubmit(true);
+  //   let transactionId = null;
 
-    try {
-      // 1. Vérification utilisateur
-      const userId = JSON.parse(localStorage.getItem("userEcomme"))?.id;
-      if (!userId) {
-        setSubmitStatus({
-          loading: false,
-          error: "ID utilisateur non trouvé. Veuillez vous reconnecter.",
-          success: false,
-        });
-        setOnSubmit(false);
-        return;
-      }
+  //   try {
+  //     // 1. Vérification utilisateur
+  //     const userId = JSON.parse(localStorage.getItem("userEcomme"))?.id;
+  //     if (!userId) {
+  //       setSubmitStatus({
+  //         loading: false,
+  //         error: "ID utilisateur non trouvé. Veuillez vous reconnecter.",
+  //         success: false,
+  //       });
+  //       setOnSubmit(false);
+  //       return;
+  //     }
 
-      // 2. Validation des données
-      const deliveryErrors = validateDeliveryInfo();
-      const paymentErrors = validatePaymentInfo();
-      if (deliveryErrors.length > 0 || paymentErrors.length > 0) {
-        setSubmitStatus({
-          loading: false,
-          error: [...deliveryErrors, ...paymentErrors].join(", "),
-          success: false,
-        });
-        setOnSubmit(false);
-        return;
-      }
+  //     // 2. Validation des données
+  //     const deliveryErrors = validateDeliveryInfo();
+  //     const paymentErrors = validatePaymentInfo();
+  //     if (deliveryErrors.length > 0 || paymentErrors.length > 0) {
+  //       setSubmitStatus({
+  //         loading: false,
+  //         error: [...deliveryErrors, ...paymentErrors].join(", "),
+  //         success: false,
+  //       });
+  //       setOnSubmit(false);
+  //       return;
+  //     }
 
-      // 3. Vérification de commande existante
-      const existingOrder = localStorage.getItem("pendingOrder");
-      let commandeId;
+  //     // 3. Vérification de commande existante
+  //     const existingOrder = localStorage.getItem("pendingOrder");
+  //     let commandeId;
 
-      if (existingOrder) {
-        // Utiliser la commande existante mais générer un nouveau transactionId
-        const orderData = JSON.parse(existingOrder);
-        commandeId = orderData.commandeId;
-        const currentReference = orderData.transactionId;
+  //     if (existingOrder) {
+  //       // Utiliser la commande existante mais générer un nouveau transactionId
+  //       const orderData = JSON.parse(existingOrder);
+  //       commandeId = orderData.commandeId;
+  //       const currentReference = orderData.transactionId;
 
-        // Initialiser la nouvelle transaction
-        const transactionResponse = await axios.post(
-          `${BackendUrl}/api/initiate-transaction`,
-          {
-            userId,
-            amount: orderTotal,
-            paymentMethod: selectedPayment,
-          }
-        );
+  //       // Initialiser la nouvelle transaction
+  //       const transactionResponse = await axios.post(
+  //         `${BackendUrl}/api/initiate-transaction`,
+  //         {
+  //           userId,
+  //           amount: orderTotal,
+  //           paymentMethod: selectedPayment,
+  //         }
+  //       );
 
-        if (!transactionResponse.data.success) {
-          setSubmitStatus({
-            loading: false,
-            error: "Échec de l'initiation du paiement",
-            success: false,
-          });
-          setOnSubmit(false);
-          return;
-        }
+  //       if (!transactionResponse.data.success) {
+  //         setSubmitStatus({
+  //           loading: false,
+  //           error: "Échec de l'initiation du paiement",
+  //           success: false,
+  //         });
+  //         setOnSubmit(false);
+  //         return;
+  //       }
 
-        transactionId = transactionResponse.data.transactionId;
+  //       transactionId = transactionResponse.data.transactionId;
 
-        // Mettre à jour la commande avec le nouveau transactionId
-        await axios.put(`${BackendUrl}/updateCommande`, {
-          clefUser: userId,
-          nbrProduits: JSON.parse(localStorage.getItem("panier")).map(
-            (item) => ({
-              produit: item._id,
-              quantite: item.quantity,
-              tailles: item.sizes,
-              couleurs: item.colors,
-            })
-          ),
-          prix: orderTotal,
-          oldReference: currentReference,
-          newReference: transactionId,
-          livraisonDetails: {
-            customerName: deliveryInfo.name,
-            email: deliveryInfo.email,
-            region: deliveryInfo.region,
-            quartier: deliveryInfo.quartier,
-            numero: deliveryInfo.numero,
-            description: deliveryInfo.description,
-          },
-          prod: JSON.parse(localStorage.getItem("panier")),
-          ...(orderCodeP?.isValide && {
-            codePro: true,
-            idCodePro: orderCodeP._id,
-          }),
-          statusPayment:
-            selectedPayment === "payé à la livraison"
-              ? "payé à la livraison"
-              : null,
-        });
+  //       // Mettre à jour la commande avec le nouveau transactionId
+  //       await axios.put(`${BackendUrl}/updateCommande`, {
+  //         clefUser: userId,
+  //         nbrProduits: JSON.parse(localStorage.getItem("panier")).map(
+  //           (item) => ({
+  //             produit: item._id,
+  //             quantite: item.quantity,
+  //             tailles: item.sizes,
+  //             couleurs: item.colors,
+  //           })
+  //         ),
+  //         prix: orderTotal,
+  //         oldReference: currentReference,
+  //         newReference: transactionId,
+  //         livraisonDetails: {
+  //           customerName: deliveryInfo.name,
+  //           email: deliveryInfo.email,
+  //           region: deliveryInfo.region,
+  //           quartier: deliveryInfo.quartier,
+  //           numero: deliveryInfo.numero,
+  //           description: deliveryInfo.description,
+  //         },
+  //         prod: JSON.parse(localStorage.getItem("panier")),
+  //         ...(orderCodeP?.isValide && {
+  //           codePro: true,
+  //           idCodePro: orderCodeP._id,
+  //         }),
+  //         statusPayment:
+  //           selectedPayment === "payé à la livraison"
+  //             ? "payé à la livraison"
+  //             : null,
+  //       });
 
-        localStorage.setItem(
-          "pendingOrder",
-          JSON.stringify({
-            commandeId,
-            transactionId,
-            timestamp: new Date().getTime(),
-          })
-        );
-      } else {
-        // 4. Sauvegarde de l'adresse
-        await axios.post(`${BackendUrl}/createOrUpdateAddress`, {
-          ...deliveryInfo,
-          email: deliveryInfo.email !== "" ? deliveryInfo.email : null,
-          clefUser: userId,
-        });
+  //       localStorage.setItem(
+  //         "pendingOrder",
+  //         JSON.stringify({
+  //           commandeId,
+  //           transactionId,
+  //           timestamp: new Date().getTime(),
+  //         })
+  //       );
+  //     } else {
+  //       // 4. Sauvegarde de l'adresse
+  //       await axios.post(`${BackendUrl}/createOrUpdateAddress`, {
+  //         ...deliveryInfo,
+  //         email: deliveryInfo.email !== "" ? deliveryInfo.email : null,
+  //         clefUser: userId,
+  //       });
 
-        // 5. Vérification du panier
-        const panier = JSON.parse(localStorage.getItem("panier"));
-        if (!panier || panier.length === 0) {
-          setSubmitStatus({
-            loading: false,
-            error: "Aucun produit n'est sélectionné.",
-            success: false,
-          });
-          setOnSubmit(false);
-          return;
-        }
+  //       // 5. Vérification du panier
+  //       const panier = JSON.parse(localStorage.getItem("panier"));
+  //       if (!panier || panier.length === 0) {
+  //         setSubmitStatus({
+  //           loading: false,
+  //           error: "Aucun produit n'est sélectionné.",
+  //           success: false,
+  //         });
+  //         setOnSubmit(false);
+  //         return;
+  //       }
 
-        // 6. Création de la transaction
-        transactionId = generateUniqueID();
-        const commandeData = {
-          clefUser: userId,
-          nbrProduits: panier.map((item) => ({
-            produit: item._id,
-            quantite: item.quantity,
-            tailles: item.sizes,
-            couleurs: item.colors,
-          })),
-          prix: orderTotal,
-          statusPayment: "en_attente",
-          reference: transactionId,
-          livraisonDetails: {
-            customerName: deliveryInfo.name,
-            email: deliveryInfo.email,
-            region: deliveryInfo.region,
-            quartier: deliveryInfo.quartier,
-            numero: deliveryInfo.numero,
-            description: deliveryInfo.description,
-          },
-          prod: panier,
-          ...(orderCodeP?.isValide && {
-            codePro: true,
-            idCodePro: orderCodeP._id,
-          }),
-        };
+  //       // 6. Création de la transaction
+  //       transactionId = generateUniqueID();
+  //       const commandeData = {
+  //         clefUser: userId,
+  //         nbrProduits: panier.map((item) => ({
+  //           produit: item._id,
+  //           quantite: item.quantity,
+  //           tailles: item.sizes,
+  //           couleurs: item.colors,
+  //         })),
+  //         prix: orderTotal,
+  //         statusPayment: "en_attente",
+  //         reference: transactionId,
+  //         livraisonDetails: {
+  //           customerName: deliveryInfo.name,
+  //           email: deliveryInfo.email,
+  //           region: deliveryInfo.region,
+  //           quartier: deliveryInfo.quartier,
+  //           numero: deliveryInfo.numero,
+  //           description: deliveryInfo.description,
+  //         },
+  //         prod: panier,
+  //         ...(orderCodeP?.isValide && {
+  //           codePro: true,
+  //           idCodePro: orderCodeP._id,
+  //         }),
+  //       };
 
-        const orderResponse = await axios.post(
-          `${BackendUrl}/createCommande`,
-          commandeData
-        );
-        commandeId = orderResponse.data._id;
+  //       const orderResponse = await axios.post(
+  //         `${BackendUrl}/createCommande`,
+  //         commandeData
+  //       );
+  //       commandeId = orderResponse.data._id;
 
-        localStorage.setItem(
-          "pendingOrder",
-          JSON.stringify({
-            commandeId,
-            transactionId,
-            timestamp: new Date().getTime(),
-          })
-        );
-      }
+  //       localStorage.setItem(
+  //         "pendingOrder",
+  //         JSON.stringify({
+  //           commandeId,
+  //           transactionId,
+  //           timestamp: new Date().getTime(),
+  //         })
+  //       );
+  //     }
 
-      // Avant de lancer le paiement
-      localStorage.setItem(
-        "paymentInitiated",
-        JSON.stringify({
-          transactionId,
-          commandeId,
-          timestamp: new Date().getTime(),
-        })
-      );
+  //     // Avant de lancer le paiement
+  //     localStorage.setItem(
+  //       "paymentInitiated",
+  //       JSON.stringify({
+  //         transactionId,
+  //         commandeId,
+  //         timestamp: new Date().getTime(),
+  //       })
+  //     );
 
-      // 7. Traitement du paiement selon la méthode
-      // 7. Traitement du paiement selon la méthode
-      if (
-        [
-          "Visa",
-          "master Card",
-          "Mobile Money",
-          "nita",
-          "zeyna",
-          "amana",
-        ].includes(selectedPayment)
-      ) {
-        try {
-          if (selectedPayment === "Visa" || selectedPayment === "master Card") {
-            await processCardPayment(transactionId);
-          } else if (["zeyna", "nita", "amana"].includes(selectedPayment)) {
-            await processMobilePayment(transactionId);
-          } else if (selectedPayment === "Mobile Money") {
-            await processMobileMoneyPayment(transactionId);
-          }
+  //     // 7. Traitement du paiement selon la méthode
+  //     // 7. Traitement du paiement selon la méthode
+  //     if (
+  //       [
+  //         "Visa",
+  //         "master Card",
+  //         "Mobile Money",
+  //         "nita",
+  //         "zeyna",
+  //         "amana",
+  //       ].includes(selectedPayment)
+  //     ) {
+  //       try {
+  //         if (selectedPayment === "Visa" || selectedPayment === "master Card") {
+  //           await processCardPayment(transactionId);
+  //         } else if (["zeyna", "nita", "amana"].includes(selectedPayment)) {
+  //           await processMobilePayment(transactionId);
+  //         } else if (selectedPayment === "Mobile Money") {
+  //           await processMobileMoneyPayment(transactionId);
+  //         }
 
-          // Vérification unique du statut
-          const status = await checkTransactionStatus(transactionId);
+  //         // Vérification unique du statut
+  //         const status = await checkTransactionStatus(transactionId);
 
-          if (status === "complete") {
-            // Nettoyage
-            localStorage.removeItem("panier");
-            localStorage.removeItem("orderTotal");
-            localStorage.removeItem("paymentInfo");
-            localStorage.removeItem("pendingOrder");
+  //         if (status === "complete") {
+  //           // Nettoyage
+  //           localStorage.removeItem("panier");
+  //           localStorage.removeItem("orderTotal");
+  //           localStorage.removeItem("paymentInfo");
+  //           localStorage.removeItem("pendingOrder");
 
-            if (orderCodeP?.isValide) {
-              await axios.put(`${BackendUrl}/updateCodePromo`, {
-                codePromoId: orderCodeP._id,
-                isValide: false,
-              });
-              localStorage.removeItem("orderCodeP");
-            }
+  //           if (orderCodeP?.isValide) {
+  //             await axios.put(`${BackendUrl}/updateCodePromo`, {
+  //               codePromoId: orderCodeP._id,
+  //               isValide: false,
+  //             });
+  //             localStorage.removeItem("orderCodeP");
+  //           }
 
-            setSubmitStatus({
-              loading: false,
-              error: "Paiement effectué avec succès",
-              success: true,
-            });
-            setPaiementProduit(true);
-            navigation("/Commande");
-          } else {
-            setSubmitStatus({
-              loading: false,
-              error: "Le paiement a échoué. Veuillez réessayer.",
-              success: false,
-            });
-            setOnSubmit(false);
-          }
-        } catch (error) {
-          setSubmitStatus({
-            loading: false,
-            error:
-              error.response?.data?.message ||
-              "Une erreur est survenue lors du paiement",
-            success: false,
-          });
-          setOnSubmit(false);
-        }
-      } else {
-        // Paiement à la livraison
-        localStorage.removeItem("panier");
-        localStorage.removeItem("orderTotal");
+  //           setSubmitStatus({
+  //             loading: false,
+  //             error: "Paiement effectué avec succès",
+  //             success: true,
+  //           });
+  //           setPaiementProduit(true);
+  //           navigation("/Commande");
+  //         } else {
+  //           setSubmitStatus({
+  //             loading: false,
+  //             error: "Le paiement a échoué. Veuillez réessayer.",
+  //             success: false,
+  //           });
+  //           setOnSubmit(false);
+  //         }
+  //       } catch (error) {
+  //         setSubmitStatus({
+  //           loading: false,
+  //           error:
+  //             error.response?.data?.message ||
+  //             "Une erreur est survenue lors du paiement",
+  //           success: false,
+  //         });
+  //         setOnSubmit(false);
+  //       }
+  //     } else {
+  //       // Paiement à la livraison
+  //       localStorage.removeItem("panier");
+  //       localStorage.removeItem("orderTotal");
 
-        if (orderCodeP?.isValide) {
-          await axios.put(`${BackendUrl}/updateCodePromo`, {
-            codePromoId: orderCodeP._id,
-            isValide: false,
-          });
-          localStorage.removeItem("orderCodeP");
-        }
+  //       if (orderCodeP?.isValide) {
+  //         await axios.put(`${BackendUrl}/updateCodePromo`, {
+  //           codePromoId: orderCodeP._id,
+  //           isValide: false,
+  //         });
+  //         localStorage.removeItem("orderCodeP");
+  //       }
 
-        setSubmitStatus({ loading: false, error: null, success: true });
-        setPaiementProduit(true);
-      }
-    } catch (error) {
-      setSubmitStatus({
-        loading: false,
-        error: error.response?.data?.message || "Une erreur est survenue",
-        success: false,
-      });
-      setOnSubmit(false);
-    }
-  };
+  //       setSubmitStatus({ loading: false, error: null, success: true });
+  //       setPaiementProduit(true);
+  //     }
+  //   } catch (error) {
+  //     setSubmitStatus({
+  //       loading: false,
+  //       error: error.response?.data?.message || "Une erreur est survenue",
+  //       success: false,
+  //     });
+  //     setOnSubmit(false);
+  //   }
+  // };
 
   const getPaymentDescription = () => {
     switch (selectedPayment) {

@@ -53,6 +53,15 @@ export default function CommandeSuivi() {
           `${BackendUrl}/getCommandesById/${id}`
         );
         setOrder(orderResponse.data.commande);
+        if (orderResponse.data.commande?.livraisonDetails) {
+          setShippingAddress(orderResponse.data.commande?.livraisonDetails);
+        } else {
+          // Fetch shipping address
+          const addressResponse = await axios.get(
+            `${BackendUrl}/getAddressByUserKey/${userEcomme.id}`
+          );
+          setShippingAddress(addressResponse.data.address);
+        }
 
         if (orderResponse?.data?.commande?.codePro) {
           const promoCodeRes = await axios.get(
@@ -65,12 +74,6 @@ export default function CommandeSuivi() {
             ) || null
           );
         }
-
-        // Fetch shipping address
-        const addressResponse = await axios.get(
-          `${BackendUrl}/getAddressByUserKey/${userEcomme.id}`
-        );
-        setShippingAddress(addressResponse.data.address);
 
         setLoading(false);
       } catch (err) {

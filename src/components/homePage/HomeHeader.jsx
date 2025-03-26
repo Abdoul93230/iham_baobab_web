@@ -665,9 +665,18 @@ function HomeHeader({ paniernbr, acces }) {
       </header>
 
       {/* Promo banner */}
-      <div className="bg-amber-200 text-amber-800 py-2 px-4 text-sm flex justify-center items-center">
-        <Gift className="h-4 w-4 mr-2" /> Offre spéciale : -20% sur votre
-        première commande avec le code BIENVENUE20
+      <div className="bg-gradient-to-r from-amber-300 to-amber-400 text-amber-900 py-3 px-5 text-base flex items-center justify-center animate-pulse shadow-lg">
+        <Gift className="h-6 w-6 mr-3 animate-bounce text-amber-700" />
+        <span className="font-bold">🎉 OFFRE CHOC !</span>
+        <span className="ml-2">
+          -20% sur votre première commande avec le code{" "}
+          <span className="bg-amber-200 px-2 py-1 rounded-md font-extrabold text-amber-900">
+            BIENVENUE20
+          </span>
+          <span className="bg-red-500 text-white px-2 py-1 rounded-md font-extrabold ml-2">
+            (remise max : 2000 F)
+          </span>
+        </span>
       </div>
 
       {/* Mobile menu */}
