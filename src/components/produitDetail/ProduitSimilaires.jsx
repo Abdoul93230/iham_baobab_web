@@ -1,38 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Heart } from "lucide-react";
-import axios from "axios";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchUserLikes, toggleLike } from "../../redux/likesSlice";
 
-// Fonction utilitaire pour combiner les classes CSS
 function cn(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
 const ProduitSimilaires = ({ titre, produits }) => {
   const navigate = useNavigate();
-  const [likedProducts, setLikedProducts] = useState(new Set());
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
   const [notificationType, setNotificationType] = useState("success");
 
-  const API_URL = process.env.REACT_APP_Backend_Url;
+  const dispatch = useDispatch();
+  const likedProducts = useSelector((state) => state.likes.likedProducts);
   const userId = JSON.parse(localStorage.getItem("userEcomme"))?.id;
 
   useEffect(() => {
     if (userId) {
-      fetchUserLikes();
+      dispatch(fetchUserLikes(userId));
     }
-  }, [userId]);
-
-  const fetchUserLikes = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/likes/user/${userId}`);
-      const likedIds = new Set(response.data.map((like) => like.produit._id));
-      setLikedProducts(likedIds);
-    } catch (error) {
-      console.error("Erreur lors du chargement des likes:", error);
-    }
-  };
+  }, [userId, dispatch]);
 
   const showToast = (message, type = "success") => {
     setNotificationMessage(message);
@@ -41,7 +31,7 @@ const ProduitSimilaires = ({ titre, produits }) => {
     setTimeout(() => setShowNotification(false), 3000);
   };
 
-  const handleLikeClick = async (productId, e) => {
+  const handleLikeClick = async (product, e) => {
     e.stopPropagation();
 
     if (!userId) {
@@ -50,24 +40,12 @@ const ProduitSimilaires = ({ titre, produits }) => {
     }
 
     try {
-      if (likedProducts.has(productId)) {
-        // Supprimer le like
-        await axios.delete(`${API_URL}/likes/${userId}/${productId}`);
-        setLikedProducts((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(productId);
-          return newSet;
-        });
-        showToast("Produit retiré des favoris");
-      } else {
-        // Ajouter le like
-        await axios.post(`${API_URL}/likes`, {
-          userId,
-          produitId: productId,
-        });
-        setLikedProducts((prev) => new Set([...prev, productId]));
-        showToast("Produit ajouté aux favoris");
-      }
+      await dispatch(toggleLike({ userId, product })).unwrap();
+      showToast(
+        likedProducts.includes(product._id)
+          ? "Produit retiré des favoris"
+          : "Produit ajouté aux favoris"
+      );
     } catch (error) {
       showToast("Une erreur est survenue", "error");
       console.error("Erreur:", error);
@@ -76,7 +54,6 @@ const ProduitSimilaires = ({ titre, produits }) => {
 
   return (
     <div className="mt-12">
-      {/* Notification Toast */}
       {showNotification && (
         <div
           className={cn(
@@ -104,13 +81,11 @@ const ProduitSimilaires = ({ titre, produits }) => {
                 alt={produit.name}
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
               />
-
-              {/* Like Button */}
               <button
-                onClick={(e) => handleLikeClick(produit._id, e)}
+                onClick={(e) => handleLikeClick(produit, e)}
                 className={cn(
                   "absolute top-3 left-3 p-2 rounded-full shadow-lg transition-all duration-300 z-20",
-                  likedProducts.has(produit._id)
+                  likedProducts.includes(produit._id)
                     ? "bg-red-50 hover:bg-red-100"
                     : "bg-white hover:bg-emerald-50"
                 )}
@@ -118,7 +93,7 @@ const ProduitSimilaires = ({ titre, produits }) => {
                 <Heart
                   className={cn(
                     "w-5 h-5 transition-colors duration-300",
-                    likedProducts.has(produit._id)
+                    likedProducts.includes(produit._id)
                       ? "text-red-500 fill-red-500"
                       : "text-emerald-600"
                   )}
