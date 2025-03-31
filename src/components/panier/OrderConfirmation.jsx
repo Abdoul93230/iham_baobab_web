@@ -190,7 +190,7 @@ const OrderConfirmation = ({ onClose }) => {
         //   }
         // }
       } catch (error) {
-        console.log(error)
+        console.log(error);
         // setSubmitStatus({
         //   loading: false,
         //   error: "Erreur lors du chargement des données",
@@ -765,19 +765,40 @@ const OrderConfirmation = ({ onClose }) => {
           throw new Error("Aucune URL de redirection n'a été fournie");
         }
 
-        const paymentWindow = window.open(
+        // Tentative d'ouverture de la fenêtre de paiement
+        let paymentWindow = window.open(
           response.data.redirectUrl,
           "_blank",
           "width=800,height=600,scrollbars=yes,resizable=yes,top=50,left=50"
         );
 
-        if (!paymentWindow || paymentWindow.closed) {
+        // Vérification si la fenêtre s'est bien ouverte
+        if (
+          !paymentWindow ||
+          paymentWindow.closed ||
+          typeof paymentWindow.closed === "undefined"
+        ) {
+          // Si la fenêtre est bloquée, utiliser la méthode alternative avec un lien temporaire
+          const link = document.createElement("a");
+          link.href = response.data.redirectUrl;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.click();
+          paymentWindow = true; // Pour que la promesse soit résolue
+        }
+
+        if (!paymentWindow) {
           const shouldRedirect = window.confirm(
             "La fenêtre de paiement n'a pas pu s'ouvrir automatiquement. Cliquez OK pour ouvrir la page de paiement."
           );
 
           if (shouldRedirect) {
-            window.location.href = response.data.redirectUrl;
+            // Même méthode que précédemment pour forcer l'ouverture dans un nouvel onglet
+            const link = document.createElement("a");
+            link.href = response.data.redirectUrl;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.click();
           } else {
             throw new Error("Impossible d'ouvrir la fenêtre de paiement");
           }
