@@ -11,8 +11,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchUserLikes, toggleLike } from "../../redux/likesSlice";
 
-const ProductCard = ({ product, onProductClick, isLiked, onLikeClick }) => {
+function cn2(...classes) {
+  return classes.filter(Boolean).join(" ");
+}
+
+const ProductCard = ({
+  product,
+  onProductClick,
+  likedProducts,
+  onLikeClick,
+}) => {
   const calculateDiscount = (originalPrice, promoPrice) => {
     return Math.round(((originalPrice - promoPrice) / originalPrice) * 100);
   };
@@ -44,24 +55,24 @@ const ProductCard = ({ product, onProductClick, isLiked, onLikeClick }) => {
 
         {/* Like Button - Always visible */}
         {/* Like Button - Always visible on the left */}
-        <Button
-          size="icon"
-          variant="secondary"
+        <button
+          onClick={(e) => handleLikeClick(product, e)}
           className={cn(
-            "absolute top-3 left-3 w-8 h-8 rounded-full shadow-lg transition-all duration-300 z-20",
-            isLiked
+            "absolute top-3 left-3 p-2 rounded-full shadow-lg transition-all duration-300 z-20",
+            likedProducts.includes(product._id)
               ? "bg-red-50 hover:bg-red-100"
               : "bg-white hover:bg-emerald-50"
           )}
-          onClick={handleLikeClick}
         >
           <Heart
             className={cn(
-              "w-4 h-4 transition-all duration-300",
-              isLiked ? "text-red-500 fill-red-500" : "text-emerald-600"
+              "w-5 h-5 transition-colors duration-300",
+              likedProducts.includes(product._id)
+                ? "text-red-500 fill-red-500"
+                : "text-emerald-600"
             )}
           />
-        </Button>
+        </button>
 
         {/* Overlay Actions - Only Cart button */}
         <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-all duration-300">
@@ -109,68 +120,49 @@ const ProductCard = ({ product, onProductClick, isLiked, onLikeClick }) => {
 
 const SliderPage = ({ products, name }) => {
   const swiperRef = useRef(null);
+
+  ////////////////////////////////////////////////////////////////////////
+  const API_URL = process.env.REACT_APP_Backend_Url;
   const navigate = useNavigate();
-  const [likedProducts, setLikedProducts] = useState(new Set());
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
   const [notificationType, setNotificationType] = useState("success");
-
-  const API_URL = process.env.REACT_APP_Backend_Url;
+  const dispatch = useDispatch();
+  const likedProducts = useSelector((state) => state.likes.likedProducts);
   const userId = JSON.parse(localStorage.getItem("userEcomme"))?.id;
 
   useEffect(() => {
     if (userId) {
-      fetchUserLikes();
+      dispatch(fetchUserLikes(userId));
     }
-  }, [userId]);
-
-  const fetchUserLikes = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/likes/user/${userId}`);
-      const likedIds = new Set(response.data.map((like) => like.produit._id));
-      setLikedProducts(likedIds);
-    } catch (error) {
-      console.error("Erreur lors du chargement des likes:", error);
-    }
-  };
-
+  }, [userId, dispatch]);
   const showToast = (message, type = "success") => {
     setNotificationMessage(message);
     setNotificationType(type);
     setShowNotification(true);
     setTimeout(() => setShowNotification(false), 3000);
   };
+  const handleLikeClick = async (product, e) => {
+    e.stopPropagation();
 
-  const handleLikeClick = async (product) => {
     if (!userId) {
       showToast("Veuillez vous connecter pour ajouter des favoris", "error");
       return;
     }
 
     try {
-      if (likedProducts.has(product._id)) {
-        // Supprimer le like
-        await axios.delete(`${API_URL}/likes/${userId}/${product._id}`);
-        setLikedProducts((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(product._id);
-          return newSet;
-        });
-        showToast("Produit retiré des favoris");
-      } else {
-        // Ajouter le like
-        await axios.post(`${API_URL}/likes`, {
-          userId,
-          produitId: product._id,
-        });
-        setLikedProducts((prev) => new Set([...prev, product._id]));
-        showToast("Produit ajouté aux favoris");
-      }
+      await dispatch(toggleLike({ userId, product })).unwrap();
+      showToast(
+        likedProducts.includes(product._id)
+          ? "Produit retiré des favoris"
+          : "Produit ajouté aux favoris"
+      );
     } catch (error) {
       showToast("Une erreur est survenue", "error");
       console.error("Erreur:", error);
     }
   };
+  ////////////////////////////////////////////////////////////////////////
 
   const handleProductClick = (productId) => {
     navigate(`/ProduitDétail/${productId}`);
@@ -181,7 +173,7 @@ const SliderPage = ({ products, name }) => {
       {/* Notification Toast */}
       {showNotification && (
         <div
-          className={cn(
+          className={cn2(
             "fixed top-4 right-4 z-50 px-4 py-3 rounded shadow-lg transition-all duration-300",
             notificationType === "success"
               ? "bg-green-100 border-green-400 text-green-700"
@@ -240,8 +232,9 @@ const SliderPage = ({ products, name }) => {
             <ProductCard
               product={product}
               onProductClick={handleProductClick}
-              isLiked={likedProducts.has(product._id)}
+              // isLiked={likedProducts.has(product._id)}
               onLikeClick={handleLikeClick}
+              likedProducts={likedProducts}
             />
           </SwiperSlide>
         ))}
