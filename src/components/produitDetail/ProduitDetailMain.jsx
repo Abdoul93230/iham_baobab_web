@@ -28,12 +28,13 @@ import ProduitSimilaires from "./ProduitSimilaires";
 import CommentaireProduit from "./CommentaireProduit";
 import CountryPage from "./CountryPage";
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { shuffle } from "lodash";
 import Alert from "../../pages/Alert";
 import { useNavigate } from "react-router-dom";
 import AppPromo from "./AppPromo ";
+import { fetchUserLikes, toggleLike } from "../../redux/likesSlice";
 
 // Fonction utilitaire pour combiner les classes CSS
 function cn(...classes) {
@@ -50,9 +51,6 @@ function ProduitDetailMain({ panierchg }) {
   const [selectedSizeImage, setSelectedSizeImage] = useState(null);
   const [quantity, setQuantity] = useState(0);
   const [liked, setLiked] = useState(false);
-  const [showNotification, setShowNotification] = useState(false);
-  const [notificationMessage, setNotificationMessage] = useState("");
-  const [notificationType, setNotificationType] = useState("success");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalOpen1, setIsModalOpen1] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -110,27 +108,21 @@ function ProduitDetailMain({ panierchg }) {
   const DATA_Categories = useSelector((state) => state.products.categories);
   const DATA_Pubs = useSelector((state) => state.products.products_Pubs);
 
+  ////////////////////////////////////////////////////////////////////////
   const API_URL = process.env.REACT_APP_Backend_Url;
+  const navigate = useNavigate();
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const [notificationType, setNotificationType] = useState("success");
+  const dispatch = useDispatch();
+  const likedProducts = useSelector((state) => state.likes.likedProducts);
   const userId = JSON.parse(localStorage.getItem("userEcomme"))?.id;
 
-  // Vérifier si le produit est liké au chargement
   useEffect(() => {
-    if (userId && params.id) {
-      checkIfProductLiked();
+    if (userId) {
+      dispatch(fetchUserLikes(userId));
     }
-  }, [userId, params.id]);
-
-  const checkIfProductLiked = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/likes/user/${userId}`);
-      const likedProducts = new Set(
-        response.data.map((like) => like.produit._id)
-      );
-      setLiked(likedProducts.has(params.id));
-    } catch (error) {
-      console.error("Erreur lors de la vérification des likes:", error);
-    }
-  };
+  }, [userId, dispatch]);
 
   const showToast = (message, type = "success") => {
     setNotificationMessage(message);
@@ -139,32 +131,27 @@ function ProduitDetailMain({ panierchg }) {
     setTimeout(() => setShowNotification(false), 3000);
   };
 
-  const handleLikeClick = async () => {
+  const handleLikeClick = async (product, e) => {
+    e.stopPropagation();
+
     if (!userId) {
       showToast("Veuillez vous connecter pour ajouter des favoris", "error");
       return;
     }
 
     try {
-      if (liked) {
-        // Supprimer le like
-        await axios.delete(`${API_URL}/likes/${userId}/${params.id}`);
-        setLiked(false);
-        showToast("Produit retiré des favoris");
-      } else {
-        // Ajouter le like
-        await axios.post(`${API_URL}/likes`, {
-          userId,
-          produitId: params.id,
-        });
-        setLiked(true);
-        showToast("Produit ajouté aux favoris");
-      }
+      await dispatch(toggleLike({ userId, product })).unwrap();
+      showToast(
+        likedProducts.includes(product._id)
+          ? "Produit retiré des favoris"
+          : "Produit ajouté aux favoris"
+      );
     } catch (error) {
       showToast("Une erreur est survenue", "error");
       console.error("Erreur:", error);
     }
   };
+  ////////////////////////////////////////////////////////////////////////
 
   const produit = DATA_Products.find((item) => item._id === params.id);
 
@@ -302,20 +289,6 @@ function ProduitDetailMain({ panierchg }) {
   const handleZoomOut = () => {
     setZoomLevel((prev) => Math.max(prev / 1.5, 1));
   };
-
-  // const sizes = [
-  //   { size: "39", cm: "24.5CM" },
-  //   { size: "40", cm: "25.0CM" },
-  //   { size: "41", cm: "25.5CM" },
-  //   { size: "42", cm: "26.0CM" },
-  //   { size: "43", cm: "26.5CM" },
-  //   // Ajoutez d'autres tailles si nécessaire
-  // ];
-  // const imageColorMap =
-  //   DATA_Products.find((item) => item._id === params.id)?.pictures || [];
-
-  // const decreaseQuantity = () => setQuantity((prev) => Math.max(1, prev - 1));
-  // const increaseQuantity = () => setQuantity((prev) => Math.min(5, prev + 1));
 
   const decreaseQuantity = () => setQuantity((prev) => prev - 1);
   const increaseQuantity = () => setQuantity((prev) => prev + 1);
@@ -1100,16 +1073,20 @@ function ProduitDetailMain({ panierchg }) {
               ) : null}
 
               <button
-                onClick={handleLikeClick}
+                onClick={(e) => handleLikeClick(produit, e)}
                 className={cn(
                   "p-2 rounded-full transition-all duration-300",
-                  liked ? "bg-red-50 hover:bg-red-100" : "hover:bg-gray-100"
+                  likedProducts.includes(produit._id)
+                    ? "bg-red-50 hover:bg-red-100"
+                    : "bg-white hover:bg-emerald-50"
                 )}
               >
                 <Heart
                   className={cn(
                     "w-6 h-6 transition-all duration-300",
-                    liked ? "text-red-500 fill-red-500" : "text-gray-400"
+                    likedProducts.includes(produit._id)
+                      ? "text-red-500 fill-red-500"
+                      : "text-emerald-600"
                   )}
                 />
               </button>
