@@ -231,7 +231,7 @@ function ProduitDetailMain({ panierchg }) {
     DATA_Products.find((item) => item._id === params.id)?.image1,
     DATA_Products.find((item) => item._id === params.id)?.image2,
     DATA_Products.find((item) => item._id === params.id)?.image3,
-  ];
+  ].filter((image) => image && image.startsWith("http"));
 
   // const handlePrev = () => {
   //   setActiveImageIndex((prevIndex) =>
@@ -1076,7 +1076,7 @@ function ProduitDetailMain({ panierchg }) {
                 onClick={(e) => handleLikeClick(produit, e)}
                 className={cn(
                   "p-2 rounded-full transition-all duration-300",
-                  likedProducts.includes(produit._id)
+                  likedProducts.includes(produit?._id)
                     ? "bg-red-50 hover:bg-red-100"
                     : "bg-white hover:bg-emerald-50"
                 )}
@@ -1084,7 +1084,7 @@ function ProduitDetailMain({ panierchg }) {
                 <Heart
                   className={cn(
                     "w-6 h-6 transition-all duration-300",
-                    likedProducts.includes(produit._id)
+                    likedProducts.includes(produit?._id)
                       ? "text-red-500 fill-red-500"
                       : "text-emerald-600"
                   )}
@@ -1296,7 +1296,12 @@ function ProduitDetailMain({ panierchg }) {
           </div>
           <div className="flex justify-between px-6 py-4 border-t">
             <div className="flex flex-col items-center">
-              <button className="p-2" onClick={() => navigation("/Boutique")}>
+              <button
+                className="p-2"
+                onClick={() =>
+                  navigation(`/Boutique/${produit?.Clefournisseur}`)
+                }
+              >
                 <Store className="w-5 h-5" />
               </button>
               <span className="text-sm">Boutique</span>

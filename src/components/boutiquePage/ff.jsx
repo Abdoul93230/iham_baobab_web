@@ -23,9 +23,6 @@ import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import BoutiqueProduits from "./BoutiqueProduits";
 import BoutiquierProfile from "./BoutiquierProfile";
 import axios from "axios";
-import { useSelector } from "react-redux";
-import { shuffle } from "lodash";
-import VerticalCarousel from "./VerticalCarousel";
 // import CategorieMobile from '../homePage/CategorieMobile';
 const BackendUrl = process.env.REACT_APP_Backend_Url;
 
@@ -36,7 +33,6 @@ const stripHtml = (html) => {
   return tmp.textContent || tmp.innerText || "";
 };
 const AdvancedECommercePage = ({ isOpen, acces }) => {
-  const DATA_Products = useSelector((state) => state.products.data);
   const [products, setProducts] = useState([]);
   const [cartItems, setCartItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -54,13 +50,6 @@ const AdvancedECommercePage = ({ isOpen, acces }) => {
   const navigation = useNavigate();
   const { toast } = useToast();
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [banners, setBanners] = useState([]);
-  const DATA_Pubs = useSelector((state) => state.products.products_Pubs);
-  const DATA_Categories = useSelector((state) => state.products.categories);
-  const images1 = banners?.map((item) => item.image);
-  const images2 = DATA_Pubs?.map((item) => item.image);
-
-  const toutesLesImages = [...images1, ...images2];
 
   // const categories = [
   //   "All",
@@ -142,7 +131,6 @@ const AdvancedECommercePage = ({ isOpen, acces }) => {
   useEffect(() => {
     if (sellerId) {
       fetchSellerData();
-      fetchBanners();
     }
   }, [sellerId]);
 
@@ -172,111 +160,6 @@ const AdvancedECommercePage = ({ isOpen, acces }) => {
         title: "Error",
         description:
           error.response?.data?.message || "Failed to fetch boutique data",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchBanners = async () => {
-    setIsLoading(true);
-    try {
-      const response = await axios.get(
-        `${BackendUrl}/api/marketing/Bannerss/${sellerId}`,
-        {
-          withCredentials: true,
-        }
-      );
-
-      if (response.data.success) {
-        setBanners(response.data.data);
-      } else {
-        toast.error("Erreur lors de la récupération des bannières");
-      }
-    } catch (error) {
-      console.error("Error fetching banners:", error);
-      toast.error(
-        error.response?.data?.message || "Erreur de connexion au serveur"
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleCategorySelect = async (categoryId, categoryName) => {
-    setIsLoading(true);
-    setSelectedCategory(categoryName);
-    try {
-      if (categoryName === "All") {
-        // Reload all products
-        const response = await axios.get(
-          `${BackendUrl}/searchProductBySupplier/${sellerId}`
-        );
-        const publishedProducts = response.data.data.filter(
-          (product) => product.isPublished === "Published"
-        );
-        setProducts(publishedProducts);
-        setTotalPages(Math.ceil(publishedProducts.length / perPage));
-      } else {
-        // Filter by category
-        const response = await axios.get(
-          `${BackendUrl}/searchProductByTypeBySeller/${categoryId}/${sellerId}`
-        );
-        const publishedProducts = response.data.products.filter(
-          (product) => product.isPublished === "Published"
-        );
-        setProducts(publishedProducts);
-        setTotalPages(Math.ceil(publishedProducts.length / perPage));
-      }
-      setCurrentPage(1);
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to filter products by category",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (searchName.length < 2) {
-      toast({
-        variant: "warning",
-        title: "Warning",
-        description: "Search term must be at least 2 characters long",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const response = await axios.get(
-        `${BackendUrl}/searchProductByNameBySeller/${searchName}/${sellerId}`
-      );
-
-      const publishedProducts = response.data.products.filter(
-        (product) => product.isPublished === "Published"
-      );
-
-      // Apply category filter if active
-      let filteredProducts = publishedProducts;
-      if (selectedCategory !== "All") {
-        filteredProducts = filteredProducts.filter(
-          (product) => product.typeName === selectedCategory
-        );
-      }
-
-      setProducts(filteredProducts);
-      setTotalPages(Math.ceil(filteredProducts.length / perPage));
-      setCurrentPage(1);
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to search products",
       });
     } finally {
       setIsLoading(false);
@@ -369,11 +252,6 @@ const AdvancedECommercePage = ({ isOpen, acces }) => {
     },
   ];
 
-  function getRandomElementss(array, nbr) {
-    const shuffledArray = shuffle(array);
-    return shuffledArray.slice(0, nbr);
-  }
-
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col">
       {/* Responsive Navigation */}
@@ -413,9 +291,7 @@ const AdvancedECommercePage = ({ isOpen, acces }) => {
               {categories.map((category) => (
                 <button
                   key={category?._id}
-                  onClick={() =>
-                    handleCategorySelect(category._id, category.name)
-                  }
+                  onClick={() => setSelectedCategory(category)}
                   className={`${
                     selectedCategory === category
                       ? "font-bold"
@@ -499,7 +375,7 @@ const AdvancedECommercePage = ({ isOpen, acces }) => {
                 <button
                   key={category?._id}
                   onClick={() => {
-                    handleCategorySelect(category._id, category.name);
+                    setSelectedCategory(category);
                     setIsMobileMenuOpen(false);
                   }}
                   className={`${
@@ -534,7 +410,7 @@ const AdvancedECommercePage = ({ isOpen, acces }) => {
               Catégories
             </h2>
             <ul>
-              {/* {categoriesSideBar.map((category) => (
+              {categoriesSideBar.map((category) => (
                 <li key={category.id} className="mb-2">
                   <button
                     onClick={category.onClick}
@@ -544,54 +420,15 @@ const AdvancedECommercePage = ({ isOpen, acces }) => {
                     <span>{category.name}</span>
                   </button>
                 </li>
-              ))} */}
-              {DATA_Categories.map((category) => {
-                if (category.name == "all") {
-                  return null;
-                }
-                return (
-                  <li
-                    key={category._id}
-                    onClick={() => navigation(`/Categorie/${category.name}`)}
-                    className="mb-2"
-                  >
-                    <button className="w-full text-left py-2 px-4 rounded hover:bg-[#FFE9CC] transition-colors duration-200 flex items-center space-x-2">
-                      {/* <span>{category.icon}</span> */}
-
-                      <img
-                        src={category?.image}
-                        alt="loading"
-                        style={{
-                          width: 30,
-                          height: 30,
-                          objectFit: "contain",
-                          borderRadius: "50%",
-                        }}
-                      />
-                      <span>{category?.name}</span>
-                    </button>
-                  </li>
-                );
-              })}
-              <li className="mb-2" onClick={() => navigation("/Voir-plus")}>
-                <button className="w-full text-left py-2 px-4 rounded hover:bg-[#FFE9CC] transition-colors duration-200 flex items-center space-x-2">
-                  <span>➡️</span>
-
-                  {/* <img src={category?.image} alt="loading"
-                    style={{width:30,height:30,objectFit:"contain",borderRadius:"50%"}}
-                     /> */}
-                  <span>Voir plus</span>
-                </button>
-              </li>
-              {/* <div className="container py-8">
+              ))}
+              <div className="container py-8">
                 <div className="card w-100 h-50 overflow-hidden">
                   {carouselImages.map((image, index) => {
                     return <img src={image} key={index} alt="" />;
                   })}
                 </div>
-              </div> */}
+              </div>
             </ul>
-            <VerticalCarousel carouselImages={toutesLesImages} />
           </sidea>
 
           {/* Carousel and Products */}
@@ -608,25 +445,15 @@ const AdvancedECommercePage = ({ isOpen, acces }) => {
                 autoplay={{ delay: 3000 }}
                 className="mb-8 rounded-lg overflow-hidden"
               >
-                {banners.length > 0
-                  ? banners.map((banner, index) => (
-                      <SwiperSlide key={index}>
-                        <img
-                          src={banner?.image}
-                          alt={`Slide ${index + 1}`}
-                          className="w-full h-[400px] object-cover"
-                        />
-                      </SwiperSlide>
-                    ))
-                  : DATA_Pubs.map((banner, index) => (
-                      <SwiperSlide key={index}>
-                        <img
-                          src={banner?.image}
-                          alt={`Slide ${index + 1}`}
-                          className="w-full h-[400px] object-cover"
-                        />
-                      </SwiperSlide>
-                    ))}
+                {carouselImages.map((image, index) => (
+                  <SwiperSlide key={index}>
+                    <img
+                      src={image}
+                      alt={`Slide ${index + 1}`}
+                      className="w-full h-[400px] object-cover"
+                    />
+                  </SwiperSlide>
+                ))}
               </Swiper>
               {/* Flèches personnalisées */}
               <div
@@ -651,14 +478,14 @@ const AdvancedECommercePage = ({ isOpen, acces }) => {
                 Produits vedettes
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {getRandomElementss(DATA_Products, 4).map((product) => (
+                {productVedettes.map((product) => (
                   <div
                     key={product.id}
                     className="flex flex-col rounded-lg group overflow-hidden transition-all duration-300 transform shadow-lg transition-transform duration-300 hover:-translate-y-1 cursor-pointer relative"
                   >
                     <div className="relative flex-grow">
                       <img
-                        src={product.image1}
+                        src={product.image}
                         alt={product.name}
                         className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                       />
@@ -709,10 +536,94 @@ const AdvancedECommercePage = ({ isOpen, acces }) => {
             >
               Our Collection
               <span className="text-sm ml-2 text-gray-500">
-                ({products?.length} products)
+                ({filteredProducts.length} products)
               </span>
             </h2>
           </div>
+
+          {/* Responsive Product Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6  cursor-pointer">
+            {filteredProducts.map((product) => (
+              <div
+                key={product.id}
+                className="bg-white rounded-2xl  shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group"
+              >
+                {/* Product Card */}
+                <div className="relative transform hover:-translate-y-1 transition-all duration-300">
+                  {/* Product Badges */}
+                  <div className="absolute top-2 left-2 z-10 flex space-x-1">
+                    {product.badges.map((badge) => (
+                      <span
+                        key={badge}
+                        className="text-xs px-2 py-1 text-white text-xs font-bold py-1 px-2 rounded-full"
+                        style={{
+                          backgroundColor: "#62aca2bb",
+                          color: "white",
+                        }}
+                      >
+                        {badge}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Product Image */}
+                  <img
+                    src={product.images[0]}
+                    alt={product.name}
+                    className="w-full h-48 md:h-64 object-cover group-hover:scale-105 transition-transform"
+                  />
+                  <div
+                    onClick={() => navigation("/Produit détail")}
+                    className="absolute inset-0 bg-gradient-to-b from-transparent to-[#30A08B] opacity-30 group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+
+                {/* Product Details */}
+                <div className="p-4 ">
+                  {/* Product Name */}
+                  <h3
+                    className="font-semibold truncate"
+                    style={{ color: "#B17236" }}
+                  >
+                    {product.name}
+                  </h3>
+
+                  {/* Price */}
+                  <div className="mt-3 flex items-center justify-between">
+                    <div>
+                      <span
+                        className="text-lg font-bold"
+                        style={{ color: "#B2905F" }}
+                      >
+                        {product.price.toFixed(2)} FCFA
+                      </span>
+                    </div>
+
+                    {/* Add to Cart Button */}
+                    <button
+                      onClick={() => handleAddToCart(product)}
+                      className="p-2 rounded-full hover:opacity-75 transition"
+                      style={{
+                        backgroundColor: "#30A08B",
+                        color: "white",
+                      }}
+                    >
+                      <ShoppingCart size={16} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* No Products Found */}
+          {filteredProducts.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-xl" style={{ color: "#B17236" }}>
+                No products found matching your filters.
+              </p>
+            </div>
+          )}
         </section>
         <BoutiqueProduits products={products} />
       </main>

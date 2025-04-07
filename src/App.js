@@ -365,7 +365,7 @@ function App() {
                 }
               />
               <Route
-                path="/Boutique"
+                path="/Boutique/:sellerId"
                 element={<Boutique acces={acces} paniernbr={produits} />}
               />
               <Route
