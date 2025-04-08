@@ -395,7 +395,7 @@ function App() {
                 }
               />
               <Route
-                path="/Profile d'un boutiquier"
+                path="/Profile d'un boutiquier/:sellerId"
                 element={
                   <BoutiquierProfile acces={acces} paniernbr={produits} />
                 }

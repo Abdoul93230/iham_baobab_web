@@ -478,7 +478,9 @@ const AdvancedECommercePage = ({ isOpen, acces }) => {
               <div className="relative">
                 <button
                   className="flex items-center space-x-2 p-1 hover:bg-[#B2905F] rounded-full"
-                  onClick={() => navigation("/Profile d'un boutiquier")}
+                  onClick={() =>
+                    navigation(`/Profile d'un boutiquier/${sellerId}`)
+                  }
                 >
                   <img
                     src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcyI9Cvp53aaP9XeRn-ZKbJDH2QaWC72O26A&s"
@@ -534,17 +536,6 @@ const AdvancedECommercePage = ({ isOpen, acces }) => {
               Catégories
             </h2>
             <ul>
-              {/* {categoriesSideBar.map((category) => (
-                <li key={category.id} className="mb-2">
-                  <button
-                    onClick={category.onClick}
-                    className="w-full text-left py-2 px-4 rounded hover:bg-[#FFE9CC] transition-colors duration-200 flex items-center space-x-2"
-                  >
-                    <span>{category.icon}</span>
-                    <span>{category.name}</span>
-                  </button>
-                </li>
-              ))} */}
               {DATA_Categories.map((category) => {
                 if (category.name == "all") {
                   return null;
@@ -577,19 +568,9 @@ const AdvancedECommercePage = ({ isOpen, acces }) => {
                 <button className="w-full text-left py-2 px-4 rounded hover:bg-[#FFE9CC] transition-colors duration-200 flex items-center space-x-2">
                   <span>➡️</span>
 
-                  {/* <img src={category?.image} alt="loading"
-                    style={{width:30,height:30,objectFit:"contain",borderRadius:"50%"}}
-                     /> */}
                   <span>Voir plus</span>
                 </button>
               </li>
-              {/* <div className="container py-8">
-                <div className="card w-100 h-50 overflow-hidden">
-                  {carouselImages.map((image, index) => {
-                    return <img src={image} key={index} alt="" />;
-                  })}
-                </div>
-              </div> */}
             </ul>
             <VerticalCarousel carouselImages={toutesLesImages} />
           </sidea>
@@ -614,7 +595,7 @@ const AdvancedECommercePage = ({ isOpen, acces }) => {
                         <img
                           src={banner?.image}
                           alt={`Slide ${index + 1}`}
-                          className="w-full h-[400px] object-cover"
+                          className="w-full h-[400px]"
                         />
                       </SwiperSlide>
                     ))
@@ -623,7 +604,7 @@ const AdvancedECommercePage = ({ isOpen, acces }) => {
                         <img
                           src={banner?.image}
                           alt={`Slide ${index + 1}`}
-                          className="w-full h-[400px] object-cover"
+                          className="w-full h-[400px]"
                         />
                       </SwiperSlide>
                     ))}
@@ -654,6 +635,7 @@ const AdvancedECommercePage = ({ isOpen, acces }) => {
                 {getRandomElementss(DATA_Products, 4).map((product) => (
                   <div
                     key={product.id}
+                    onClick={() => navigation(`/ProduitDétail/${product?._id}`)}
                     className="flex flex-col rounded-lg group overflow-hidden transition-all duration-300 transform shadow-lg transition-transform duration-300 hover:-translate-y-1 cursor-pointer relative"
                   >
                     <div className="relative flex-grow">
@@ -667,7 +649,8 @@ const AdvancedECommercePage = ({ isOpen, acces }) => {
                       </span>
 
                       <div
-                        onClick={() => navigation("/Produit détail")}
+                        // onClick={() => navigation("/Produit détail")}
+
                         className="absolute inset-0 bg-gradient-to-b from-transparent to-[#30A08B] opacity-30 group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
@@ -718,7 +701,7 @@ const AdvancedECommercePage = ({ isOpen, acces }) => {
       </main>
 
       {/* Modern Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      {/* <footer className="bg-gray-900 text-white py-12">
         <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <h4
@@ -890,7 +873,7 @@ const AdvancedECommercePage = ({ isOpen, acces }) => {
             </div>
           </div>
         </div>
-      </footer>
+      </footer> */}
     </div>
   );
 };

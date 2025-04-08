@@ -98,6 +98,7 @@ export default function BoutiqueProduits({ products }) {
           return (
             <div
               key={index}
+              onClick={() => navigation(`/ProduitDétail/${product?._id}`)}
               className="bg-white rounded-2xl  shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group"
             >
               {/* Product Card */}
@@ -127,10 +128,7 @@ export default function BoutiqueProduits({ products }) {
                   alt={product?.name}
                   className="w-full h-48 md:h-64 object-cover group-hover:scale-105 transition-transform"
                 />
-                <div
-                  onClick={() => navigation(`/ProduitDétail/${product?._id}`)}
-                  className="absolute inset-0 bg-gradient-to-b from-transparent to-[#30A08B] opacity-30 group-hover:scale-105 transition-transform duration-300"
-                />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#30A08B] opacity-30 group-hover:scale-105 transition-transform duration-300" />
               </div>
 
               {/* Product Details */}
