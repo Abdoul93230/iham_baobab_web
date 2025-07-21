@@ -453,6 +453,7 @@ function HomeHeader({ paniernbr, acces }) {
                 className="w-auto h-full object-contain cursor-pointer transition-opacity duration-300 hover:opacity-90"
                 alt="Logo"
               />
+              22
             </span>
 
             {isMenuOpen && (
