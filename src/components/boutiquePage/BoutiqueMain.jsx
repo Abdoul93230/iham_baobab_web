@@ -37,8 +37,8 @@ const AdvancedECommercePage = ({ isOpen, acces }) => {
   const [banners, setBanners] = useState([]);
   const DATA_Pubs = useSelector((state) => state.products.products_Pubs);
   const DATA_Categories = useSelector((state) => state.products.categories);
-  const images1 = banners?.map((item) => item.image);
-  const images2 = DATA_Pubs?.map((item) => item.image);
+  const images1 = banners?.map((item) => item.image) || [];
+  const images2 = DATA_Pubs?.map((item) => item.image) || [];
 
   const toutesLesImages = [...images1, ...images2];
 

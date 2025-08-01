@@ -6,44 +6,59 @@ const BackendUrl = process.env.REACT_APP_Backend_Url;
 export const getProducts = (setLoading) => async (dispatch) => {
   try {
     const response = await axios.get(`${BackendUrl}/products`);
-    dispatch(setProducts(response.data.data));
-    setLoading(false);
+    if (response?.data?.data) {
+      dispatch(setProducts(response.data.data));
+    }
+    if (setLoading) setLoading(false);
   } catch (error) {
-    console.log(error.response.data.message);
+    console.log("Error loading products:", error?.response?.data?.message || error.message);
+    if (setLoading) setLoading(false);
   }
 };
 
 export const getTypes = () => async (dispatch) => {
   try {
     const response = await axios.get(`${BackendUrl}/getAllType`);
-    dispatch(setTypes(response.data.data));
+    if (response?.data?.data) {
+      dispatch(setTypes(response.data.data));
+    }
   } catch (error) {
-    console.log(error);
+    console.log("Error loading types:", error?.response?.data?.message || error.message);
   }
 };
+
 export const getCategories = (setLoading) => async (dispatch) => {
   try {
     const response = await axios.get(`${BackendUrl}/getAllCategories`);
-    dispatch(setCategories(response.data.data));
-    setLoading(false);
+    if (response?.data?.data) {
+      dispatch(setCategories(response.data.data));
+    }
+    if (setLoading) setLoading(false);
   } catch (error) {
-    console.log(error);
+    console.log("Error loading categories:", error?.response?.data?.message || error.message);
+    if (setLoading) setLoading(false);
   }
 };
+
 export const getProducts_Pubs = () => async (dispatch) => {
   try {
     const response = await axios.get(`${BackendUrl}/productPubget`);
-    dispatch(setProducts_Pubs(response.data));
+    if (response?.data) {
+      dispatch(setProducts_Pubs(response.data));
+    }
   } catch (error) {
-    console.log(error);
+    console.log("Error loading product pubs:", error?.response?.data?.message || error.message);
   }
 };
+
 export const getProducts_Commentes = () => async (dispatch) => {
   try {
     const response = await axios.get(`${BackendUrl}/getAllCommenteProduit`);
-    dispatch(setProducts_Commentes(response.data));
+    if (response?.data) {
+      dispatch(setProducts_Commentes(response.data));
+    }
   } catch (error) {
-    console.log(error);
+    console.log("Error loading commented products:", error?.response?.data?.message || error.message);
   }
 };
 
