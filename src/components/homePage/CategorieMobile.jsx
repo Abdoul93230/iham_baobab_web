@@ -144,9 +144,7 @@ const CategorieMobile = () => {
                     <img
                       src={category.image}
                       alt={category.name}
-                      className="object-cover w-full h-full
-                   transition-transform duration-300
-                   group-hover:scale-110"
+                      className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full" />
                   </div>
@@ -169,7 +167,7 @@ const CategorieMobile = () => {
               -ms-overflow-style: none; /* Pour Internet Explorer et Edge */
               scrollbar-width: none; /* Pour Firefox */
             }
-          `}{" "}
+          `}
         </style>
       </div>
 

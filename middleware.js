@@ -1,8 +1,31 @@
 import { NextResponse } from 'next/server';
 
 export function middleware(request) {
-  // Add middleware logic here if needed for authentication
-  // For now, just pass through all requests
+  const { pathname } = request.nextUrl;
+  
+  // Protected routes that require authentication
+  const protectedRoutes = [
+    '/compte',
+    '/suggestion',
+    '/commande',
+    '/messagerie',
+    '/notification',
+    '/like-produit'
+  ];
+  
+  // Check if the current path is protected
+  const isProtectedRoute = protectedRoutes.some(route => 
+    pathname.startsWith(route)
+  );
+  
+  if (isProtectedRoute) {
+    // In a real application, you would check for a valid authentication token
+    // For now, we'll just add a header to indicate this is a protected route
+    const response = NextResponse.next();
+    response.headers.set('X-Protected-Route', 'true');
+    return response;
+  }
+  
   return NextResponse.next();
 }
 

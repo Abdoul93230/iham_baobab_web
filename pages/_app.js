@@ -5,7 +5,6 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "tailwindcss/tailwind.css";
 import "../src/App.css";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import {
   getCategories,
   getProducts,
@@ -29,14 +28,17 @@ function MyApp({ Component, pageProps }) {
     store.dispatch(getProducts_Commentes());
     
     // Initialize socket connection
-    const socket = io(BackendUrl);
-    socket.on("new_message_user", (data) => {
-      // Handle new messages
-    });
+    if (BackendUrl) {
+      const socket = io(BackendUrl);
+      socket.on("new_message_user", (data) => {
+        // Handle new messages
+        console.log("New message received:", data);
+      });
 
-    return () => {
-      socket.disconnect();
-    };
+      return () => {
+        socket.disconnect();
+      };
+    }
   }, []);
 
   return (
