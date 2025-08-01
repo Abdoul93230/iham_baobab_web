@@ -1,8 +1,6 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 
 const FrequementQeustion = () => {
-  const navigate = useNavigate()
   const data = [
     { titre: '1. Quels sont les modes de paiement acceptés sur votre site ?', description: "Nous acceptons les paiements par carte de crédit/débit (Visa, MasterCard), Mobile Money (Airtel, Orange, Moov)." },
     { titre: '2. Quelle est la politique de livraison et combien de temps cela prendra-t-il ?', description: "Nous proposons une livraison standard et express. Le délai de livraison dépend de votre emplacement, mais en général, cela prend entre 3 à 7 jours ouvrables pour la livraison standard et 1 à 3 jours ouvrables pour la livraison express." },

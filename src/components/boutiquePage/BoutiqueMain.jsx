@@ -3,25 +3,13 @@ import {
   ShoppingCart,
   Heart,
   Search,
-  Truck,
-  Award,
-  Shield,
   MessageCircle,
-  Globe,
-  Phone,
-  CreditCard,
-  Mail,
 } from "lucide-react";
-import MasterCard from "../paementPage/paiementPhoto/masterCard.jpeg";
-import VisaCard from "../paementPage/paiementPhoto/VisaCard.png";
-import DomicileCard from "../paementPage/paiementPhoto/domicile.jpeg";
-import MobileMoney from "../paementPage/paiementPhoto/MobileMoney.png";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate, useParams } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import BoutiqueProduits from "./BoutiqueProduits";
-import BoutiquierProfile from "./BoutiquierProfile";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { shuffle } from "lodash";
@@ -29,21 +17,13 @@ import VerticalCarousel from "./VerticalCarousel";
 // import CategorieMobile from '../homePage/CategorieMobile';
 const BackendUrl = process.env.REACT_APP_Backend_Url;
 
-const stripHtml = (html) => {
-  if (!html) return "";
-  const tmp = document.createElement("div");
-  tmp.innerHTML = html;
-  return tmp.textContent || tmp.innerText || "";
-};
 const AdvancedECommercePage = ({ isOpen, acces }) => {
   const DATA_Products = useSelector((state) => state.products.data);
   const [products, setProducts] = useState([]);
   const [cartItems, setCartItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const { sellerId } = useParams();
-  const [sellerInfo, setSellerInfo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [categories, setCategories] = useState([]);
   const [searchName, setSearchName] = useState("");
