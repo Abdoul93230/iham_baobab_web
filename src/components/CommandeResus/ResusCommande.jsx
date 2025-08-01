@@ -1,13 +1,8 @@
 import React, { useState, useEffect } from "react";
 import {
-  MapPin,
-  Package,
-  Truck,
   Loader,
   ChevronLeft,
-  User,
   Calendar,
-  CheckCircle,
   AlertCircle,
   Clock,
   CreditCard,

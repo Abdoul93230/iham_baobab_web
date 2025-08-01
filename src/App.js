@@ -14,7 +14,7 @@ import Informagtion from "./pages/Informagtion";
 import Question from "./pages/Question";
 import Confidentialite from "./pages/Confidentialite";
 import Notification from "./pages/Notification";
-import Paement from "./pages/Paement";
+
 import Service from "./pages/Service";
 import Livraison from "./pages/Livraison";
 import SuiviCommand from "./pages/SuiviCommand";
@@ -63,8 +63,6 @@ const BackendUrl = process.env.REACT_APP_Backend_Url;
 
 function App() {
   const [acces, setAcces] = useState("non");
-  const [verificationComplete, setVerificationComplete] = useState(false);
-  const [adminConnection, setAdminConnection] = useState(false);
   const [total, setTotal] = useState(0);
   const [codeP, setCodeP] = useState(null);
   const [produits, setProduits] = useState(0);
@@ -93,13 +91,12 @@ function App() {
         .catch((error) => {
           setAcces("non");
           console.log(error.response);
-          setVerificationComplete(true);
         })
         .finally(() => {
-          setVerificationComplete(true);
+          // Verification complete
         });
     } else {
-      setVerificationComplete(true);
+      // No user found, verification complete
     }
   }, []);
 
