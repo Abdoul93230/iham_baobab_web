@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import LoadingIndicator from "../../pages/LoadingIndicator";
 import AvatarEditor from "react-avatar-editor";
-import defaultUserIcon from "../../Images/icon_user.png";
+// Use a placeholder icon instead of importing the corrupted image
+const defaultUserIcon = "/logo192.png";
 import Alert from "../Alert/Alert";
 import ButtonLoader from "../ButtonLoader/ButtonLoader";
 

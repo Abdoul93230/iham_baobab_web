@@ -300,9 +300,7 @@ const HeaderMobile = ({ setIsMobileMenuOpen, navigate, nbr, paniernbr }) => {
 
               {/* Tooltip */}
               <span
-                className="absolute -top-8 left-1/2 transform -translate-x-1/2 
-                bg-black text-white text-xs py-1 px-2 rounded 
-                opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300"
               >
                 {item.label}
               </span>

@@ -1,0 +1,11 @@
+{
+  "extends": ["next"],
+  "rules": {
+    "no-unused-vars": "warn",
+    "jsx-a11y/anchor-has-content": "warn",
+    "jsx-a11y/heading-has-content": "warn",
+    "jsx-a11y/img-redundant-alt": "warn",
+    "react-hooks/exhaustive-deps": "warn",
+    "default-case": "warn"
+  }
+}
