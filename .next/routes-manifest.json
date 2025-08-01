@@ -1,1 +1,171 @@
-{"version":3,"caseSensitive":false,"basePath":"","rewrites":{"beforeFiles":[],"afterFiles":[],"fallback":[]},"redirects":[{"source":"/:path+/","destination":"/:path+","permanent":true,"internal":true,"regex":"^(?:\\/((?:[^\\/]+?)(?:\\/(?:[^\\/]+?))*))\\/$"},{"source":"/Home","destination":"/","permanent":true,"regex":"^(?!\\/_next)\\/Home(?:\\/)?$"},{"source":"/ProduitDétail/:id","destination":"/produit/:id","permanent":true,"regex":"^(?!\\/_next)\\/ProduitDétail(?:\\/([^\\/]+?))(?:\\/)?$"},{"source":"/Connexion","destination":"/connexion","permanent":true,"regex":"^(?!\\/_next)\\/Connexion(?:\\/)?$"},{"source":"/Inscription","destination":"/inscription","permanent":true,"regex":"^(?!\\/_next)\\/Inscription(?:\\/)?$"},{"source":"/Panier","destination":"/panier","permanent":true,"regex":"^(?!\\/_next)\\/Panier(?:\\/)?$"}],"headers":[]}
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    },
+    {
+      "source": "/Home",
+      "destination": "/",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/Home(?:/)?$"
+    },
+    {
+      "source": "/ProduitDétail/:id",
+      "destination": "/produit/:id",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/ProduitDétail(?:/([^/]+?))(?:/)?$"
+    },
+    {
+      "source": "/Connexion",
+      "destination": "/connexion",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/Connexion(?:/)?$"
+    },
+    {
+      "source": "/Inscription",
+      "destination": "/inscription",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/Inscription(?:/)?$"
+    },
+    {
+      "source": "/Panier",
+      "destination": "/panier",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/Panier(?:/)?$"
+    }
+  ],
+  "headers": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/boutique/[sellerId]",
+      "regex": "^/boutique/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPsellerId": "nxtPsellerId"
+      },
+      "namedRegex": "^/boutique/(?<nxtPsellerId>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/categorie/[...params]",
+      "regex": "^/categorie/(.+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPparams": "nxtPparams"
+      },
+      "namedRegex": "^/categorie/(?<nxtPparams>.+?)(?:/)?$"
+    },
+    {
+      "page": "/produit/[id]",
+      "regex": "^/produit/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/produit/(?<nxtPid>[^/]+?)(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/about-us",
+      "regex": "^/about\\-us(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/about\\-us(?:/)?$"
+    },
+    {
+      "page": "/compte",
+      "regex": "^/compte(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/compte(?:/)?$"
+    },
+    {
+      "page": "/connexion",
+      "regex": "^/connexion(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/connexion(?:/)?$"
+    },
+    {
+      "page": "/inscription",
+      "regex": "^/inscription(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/inscription(?:/)?$"
+    },
+    {
+      "page": "/messagerie",
+      "regex": "^/messagerie(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/messagerie(?:/)?$"
+    },
+    {
+      "page": "/nouveau-produit",
+      "regex": "^/nouveau\\-produit(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/nouveau\\-produit(?:/)?$"
+    },
+    {
+      "page": "/panier",
+      "regex": "^/panier(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/panier(?:/)?$"
+    },
+    {
+      "page": "/promotions",
+      "regex": "^/promotions(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/promotions(?:/)?$"
+    },
+    {
+      "page": "/suggestion",
+      "regex": "^/suggestion(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/suggestion(?:/)?$"
+    },
+    {
+      "page": "/voir-plus",
+      "regex": "^/voir\\-plus(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/voir\\-plus(?:/)?$"
+    }
+  ],
+  "dataRoutes": [
+    {
+      "page": "/produit/[id]",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "dataRouteRegex": "^/_next/data/upKjOyAVBcJisBJ9EGTkV/produit/([^/]+?)\\.json$",
+      "namedDataRouteRegex": "^/_next/data/upKjOyAVBcJisBJ9EGTkV/produit/(?<nxtPid>[^/]+?)\\.json$"
+    }
+  ],
+  "rsc": {
+    "header": "RSC",
+    "varyHeader": "RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch",
+    "prefetchHeader": "Next-Router-Prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "Next-Router-Segment-Prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments"
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}
