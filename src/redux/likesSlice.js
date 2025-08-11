@@ -48,21 +48,53 @@ const likesSlice = createSlice({
       })
       .addCase(fetchUserLikes.fulfilled, (state, action) => {
         state.loading = false;
-        state.likedProducts = action.payload.map((like) => like.produit._id);
+        
+        console.log('📦 fetchUserLikes payload:', action.payload); // Debug
+        
+        // Gestion sécurisée des différentes structures de réponse
+        let likesData = action.payload;
+        
+        // Si la réponse a une structure { data: [...] }
+        if (action.payload && action.payload.data) {
+          likesData = action.payload.data;
+        }
+        
+        // Vérifier si c'est bien un array
+        if (Array.isArray(likesData)) {
+          state.likedProducts = likesData
+            .map((like) => like?.produit?._id)
+            .filter(Boolean); // Enlever les valeurs undefined/null
+        } else if (Array.isArray(action.payload)) {
+          // Si payload est directement un array
+          state.likedProducts = action.payload
+            .map((like) => like?.produit?._id)
+            .filter(Boolean);
+        } else {
+          // Si ce n'est pas un array, initialiser avec un array vide
+          console.warn('⚠️ fetchUserLikes: payload n\'est pas un array:', action.payload);
+          state.likedProducts = [];
+        }
       })
       .addCase(fetchUserLikes.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+        console.error('❌ fetchUserLikes error:', action.error.message);
       })
       .addCase(toggleLike.fulfilled, (state, action) => {
         const { productId, action: likeAction } = action.payload;
         if (likeAction === "add") {
-          state.likedProducts.push(productId);
+          if (!state.likedProducts.includes(productId)) {
+            state.likedProducts.push(productId);
+          }
         } else {
           state.likedProducts = state.likedProducts.filter(
             (id) => id !== productId
           );
         }
+      })
+      .addCase(toggleLike.rejected, (state, action) => {
+        state.error = action.error.message;
+        console.error('❌ toggleLike error:', action.error.message);
       });
   },
 });

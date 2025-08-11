@@ -391,7 +391,8 @@ function ProduitDetailMain({ panierchg }) {
     axios
       .get(`${BackendUrl}/getAllCommenteProduitById/${params.id}`)
       .then((coments) => {
-        setAllCommente(coments.data);
+        setAllCommente(coments.data.data);
+        
       })
       .catch((error) => {
         console.log(error);

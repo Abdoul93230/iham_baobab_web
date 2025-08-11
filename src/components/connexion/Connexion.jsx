@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Mail, Phone, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Phone, Lock, Eye, EyeOff, ChevronDown } from "lucide-react";
 import GoogleIcon from "@mui/icons-material/Google";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import XIcon from "@mui/icons-material/X";
@@ -15,6 +15,22 @@ import axios from "axios";
 
 const BackendUrl = process.env.REACT_APP_Backend_Url;
 
+// Configuration des pays supportés
+const countryCodes = [
+  { code: '+227', name: 'Niger', flag: '🇳🇪', defaultSelected: true },
+  { code: '+33', name: 'France', flag: '🇫🇷' },
+  { code: '+1', name: 'États-Unis', flag: '🇺🇸' },
+  { code: '+44', name: 'Royaume-Uni', flag: '🇬🇧' },
+  { code: '+49', name: 'Allemagne', flag: '🇩🇪' },
+  { code: '+86', name: 'Chine', flag: '🇨🇳' },
+  { code: '+91', name: 'Inde', flag: '🇮🇳' },
+  { code: '+81', name: 'Japon', flag: '🇯🇵' },
+  { code: '+55', name: 'Brésil', flag: '🇧🇷' },
+  { code: '+61', name: 'Australie', flag: '🇦🇺' },
+  { code: '+234', name: 'Nigeria', flag: '🇳🇬' },
+  { code: '+212', name: 'Maroc', flag: '🇲🇦' }
+];
+
 const Connexion = ({ chg }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loginMethod, setLoginMethod] = useState("email");
@@ -26,6 +42,8 @@ const Connexion = ({ chg }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [selectedCountryCode, setSelectedCountryCode] = useState('+227');
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [isloading, setIsloading] = useState(false);
   const location = useLocation();
   const regexMail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -45,6 +63,15 @@ const Connexion = ({ chg }) => {
 
   const handleWarning = (message) => {
     showAlert("warn", message);
+  };
+
+  const handleCountrySelect = (countryCode) => {
+    setSelectedCountryCode(countryCode);
+    setShowCountryDropdown(false);
+  };
+
+  const getSelectedCountry = () => {
+    return countryCodes.find(country => country.code === selectedCountryCode) || countryCodes[0];
   };
 
   const navigateBasedOnLocation = () => {
@@ -101,8 +128,9 @@ const Connexion = ({ chg }) => {
 
     // Préparation des données de connexion
     const loginData = {
-      email: email.length > 0 ? email : null,
-      phoneNumber: phoneNumber.length > 0 ? phoneNumber : null,
+      identifier: loginMethod === "email" 
+        ? email 
+        : `${selectedCountryCode}${phoneNumber}`, // Combiner indicatif + numéro
       password: password,
     };
 
@@ -209,33 +237,80 @@ const Connexion = ({ chg }) => {
                 ? "Adresse email"
                 : "Numéro de téléphone"}
             </label>
-            <div className="mt-1 relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                {loginMethod === "email" ? (
-                  <Mail className="h-5 w-5 text-gray-400" />
-                ) : (
-                  <Phone className="h-5 w-5 text-gray-400" />
-                )}
+            
+            {loginMethod === "phone" ? (
+              // Champ téléphone avec sélecteur de pays
+              <div className="mt-1 flex rounded-md shadow-sm">
+                {/* Sélecteur de pays */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                    className="relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 bg-gray-50 text-gray-500 text-sm hover:bg-gray-100 focus:z-10 focus:outline-none focus:ring-1 focus:ring-[#30A08B] focus:border-[#30A08B]"
+                  >
+                    <span className="mr-2">{getSelectedCountry().flag}</span>
+                    <span className="mr-1">{selectedCountryCode}</span>
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                  
+                  {/* Dropdown des pays */}
+                  {showCountryDropdown && (
+                    <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-300 rounded-md shadow-lg z-50 max-h-60 overflow-y-auto">
+                      {countryCodes.map((country) => (
+                        <button
+                          key={country.code}
+                          type="button"
+                          onClick={() => handleCountrySelect(country.code)}
+                          className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center space-x-3"
+                        >
+                          <span className="text-xl">{country.flag}</span>
+                          <span className="font-medium">{country.code}</span>
+                          <span className="text-gray-600">{country.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Champ de saisie du numéro */}
+                <div className="relative flex-1">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Phone className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    required
+                    value={phoneNumber}
+                    onChange={(e) => {
+                      // Permettre seulement les chiffres
+                      const value = e.target.value.replace(/\D/g, '');
+                      setPhoneNumber(value);
+                    }}
+                    className="flex-1 block w-full pl-10 pr-3 py-2 border border-l-0 border-gray-300 rounded-r-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-[#30A08B] focus:border-[#30A08B] sm:text-sm"
+                    placeholder="87727501"
+                  />
+                </div>
               </div>
-              <input
-                id={loginMethod}
-                name={loginMethod}
-                type={loginMethod === "email" ? "email" : "tel"}
-                required
-                value={loginMethod === "email" ? email : phoneNumber}
-                onChange={(e) => {
-                  loginMethod === "email"
-                    ? setEmail(e.target.value)
-                    : setPhoneNumber(e.target.value);
-                }}
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-[#30A08B] focus:border-[#30A08B] sm:text-sm"
-                placeholder={
-                  loginMethod === "email"
-                    ? "vous@exemple.com"
-                    : "+33 6 12 34 56 78"
-                }
-              />
-            </div>
+            ) : (
+              // Champ email normal
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-[#30A08B] focus:border-[#30A08B] sm:text-sm"
+                  placeholder="vous@exemple.com"
+                />
+              </div>
+            )}
           </div>
 
           <div>

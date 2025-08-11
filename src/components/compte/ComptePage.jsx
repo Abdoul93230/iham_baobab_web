@@ -11,12 +11,29 @@ import {
   ZoomIn,
   ZoomOut,
   RotateCcw,
+  ChevronDown,
 } from "lucide-react";
 import LoadingIndicator from "../../pages/LoadingIndicator";
 import AvatarEditor from "react-avatar-editor";
 import defaultUserIcon from "../../Images/icon_user.png";
 import Alert from "../Alert/Alert";
 import ButtonLoader from "../ButtonLoader/ButtonLoader";
+
+// Configuration des pays supportés
+const countryCodes = [
+  { code: '+227', name: 'Niger', flag: '🇳🇪', defaultSelected: true },
+  { code: '+33', name: 'France', flag: '🇫🇷' },
+  { code: '+1', name: 'États-Unis', flag: '🇺🇸' },
+  { code: '+44', name: 'Royaume-Uni', flag: '🇬🇧' },
+  { code: '+49', name: 'Allemagne', flag: '🇩🇪' },
+  { code: '+86', name: 'Chine', flag: '🇨🇳' },
+  { code: '+91', name: 'Inde', flag: '🇮🇳' },
+  { code: '+81', name: 'Japon', flag: '🇯🇵' },
+  { code: '+55', name: 'Brésil', flag: '🇧🇷' },
+  { code: '+61', name: 'Australie', flag: '🇦🇺' },
+  { code: '+234', name: 'Nigeria', flag: '🇳🇬' },
+  { code: '+212', name: 'Maroc', flag: '🇲🇦' }
+];
 
 const ComptePage = () => {
   const navigate = useNavigate();
@@ -26,6 +43,9 @@ const ComptePage = () => {
     telephone: "",
     photo: defaultUserIcon,
   });
+  const [selectedCountryCode, setSelectedCountryCode] = useState('+227');
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [phoneWithoutCode, setPhoneWithoutCode] = useState('');
   const [loading, setLoading] = useState(true);
   const [editingPhoto, setEditingPhoto] = useState(false);
   const [image, setImage] = useState(null);
@@ -49,6 +69,33 @@ const ComptePage = () => {
     );
   }, []);
 
+  const handleCountrySelect = (countryCode) => {
+    setSelectedCountryCode(countryCode);
+    setShowCountryDropdown(false);
+  };
+
+  const getSelectedCountry = () => {
+    return countryCodes.find(country => country.code === selectedCountryCode) || countryCodes[0];
+  };
+
+  // Fonction pour extraire le code pays et le numéro d'un numéro complet
+  const parsePhoneNumber = (fullNumber) => {
+    if (!fullNumber) return { countryCode: '+227', phoneNumber: '' };
+    
+    // Chercher quel code pays correspond
+    for (const country of countryCodes) {
+      if (fullNumber.startsWith(country.code)) {
+        return {
+          countryCode: country.code,
+          phoneNumber: fullNumber.substring(country.code.length)
+        };
+      }
+    }
+    
+    // Si aucun code trouvé, considérer que c'est un numéro local Niger
+    return { countryCode: '+227', phoneNumber: fullNumber };
+  };
+
   const fetchUserData = useCallback(
     async (userId) => {
       try {
@@ -67,16 +114,23 @@ const ComptePage = () => {
           throw new Error("Données utilisateur non trouvées");
         }
 
+        const phoneNumber = profileResponse.data.data?.numero || "";
+        const { countryCode, phoneNumber: cleanPhone } = parsePhoneNumber(phoneNumber);
+        
         setUserData({
           nom: userResponse.data.user.name || "",
           email: userResponse.data.user.email || "",
-          telephone: profileResponse.data.data?.numero || "",
+          telephone: phoneNumber, // Conserver le numéro complet pour la compatibilité
           photo:
             profileResponse.data.data?.image !==
             "https://chagona.onrender.com/images/image-1688253105925-0.jpeg"
               ? profileResponse.data.data.image
               : defaultUserIcon,
         });
+
+        // Mettre à jour les états séparés pour le sélecteur
+        setSelectedCountryCode(countryCode);
+        setPhoneWithoutCode(cleanPhone);
 
         showAlert("Profil chargé avec succès", "success");
       } catch (error) {
@@ -195,7 +249,7 @@ const ComptePage = () => {
       formData.append("image", blob);
       formData.append("name", userData.nom);
       formData.append("email", userData.email);
-      formData.append("phone", userData.telephone);
+      formData.append("phone", `${selectedCountryCode}${phoneWithoutCode}`); // Utiliser le numéro complet
       formData.append("id", userE.id);
 
       await axios.post(
@@ -232,7 +286,7 @@ const ComptePage = () => {
       const formData = new FormData();
       formData.append("name", userData.nom);
       formData.append("email", userData.email);
-      formData.append("phone", userData.telephone);
+      formData.append("phone", `${selectedCountryCode}${phoneWithoutCode}`); // Utiliser le numéro complet
       formData.append("id", userE.id);
 
       await axios.post(
@@ -258,7 +312,7 @@ const ComptePage = () => {
     if (userData.nom.trim().length < 3)
       errors.push("Nom trop court (min 3 caractères)");
     if (!regexMail.test(userData.email)) errors.push("Email invalide");
-    if (!regexPhone.test(userData.telephone))
+    if (!regexPhone.test(phoneWithoutCode))
       errors.push("Numéro invalide (min 8 chiffres)");
 
     if (errors.length) {
@@ -451,20 +505,65 @@ const ComptePage = () => {
           </div>
 
           <div className="relative">
-            <Phone
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-500 transition-colors"
-              size={20}
-            />
-            <input
-              type="tel"
-              name="telephone"
-              value={userData.telephone}
-              onChange={(e) =>
-                setUserData((prev) => ({ ...prev, telephone: e.target.value }))
-              }
-              placeholder="Téléphone"
-              className="w-full pl-12 pr-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Numéro de téléphone
+            </label>
+            {/* Champ téléphone avec sélecteur de pays */}
+            <div className="flex rounded-xl border-2 border-gray-300 focus-within:ring-2 focus-within:ring-emerald-500 focus-within:border-emerald-500 transition-all duration-200">
+              {/* Sélecteur de pays */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                  className="relative inline-flex items-center px-3 py-3 rounded-l-xl bg-gray-50 text-gray-500 text-sm hover:bg-gray-100 focus:z-10 focus:outline-none border-r border-gray-300"
+                >
+                  <span className="mr-2">{getSelectedCountry().flag}</span>
+                  <span className="mr-1">{selectedCountryCode}</span>
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+                
+                {/* Dropdown des pays */}
+                {showCountryDropdown && (
+                  <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-300 rounded-md shadow-lg z-50 max-h-60 overflow-y-auto">
+                    {countryCodes.map((country) => (
+                      <button
+                        key={country.code}
+                        type="button"
+                        onClick={() => handleCountrySelect(country.code)}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center space-x-3"
+                      >
+                        <span className="text-xl">{country.flag}</span>
+                        <span className="font-medium">{country.code}</span>
+                        <span className="text-gray-600">{country.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              {/* Champ de saisie du numéro */}
+              <div className="relative flex-1">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Phone className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="tel"
+                  name="telephone"
+                  value={phoneWithoutCode}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, ''); // Permettre seulement les chiffres
+                    setPhoneWithoutCode(value);
+                    // Mettre à jour aussi userData.telephone pour la compatibilité
+                    setUserData((prev) => ({ 
+                      ...prev, 
+                      telephone: `${selectedCountryCode}${value}` 
+                    }));
+                  }}
+                  placeholder="87727501"
+                  className="w-full pl-10 pr-4 py-3 border-0 rounded-r-xl focus:ring-0 focus:outline-none"
+                />
+              </div>
+            </div>
           </div>
 
           <div>

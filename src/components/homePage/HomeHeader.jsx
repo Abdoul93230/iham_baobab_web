@@ -67,7 +67,7 @@ function HomeHeader({ paniernbr, acces }) {
   const fetchUserLikes = async () => {
     try {
       const response = await axios.get(`${BackendUrl}/likes/user/${userId}`);
-      const likedIds = new Set(response.data.map((like) => like.produit._id));
+      const likedIds = new Set(response.data?.data?.map((like) => like.produit._id));
       setLikedProducts(likedIds);
       // console.log(likedIds.size);
     } catch (error) {
@@ -453,7 +453,7 @@ function HomeHeader({ paniernbr, acces }) {
                 className="w-auto h-full object-contain cursor-pointer transition-opacity duration-300 hover:opacity-90"
                 alt="Logo"
               />
-              22
+              
             </span>
 
             {isMenuOpen && (

@@ -14,36 +14,6 @@ import pub1 from "../../Images/pub1.jpg";
 import pub2 from "../../Images/pub2.jpg";
 import CategorieMobile from "./CategorieMobile";
 
-const products = [
-  {
-    id: 1,
-    name: "Produit 1",
-    price: "19,99",
-    image:
-      "https://cc-prod.scene7.com/is/image/CCProdAuthor/product-photography_P1_900x420?$pjpeg$&jpegSize=200&wid=900",
-  },
-  {
-    id: 2,
-    name: "Produit 2",
-    price: "29,99",
-    image:
-      "https://www.codeur.com/blog/wp-content/uploads/2019/06/photo-produit-ecommerce.jpg",
-  },
-  {
-    id: 3,
-    name: "Produit 3",
-    price: "39,99",
-    image:
-      "https://www.fontainebleau-blog.com/wp-content/uploads/2020/02/comment-reussir-belles-photos-de-paysage-660x248.jpg",
-  },
-  {
-    id: 4,
-    name: "Produit 4",
-    price: "49,99",
-    image:
-      "https://img.freepik.com/photos-premium/photo-appareil-photo-noir-objectif-long-trepied-montagne-arriere-plan_978521-558.jpg?w=360",
-  },
-];
 
 const carouselImages = [pub1, pub2];
 
@@ -78,34 +48,7 @@ const Home = ({ isOpen }) => {
     return shuffledArray.slice(0, nbr);
   }
 
-  const categories = [
-    { id: 1, name: "Homme", icon: "🏠", onClick: () => navigation("/Homme") },
-    {
-      id: 2,
-      name: "Électronique",
-      icon: "📱",
-      onClick: () => navigation("/Homme"),
-    },
-    { id: 3, name: "Beauté", icon: "💄", onClick: () => navigation("/Homme") },
-    {
-      id: 4,
-      name: "Cuisine & Ustensiles",
-      icon: "🍳",
-      onClick: () => navigation("/Homme"),
-    },
-    {
-      id: 5,
-      name: "Électroménager",
-      icon: "🔌",
-      onClick: () => navigation("/Homme"),
-    },
-    {
-      id: 6,
-      name: "Voir plus",
-      icon: "➡️",
-      onClick: () => navigation("/Voir-plus"),
-    },
-  ];
+
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -196,7 +139,7 @@ const Home = ({ isOpen }) => {
                 autoplay={{ delay: 3000 }}
                 className="mb-8 rounded-lg overflow-hidden"
               >
-                {DATA_Pubs.map((param, index) => (
+                {DATA_Pubs?.map((param, index) => (
                   <SwiperSlide key={index}>
                     <img
                       src={param.image}
