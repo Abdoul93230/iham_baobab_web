@@ -49,7 +49,7 @@ const likesSlice = createSlice({
       .addCase(fetchUserLikes.fulfilled, (state, action) => {
         state.loading = false;
         
-        console.log('📦 fetchUserLikes payload:', action.payload); // Debug
+        // console.log('📦 fetchUserLikes payload:', action.payload); // Debug
         
         // Gestion sécurisée des différentes structures de réponse
         let likesData = action.payload;

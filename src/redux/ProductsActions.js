@@ -6,7 +6,7 @@ const BackendUrl = process.env.REACT_APP_Backend_Url;
 export const getProducts = (setLoading) => async (dispatch) => {
   try {
     const response = await axios.get(`${BackendUrl}/products`);
-    console.log({prod:response.data.data});
+    // console.log({prod:response.data.data});
     
     dispatch(setProducts(response.data.data));
     setLoading(false);

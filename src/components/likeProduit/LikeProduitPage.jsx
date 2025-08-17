@@ -34,7 +34,9 @@ const LikeProduitPage = ({ acces }) => {
     try {
       setIsLoading(true);
       const response = await axios.get(`${API_URL}/likes/user/${userId}`);
-      setLikedProducts(response.data.map((like) => like.produit));
+      // console.log({data : response.data?.data});
+      
+      setLikedProducts(response.data?.data?.map((like) => like.produit));
       setIsLoading(false);
     } catch (err) {
       setError("Erreur lors du chargement des favoris");

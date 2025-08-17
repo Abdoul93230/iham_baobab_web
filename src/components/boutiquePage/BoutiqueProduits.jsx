@@ -83,7 +83,7 @@ export default function BoutiqueProduits({ products }) {
       badges: ["Best Seller"],
     },
   ];
-  console.log(products);
+  // console.log(products);
   return (
     <section className="mt-4">
       {/* Responsive Product Grid */}

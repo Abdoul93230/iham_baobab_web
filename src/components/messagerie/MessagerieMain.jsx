@@ -191,7 +191,7 @@ const MessagerieMain = () => {
     axios
       .put(`${BackendUrl}/lecturUserMessage`, { userKey: userE.id })
       .then((resp) => {
-        console.log(resp);
+        // console.log(resp);
       })
       .catch((erro) => {
         console.log(erro);
@@ -202,7 +202,7 @@ const MessagerieMain = () => {
       conv.id === chat.id ? { ...conv, nonLu: 0 } : conv
     );
     setConversations(updatedConversations);
-    console.log(updatedConversations);
+    // console.log(updatedConversations);
   };
 
   const MessageStatus = ({ status }) => {
