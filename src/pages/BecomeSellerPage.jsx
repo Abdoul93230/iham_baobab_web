@@ -47,7 +47,7 @@ const BecomeSellerPage = () => {
 
   const handleSellerPortal = () => {
     // Redirection vers le portail des vendeurs
-    window.location.href = "https://seller.notreplateforme.com/inscription";
+    window.location.href = "https://habou227-seller.onrender.com";
   };
 
   return (
