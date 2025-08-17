@@ -47,7 +47,7 @@ const DetailHomme = ({ setCartCount, paniernbr }) => {
   const DATA_Categories = useSelector((state) => state.products.categories);
   const DATA_Commentes = useSelector(
     (state) => state.products.products_Commentes
-  );
+  )?.data;
   const DATA_Products_pubs = useSelector(
     (state) => state.products.products_Pubs
   );
@@ -69,9 +69,10 @@ const DetailHomme = ({ setCartCount, paniernbr }) => {
   const typeesInCategory = DATA_Types?.filter(
     (type) => type.clefCategories === ClefCate?._id
   );
+// console.log({DATA_Commentes});
 
   const filterComments =
-    DATA_Commentes.filter((comments) =>
+    DATA_Commentes?.filter((comments) =>
       typeesInCategory.some((type) => type._id === comments.clefType)
     ) || [];
 
