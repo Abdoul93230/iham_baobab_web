@@ -1,0 +1,1 @@
+self.__NEXT_FONT_MANIFEST='{"pages":{"/produit/[id]":[]},"app":{},"appUsingSizeAdjust":false,"pagesUsingSizeAdjust":false}';

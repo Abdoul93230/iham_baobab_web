@@ -1,70 +1,176 @@
-# Getting Started with Create React App
+# iham_baobab_web - E-commerce Platform
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project has been **migrated from Create React App to Next.js** to improve performance, SEO, and development experience.
 
-## Available Scripts
+## 🚀 Next.js Migration
 
-In the project directory, you can run:
+This application is now powered by [Next.js](https://nextjs.org/), providing:
 
-### `npm start`
+- **Server-Side Rendering (SSR)** for better SEO and performance
+- **Static Site Generation (SSG)** for faster page loads
+- **Automatic code splitting** and optimizations
+- **Built-in API routes** for backend functionality
+- **Enhanced image optimization**
+- **Improved development experience**
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 📁 Project Structure
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```
+├── pages/                 # Next.js pages (file-based routing)
+│   ├── _app.js            # App wrapper with Redux Provider
+│   ├── _document.js       # HTML document structure
+│   ├── index.js           # Home page (/)
+│   ├── connexion.js       # Login page (/connexion)
+│   ├── inscription.js     # Registration page (/inscription)
+│   ├── compte.js          # Account page (/compte)
+│   ├── panier.js          # Cart page (/panier)
+│   ├── produit/[id].js    # Product detail page (/produit/[id])
+│   ├── categorie/[...params].js # Category pages
+│   └── api/               # API routes
+├── src/                   # Legacy React components (being migrated)
+│   ├── components/        # Reusable components
+│   ├── pages/             # Original React pages
+│   ├── redux/             # Redux store and actions
+│   └── Images/            # Static images
+├── public/                # Static assets
+├── styles/                # Global styles
+└── middleware.js          # Next.js middleware for authentication
+```
 
-### `npm test`
+## 🛠 Available Scripts
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Development
+```bash
+npm run dev          # Start Next.js development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+```
 
-### `npm run build`
+### Legacy (React) Scripts
+```bash
+npm run legacy-start # Start legacy React development server
+npm run legacy-build # Build legacy React app
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🔧 Configuration
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Environment Variables
+Create a `.env.local` file with:
+```env
+REACT_APP_Backend_Url=your_backend_url
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Next.js Configuration
+The project is configured in `next.config.js` with:
+- Automatic redirects from old React Router paths
+- Environment variable mapping
+- Image optimization settings
 
-### `npm run eject`
+## 📄 Key Pages
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+| Route | Description | Features |
+|-------|-------------|----------|
+| `/` | Home page | SSR, SEO optimized |
+| `/produit/[id]` | Product details | SSR with dynamic meta tags |
+| `/connexion` | User login | Client-side authentication |
+| `/inscription` | User registration | Form validation |
+| `/compte` | User account | Protected route |
+| `/panier` | Shopping cart | Real-time updates |
+| `/categorie/[...params]` | Category pages | Dynamic routing |
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 🔐 Authentication
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+The application includes:
+- **Middleware-based route protection**
+- **JWT token verification**
+- **Automatic redirects for unauthorized access**
+- **Session management with localStorage**
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 🎨 Styling
 
-## Learn More
+- **Tailwind CSS** for utility-first styling
+- **Bootstrap** for component styling
+- **Custom CSS** for specific components
+- **Responsive design** for mobile and desktop
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 📱 Features
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- **E-commerce functionality** (products, cart, orders)
+- **User authentication** and account management
+- **Real-time messaging** with Socket.io
+- **Product search** and filtering
+- **Category browsing**
+- **Mobile-responsive design**
+- **SEO optimization**
 
-### Code Splitting
+## 🚀 Deployment
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+The application can be deployed to:
+- **Vercel** (recommended for Next.js)
+- **Netlify**
+- **Any Node.js hosting platform**
 
-### Analyzing the Bundle Size
+Build command: `npm run build`
+Start command: `npm start`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 🔄 Migration Status
 
-### Making a Progressive Web App
+✅ **Completed**
+- Next.js setup and configuration
+- Core page migrations
+- SSR implementation
+- Authentication flow
+- Dynamic routing
+- Build optimization
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+🔄 **In Progress**
+- Complete component migration
+- Image optimization with Next.js Image
+- API route implementation
+- Performance optimizations
 
-### Advanced Configuration
+## 🧪 Development
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd iham_baobab_web
+   ```
 
-### Deployment
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   # Edit .env.local with your configuration
+   ```
 
-### `npm run build` fails to minify
+4. **Start development server**
+   ```bash
+   npm run dev
+   ```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+5. **Open [http://localhost:3000](http://localhost:3000)**
+
+## 📚 Learn More
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [React Documentation](https://reactjs.org/)
+- [Tailwind CSS](https://tailwindcss.com/docs)
+- [Redux Toolkit](https://redux-toolkit.js.org/)
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project is proprietary software. All rights reserved.
