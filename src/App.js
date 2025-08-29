@@ -301,6 +301,17 @@ function App() {
                 }
               />
               <Route
+                path="/Commande annulée/:id"
+                element={
+                  acces === "oui" ? (
+                    <SuiviCommand acces={acces} paniernbr={produits} />
+                  ) : (
+                    <Connexion chg={changeA} />
+                  )
+                }
+              />
+              
+              <Route
                 path="/NotificationHeader"
                 element={
                   acces === "oui" ? (

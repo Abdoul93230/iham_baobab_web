@@ -49,7 +49,7 @@ function ProduitDetailMain({ panierchg }) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedSizeImage, setSelectedSizeImage] = useState(null);
-  const [quantity, setQuantity] = useState(0);
+  const [quantity, setQuantity] = useState(1);
   const [liked, setLiked] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalOpen1, setIsModalOpen1] = useState(false);
@@ -290,8 +290,35 @@ function ProduitDetailMain({ panierchg }) {
     setZoomLevel((prev) => Math.max(prev / 1.5, 1));
   };
 
-  const decreaseQuantity = () => setQuantity((prev) => prev - 1);
-  const increaseQuantity = () => setQuantity((prev) => prev + 1);
+  const increaseQuantity = () => {
+    const availableStock = getAvailableStock();
+    const existingProducts = JSON.parse(localStorage.getItem("panier")) || [];
+    const existingProduct = existingProducts.find((p) => {
+      if (!produit.variants || produit.variants.length === 0) {
+        return p?._id === produit?._id;
+      }
+      return (
+        p?._id === produit?._id &&
+        p.colors[0] === selectedVariant?.color &&
+        p.sizes[0] === selectedSize
+      );
+    });
+
+    const currentCartQuantity = existingProduct ? existingProduct.quantity : 0;
+    const maxAllowed = availableStock - currentCartQuantity;
+
+    if (quantity < maxAllowed) {
+      setQuantity(prev => prev + 1);
+    } else {
+      handleWarning(`Maximum ${maxAllowed} produits disponibles`);
+    }
+  };
+
+  const decreaseQuantity = () => {
+    if (quantity > 1) {
+      setQuantity(prev => prev - 1);
+    }
+  };
 
   // Pour les like
   const handleLike = () => {
@@ -373,9 +400,8 @@ function ProduitDetailMain({ panierchg }) {
         {[...Array(5)].map((_, index) => (
           <FaStar
             key={index}
-            className={`w-6 h-6 cursor-pointer ${
-              index < rating ? "text-[#30A08B]" : "text-gray-400"
-            }`} // Utilisation de #30A08B pour les étoiles remplies
+            className={`w-6 h-6 cursor-pointer ${index < rating ? "text-[#30A08B]" : "text-gray-400"
+              }`} // Utilisation de #30A08B pour les étoiles remplies
             onClick={() => setRating(index + 1)}
           />
         ))}
@@ -392,7 +418,7 @@ function ProduitDetailMain({ panierchg }) {
       .get(`${BackendUrl}/getAllCommenteProduitById/${params.id}`)
       .then((coments) => {
         setAllCommente(coments.data.data);
-        
+
       })
       .catch((error) => {
         console.log(error);
@@ -514,6 +540,22 @@ function ProduitDetailMain({ panierchg }) {
     }))
   );
 
+
+  const getAvailableStock = () => {
+    // Si le produit a des variants
+    if (produit?.variants && produit.variants.length > 0) {
+      // Si une variante est sélectionnée, retourner son stock
+      if (selectedVariant) {
+        return selectedVariant.stock || 0;
+      }
+      // Si aucune variante sélectionnée, retourner le stock total des variants
+      return produit.variants.reduce((total, variant) => total + (variant.stock || 0), 0);
+    }
+
+    // Si pas de variants, utiliser la quantité générale du produit
+    return produit?.quantite || 0;
+  };
+
   const addToCart = () => {
     if (!westAfricanCountries.includes(pays?.toLowerCase())) {
       handleWarning(`ce Produit ne peut etre expedier au ${pays}`);
@@ -528,17 +570,50 @@ function ProduitDetailMain({ panierchg }) {
     }
 
     // Vérification des tailles
+    const hasMultipleSizes1 = produit?.variants?.some(
+      (variant) => variant.sizes && variant.sizes.length >= 1
+    );
     const hasMultipleSizes = produit?.variants?.some(
       (variant) => variant.sizes && variant.sizes.length >= 2
     );
 
-    if (hasMultipleSizes && !selectedSize) {
+    if (hasMultipleSizes1 && !selectedSize) {
+      handleWarning(`Veuillez selectionner la taille disponible`);
+      return;
+    } else if (hasMultipleSizes && !selectedSize) {
       handleWarning(`Veuillez choisir une taille parmi les disponibles`);
       return;
     }
 
-    // Récupérer les produits existants dans le panier
+    // NOUVELLE VALIDATION DU STOCK
+    const availableStock = getAvailableStock();
+    if (availableStock <= 0) {
+      handleWarning("Ce produit est en rupture de stock");
+      return;
+    }
+
+    // Vérifier le stock existant dans le panier
     const existingProducts = JSON.parse(localStorage.getItem("panier")) || [];
+    const existingProduct = existingProducts.find((p) => {
+      if (!produit.variants || produit.variants.length === 0) {
+        return p?._id === produit?._id;
+      }
+      return (
+        p?._id === produit?._id &&
+        p.colors[0] === selectedVariant?.color &&
+        p.sizes[0] === selectedSize
+      );
+    });
+
+    const currentCartQuantity = existingProduct ? existingProduct.quantity : 0;
+    const totalRequestedQuantity = currentCartQuantity + quantity;
+
+    if (totalRequestedQuantity > availableStock) {
+      handleWarning(
+        `Stock insuffisant. Disponible: ${availableStock}, Dans le panier: ${currentCartQuantity}`
+      );
+      return;
+    }
 
     // Vérifier si le produit existe déjà dans le panier
     const existingProductIndex = existingProducts.findIndex((p) => {
@@ -558,12 +633,13 @@ function ProduitDetailMain({ panierchg }) {
     if (existingProductIndex !== -1) {
       // Produit existant : incrémenter la quantité
       const updatedProducts = existingProducts.map((p, index) =>
-        index === existingProductIndex ? { ...p, quantity: p.quantity + 1 } : p
+        index === existingProductIndex ? { ...p, quantity: p.quantity + quantity } : p
       );
 
       localStorage.setItem("panier", JSON.stringify(updatedProducts));
       handleSuccess(
-        "La quantité du produit a été incrémentée dans le panier !"
+        // "La quantité du produit a été incrémentée dans le panier !"
+        `${quantity} produit(s) ajouté(s) au panier !`
       );
     } else {
       // Nouveau produit à ajouter
@@ -610,17 +686,51 @@ function ProduitDetailMain({ panierchg }) {
     }
 
     // Vérification des tailles
+    const hasMultipleSizes1 = produit?.variants?.some(
+      (variant) => variant.sizes && variant.sizes.length >= 1
+    );
     const hasMultipleSizes = produit?.variants?.some(
       (variant) => variant.sizes && variant.sizes.length >= 2
     );
 
-    if (hasMultipleSizes && !selectedSize) {
+    if (hasMultipleSizes1 && !selectedSize) {
+      handleWarning(`Veuillez selectionner la taille disponible`);
+      return;
+    } else if (hasMultipleSizes && !selectedSize) {
       handleWarning(`Veuillez choisir une taille parmi les disponibles`);
       return;
     }
 
-    // Récupérer les produits existants dans le panier
+    // NOUVELLE VALIDATION DU STOCK
+    const availableStock = getAvailableStock();
+    if (availableStock <= 0) {
+      handleWarning("Ce produit est en rupture de stock");
+      return;
+    }
+
+    // Vérifier le stock existant dans le panier
     const existingProducts = JSON.parse(localStorage.getItem("panier")) || [];
+    const existingProduct = existingProducts.find((p) => {
+      if (!produit.variants || produit.variants.length === 0) {
+        return p?._id === produit?._id;
+      }
+      return (
+        p?._id === produit?._id &&
+        p.colors[0] === selectedVariant?.color &&
+        p.sizes[0] === selectedSize
+      );
+    });
+
+    const currentCartQuantity = existingProduct ? existingProduct.quantity : 0;
+    const totalRequestedQuantity = currentCartQuantity + quantity;
+
+    if (totalRequestedQuantity > availableStock) {
+      handleWarning(
+        `Stock insuffisant. Disponible: ${availableStock}, Dans le panier: ${currentCartQuantity}`
+      );
+      return;
+    }
+
 
     // Vérifier si le produit existe déjà dans le panier
     const existingProductIndex = existingProducts.findIndex((p) => {
@@ -640,12 +750,13 @@ function ProduitDetailMain({ panierchg }) {
     if (existingProductIndex !== -1) {
       // Produit existant : incrémenter la quantité
       const updatedProducts = existingProducts.map((p, index) =>
-        index === existingProductIndex ? { ...p, quantity: p.quantity + 1 } : p
+        index === existingProductIndex ? { ...p, quantity: p.quantity + quantity } : p
       );
 
       localStorage.setItem("panier", JSON.stringify(updatedProducts));
       handleSuccess(
-        "La quantité du produit a été incrémentée dans le panier !"
+        // "La quantité du produit a été incrémentée dans le panier !"
+        `${quantity} produit(s) ajouté(s) au panier !`
       );
     } else {
       // Nouveau produit à ajouter
@@ -775,9 +886,8 @@ function ProduitDetailMain({ panierchg }) {
       typeof produit?.description === "string"
         ? stripHtml(produit?.description)
         : "";
-    return `${produit?.name} - ${cleanText?.slice(0, 150)}... Prix: ${
-      produit?.prixf || produit?.prix
-    } XOF. Livraison disponible.`;
+    return `${produit?.name} - ${cleanText?.slice(0, 150)}... Prix: ${produit?.prixf || produit?.prix
+      } XOF. Livraison disponible.`;
   };
 
   // Créer des mots-clés SEO pertinents
@@ -905,11 +1015,10 @@ function ProduitDetailMain({ panierchg }) {
             {getAllImages().map((image, index) => (
               <div
                 key={index}
-                className={`w-[80px] h-[80px] cursor-pointer rounded flex-shrink-0 overflow-hidden transition-all duration-200 ${
-                  activeImageIndex === index
+                className={`w-[80px] h-[80px] cursor-pointer rounded flex-shrink-0 overflow-hidden transition-all duration-200 ${activeImageIndex === index
                     ? "border-2 border-solid border-[#30A08B]"
                     : "border border-gray-300"
-                }`}
+                  }`}
                 onMouseEnter={() => setActiveImageIndex(index)}
                 onClick={() => setActiveImageIndex(index)}
               >
@@ -1010,6 +1119,15 @@ function ProduitDetailMain({ panierchg }) {
                 ) : (
                   <></>
                 )}
+                <div className="my-2">
+                  <p className={`text-sm ${getAvailableStock() > 5 ? 'text-green-600' :
+                    getAvailableStock() > 0 ? 'text-orange-600' : 'text-red-600'}`}>
+                    {getAvailableStock() > 0
+                      ? `Stock disponible: ${getAvailableStock()}`
+                      : "Rupture de stock"
+                    }
+                  </p>
+                </div>
               </div>
 
               {produit?.variants.length > 0 ? (
@@ -1025,11 +1143,10 @@ function ProduitDetailMain({ panierchg }) {
                     {produit?.variants.map((variant, index) => (
                       <div
                         className={`w-[70px] h-[70px] rounded-md overflow-hidden transition-all duration-200 
-                      ${
-                        selectedVariant?.color === variant?.color
-                          ? "border-2 border-solid border-[#30A08B]"
-                          : "border border-gray-300"
-                      }`}
+                      ${selectedVariant?.color === variant?.color
+                            ? "border-2 border-solid border-[#30A08B]"
+                            : "border border-gray-300"
+                          }`}
                         key={index}
                       >
                         <img
@@ -1059,11 +1176,10 @@ function ProduitDetailMain({ panierchg }) {
                       <div
                         key={index}
                         className={`w-24 h-[46px] flex items-center justify-center cursor-pointer rounded-md transition-all duration-200 
-                      ${
-                        selectedSize === size
-                          ? "border-2 border-[#30A08B]"
-                          : "border border-gray-300"
-                      }`}
+                      ${selectedSize === size
+                            ? "border-2 border-[#30A08B]"
+                            : "border border-gray-300"
+                          }`}
                         onClick={() => setSelectedSize(size)}
                       >
                         <p className="text-sm font-bold">{`${size}`}</p>
@@ -1173,9 +1289,8 @@ function ProduitDetailMain({ panierchg }) {
                   src={getAllImages()[activeImageIndex]}
                   alt="Zoomed Image"
                   onMouseDown={handleMouseDown}
-                  className={`transition-transform duration-300 cursor-${
-                    zoomLevel > 1 ? "move" : "zoom-in"
-                  }`}
+                  className={`transition-transform duration-300 cursor-${zoomLevel > 1 ? "move" : "zoom-in"
+                    }`}
                   style={{
                     transform: `scale(${zoomLevel}) translate(${imagePosition.x}px, ${imagePosition.y}px)`,
                     maxWidth: "100%",
@@ -1281,11 +1396,16 @@ function ProduitDetailMain({ panierchg }) {
             </div>
 
             <div className="flex flex-col md:flex-row md:space-x-2">
+
               <button
                 onClick={addToCart2}
-                className="w-full bg-[#30A08B] hover:bg-[#228B73] text-white py-3 rounded-md mb-2 md:mb-0"
+                disabled={getAvailableStock() <= 0}
+                className={`w-full py-3 rounded-md mb-2 md:mb-0 ${getAvailableStock() <= 0
+                    ? 'bg-gray-400 cursor-not-allowed text-gray-600'
+                    : 'bg-[#30A08B] hover:bg-[#228B73] text-white'
+                  }`}
               >
-                Acheter maintenant
+                {getAvailableStock() <= 0 ? "Rupture de stock" : "Acheter maintenant"}
               </button>
               <button
                 onClick={addToCart}
@@ -1300,7 +1420,7 @@ function ProduitDetailMain({ panierchg }) {
               <button
                 className="p-2"
                 onClick={() =>
-                  navigation(`/Boutique/${produit?.Clefournisseur}`)
+                  navigation(`/Boutique/${produit?.Clefournisseur?._id}`)
                 }
               >
                 <Store className="w-5 h-5" />

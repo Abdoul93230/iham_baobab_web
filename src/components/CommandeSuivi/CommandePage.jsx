@@ -9,6 +9,7 @@ import {
   DollarSign,
   Box,
   AlertCircle,
+  XCircle,
 } from "lucide-react";
 import axios from "axios";
 
@@ -137,18 +138,46 @@ const OrderCard = ({ order, onClick, isHovered, onHover, onLeave }) => {
   );
 };
 
-const EmptyState = ({ activeTab }) => (
-  <div className="flex flex-col items-center justify-center py-16">
-    <Package className="w-16 h-16 text-gray-300 mb-4" />
-    <h3 className="text-lg font-medium text-gray-900 mb-1">
-      Aucune commande {activeTab === "inProgress" ? "en cours" : "reçue"}
-    </h3>
-    <p className="text-gray-500">
-      Les commandes {activeTab === "inProgress" ? "en cours" : "reçues"}{" "}
-      apparaîtront ici
-    </p>
-  </div>
-);
+const EmptyState = ({ activeTab }) => {
+  const getEmptyStateText = () => {
+    switch (activeTab) {
+      case "inProgress":
+        return {
+          title: "Aucune commande en cours",
+          subtitle: "Les commandes en cours apparaîtront ici"
+        };
+      case "completed":
+        return {
+          title: "Aucune commande reçue",
+          subtitle: "Les commandes reçues apparaîtront ici"
+        };
+      case "cancelled":
+        return {
+          title: "Aucune commande annulée",
+          subtitle: "Les commandes annulées apparaîtront ici"
+        };
+      default:
+        return {
+          title: "Aucune commande",
+          subtitle: "Les commandes apparaîtront ici"
+        };
+    }
+  };
+
+  const { title, subtitle } = getEmptyStateText();
+
+  return (
+    <div className="flex flex-col items-center justify-center py-16">
+      <Package className="w-16 h-16 text-gray-300 mb-4" />
+      <h3 className="text-lg font-medium text-gray-900 mb-1">
+        {title}
+      </h3>
+      <p className="text-gray-500">
+        {subtitle}
+      </p>
+    </div>
+  );
+};
 
 const CommandePage = () => {
   const navigation = useNavigate();
@@ -181,23 +210,51 @@ const CommandePage = () => {
   }, []);
 
   const getOrderStatus = (order) => {
+    // Vérifier d'abord si la commande est annulée
+    if (order.statusLivraison === "annulé") {
+      return "cancelled";
+    }
+    
+    // Ensuite vérifier si elle est en cours
     if (
       order.statusLivraison === "en cours" ||
       order.statusPayment === "en cours"
     ) {
       return "inProgress";
     }
-    return "rejected";
+    
+    // Sinon, c'est une commande terminée/reçue
+    return "completed";
   };
 
   const tabs = [
     { id: "inProgress", label: "En cours", icon: Clock },
-    { id: "rejected", label: "Reçues", icon: CheckCircle },
+    { id: "completed", label: "Reçues", icon: CheckCircle },
+    { id: "cancelled", label: "Annulées", icon: XCircle },
   ];
 
   const filteredOrders = orders.filter(
     (order) => getOrderStatus(order) === activeTab
   );
+
+  const handleOrderClick = (order) => {
+    const status = getOrderStatus(order);
+    switch (status) {
+      case "inProgress":
+        navigation(`/Suivre la commande/${order._id}`);
+        break;
+      case "completed":
+        navigation(`/Commande réisus/${order._id}`);
+        break;
+      case "cancelled":
+        // Vous pouvez créer une route spécifique pour les commandes annulées
+        // ou réutiliser une route existante
+        navigation(`/Commande annulée/${order._id}`);
+        break;
+      default:
+        break;
+    }
+  };
 
   if (loading) {
     return (
@@ -249,13 +306,7 @@ const CommandePage = () => {
               <OrderCard
                 key={order._id}
                 order={order}
-                onClick={() => {
-                  navigation(
-                    getOrderStatus(order) === "inProgress"
-                      ? `/Suivre la commande/${order._id}`
-                      : `/Commande réisus/${order._id}`
-                  );
-                }}
+                onClick={() => handleOrderClick(order)}
                 isHovered={hoveredOrder === order._id}
                 onHover={() => setHoveredOrder(order._id)}
                 onLeave={() => setHoveredOrder(null)}

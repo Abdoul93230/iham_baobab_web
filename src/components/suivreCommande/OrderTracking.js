@@ -20,7 +20,8 @@ const OrderTracking = ({ order }) => {
             ? "payé à la livraison"
             : order.statusPayment !== "échec" &&
               order.statusPayment !== "en cours" &&
-              order.statusPayment !== "en atente"
+              order.statusPayment !== "en atente"&&
+              order.statusPayment !== "en_attente"
             ? "Paiement validé"
             : order.statusPayment === "échec"
             ? "échec du paiement"

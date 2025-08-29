@@ -16,6 +16,9 @@ import {
   Check,
   CheckCheck,
   CreditCard,
+  XCircle,
+  RefreshCw,
+  ShoppingCart,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { format } from "date-fns";
@@ -39,6 +42,7 @@ export default function CommandeSuivi() {
   const [order, setOrder] = useState(null);
   const [shippingAddress, setShippingAddress] = useState(null);
   const [promoCode, setPromoCode] = useState(null);
+  const [reorderLoading, setReorderLoading] = useState(false);
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
@@ -95,6 +99,73 @@ export default function CommandeSuivi() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Fonction pour déterminer le type de commande
+  const getOrderType = () => {
+    if (!order) return "unknown";
+
+    if (order.statusLivraison === "annulé") {
+      return "cancelled";
+    }
+
+    if (order.statusLivraison === "en cours" || order.statusPayment === "en cours") {
+      return "inProgress";
+    }
+
+    return "completed";
+  };
+
+  // Fonction pour vérifier si la commande peut être relancée
+  const canReorder = () => {
+    const orderType = getOrderType();
+    return (
+      orderType === "cancelled" ||
+      order?.statusPayment === "échec" ||
+      (order?.statusPayment !== "payé à la livraison" && order?.statusPayment !== "payé")
+    );
+  };
+
+  // Fonction pour relancer la commande
+  const handleReorder = async () => {
+    setReorderLoading(true);
+    try {
+      // Ici, vous pouvez soit rediriger vers le panier avec les mêmes produits
+      // soit créer une nouvelle commande avec les mêmes détails
+
+      // Option 1: Rediriger vers le panier avec les produits
+      if (order?.prod && order.prod.length > 0) {
+        // Ajouter les produits au localStorage pour le panier
+        const cartItems = order.prod.map(product => ({
+          ...product,
+          quantity: order.nbrProduits.find(item =>
+            item.produit === product._id
+          )?.quantite || 1,
+          selectedSizes: order.nbrProduits.find(item =>
+            item.produit === product._id
+          )?.tailles || [],
+          selectedColors: order.nbrProduits.find(item =>
+            item.produit === product._id
+          )?.couleurs || []
+        }));
+
+        localStorage.setItem('reorderItems', JSON.stringify(cartItems));
+        navigate('/panier?reorder=true');
+      }
+
+      // Option 2: Créer une nouvelle commande directement
+      // const response = await axios.post(`${BackendUrl}/reorder`, {
+      //   originalOrderId: order._id,
+      //   userId: JSON.parse(localStorage.getItem("userEcomme")).id
+      // });
+      // navigate(`/Suivre la commande/${response.data.newOrderId}`);
+
+    } catch (err) {
+      console.error('Erreur lors de la relance:', err);
+      alert('Erreur lors de la relance de la commande');
+    } finally {
+      setReorderLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -155,9 +226,8 @@ export default function CommandeSuivi() {
 
   const ChatMessage = ({ message }) => (
     <div
-      className={`flex ${
-        message.isDeliverer ? "justify-start" : "justify-end"
-      } mb-4`}
+      className={`flex ${message.isDeliverer ? "justify-start" : "justify-end"
+        } mb-4`}
     >
       <div className={`max-w-[100%] sm:max-w-[70%] bg-gray-100 rounded-lg p-3`}>
         <div className="flex items-start gap-2">
@@ -168,9 +238,8 @@ export default function CommandeSuivi() {
           )}
           <div className="flex-1">
             <p
-              className={`text-sm font-medium ${
-                message.isDeliverer ? "text-gray-800" : "text-teal-800"
-              }`}
+              className={`text-sm font-medium ${message.isDeliverer ? "text-gray-800" : "text-teal-800"
+                }`}
             >
               {message.isDeliverer ? "Livreur" : "Vous"}
             </p>
@@ -197,6 +266,8 @@ export default function CommandeSuivi() {
     }).format(price);
   };
 
+  const orderType = getOrderType();
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-2">
@@ -208,55 +279,80 @@ export default function CommandeSuivi() {
           Retour aux commandes
         </button>
 
+        {/* Affichage conditionnel des onglets selon le type de commande */}
         <div className="flex mb-4 border-b">
           <button
-            className={`px-4 py-2 ${
-              activeTab === "details"
+            className={`px-4 py-2 ${activeTab === "details"
                 ? "border-b-2 border-teal text-teal"
                 : "text-gray-600"
-            }`}
+              }`}
             onClick={() => setActiveTab("details")}
           >
             Détails de la commande
           </button>
-          <button
-            className={`px-4 py-2 ${
-              activeTab === "map"
-                ? "border-b-2 border-teal text-teal"
-                : "text-gray-600"
-            }`}
-            onClick={() => setActiveTab("map")}
-          >
-            Suivre sur la carte
-          </button>
+
+          {/* Masquer l'onglet carte pour les commandes annulées */}
+          {orderType !== "cancelled" && (
+            <button
+              className={`px-4 py-2 ${activeTab === "map"
+                  ? "border-b-2 border-teal text-teal"
+                  : "text-gray-600"
+                }`}
+              onClick={() => setActiveTab("map")}
+            >
+              Suivre sur la carte
+            </button>
+          )}
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-            {/* {order?.statusPayment === "échec" ? (
-              <span className="px-4 py-1 text-nowrap bg-teal text-white rounded-full text-xs md:text-sm">
-                Faire le payment ?
-              </span>
-            ) : (
-              <></>
-            )} */}
-            {(order?.statusPayment === "échec" ||
-              (order?.statusPayment !== "payé à la livraison" &&
-                order?.statusPayment !== "payé")) && (
-              <OrderPaymentHandler
-                panier={order?.prod || null}
-                pendingOrder={order?.reference || null}
-                id={order?._id || null}
-              />
-            )}
+
+            {/* Section des actions selon le type de commande */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-4 md:mb-0">
+              {/* Gestion des paiements échoués */}
+              {(order?.statusPayment === "échec" ||
+                (order?.statusPayment !== "payé à la livraison" &&
+                  order?.statusPayment !== "payé")) ? (
+                <OrderPaymentHandler
+                  panier={order?.prod || null}
+                  pendingOrder={order?.reference || null}
+                  id={order?._id || null}
+                  setReorderLoading={setReorderLoading}
+                  isReOrder={false}
+                  order={order}
+                />
+              ) : canReorder() ? (
+                <OrderPaymentHandler
+                  panier={order?.prod || null}
+                  pendingOrder={order?.reference || null}
+                  id={order?._id || null}
+                  reorderLoading={reorderLoading}
+                  setReorderLoading={setReorderLoading}
+                  isReOrder={true}
+                  order={order}
+                />
+              ) : null}
+            </div>
+
 
             <div>
               <div className="flex items-center mb-2">
                 <h1 className="text-xl md:text-2xl font-bold text-gray-800 mr-4">
                   Commande #{order?._id?.slice(0, 7) || "N/A"} ...
                 </h1>
-                <span className="px-4 py-1 text-nowrap bg-teal text-white rounded-full text-xs md:text-sm">
-                  {order.etatTraitement}
+                <span
+                  className={`px-4 py-1 text-nowrap text-white rounded-full text-xs md:text-sm ${orderType === "cancelled"
+                      ? "bg-red-500"
+                      : orderType === "completed"
+                        ? "bg-green-500"
+                        : "bg-teal-500"
+                    }`}
+                >
+                  {orderType === "cancelled" && <XCircle className="w-3 h-3 inline mr-1" />}
+                  {orderType === "completed" && <CheckCircle className="w-3 h-3 inline mr-1" />}
+                  {orderType === "inProgress" && <Clock className="w-3 h-3 inline mr-1" />}  
+                  { order?.statusPayment === "échec" ? order.etatTraitement:order.statusLivraison === "annulé" ? order.statusLivraison : null}
                 </span>
               </div>
               <div className="text-sm text-gray-600">
@@ -267,11 +363,26 @@ export default function CommandeSuivi() {
                 </div>
                 <div className="flex items-center">
                   <Clock className="w-4 h-4 mr-1" />
-                  Status: {order.statusLivraison}
+                  Status: {(order.statusPayment==="en atente" || order.statusPayment==="en_attente" || order.statusPayment==="en attente") ? "En attente du paiement" : order.statusLivraison}
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Alerte pour commandes annulées */}
+          {(order?.statusPayment !== "échec" && orderType === "cancelled") && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center gap-3">
+                <XCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                <div>
+                  <h3 className="font-medium text-red-800">Commande annulée</h3>
+                  <p className="text-red-600 text-sm">
+                    Cette commande a été annulée. Vous pouvez la relancer en cliquant sur le bouton "Relancer la commande".
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {activeTab === "details" && (
             <>
@@ -284,7 +395,7 @@ export default function CommandeSuivi() {
                     <>
                       <div className="bg-white rounded-lg p-4 shadow">
                         <p className="font-medium">Nom du client</p>
-                        <p className="text-gray-600">{shippingAddress.name}</p>
+                        <p className="text-gray-600">{shippingAddress.name || shippingAddress.customerName}</p>
                       </div>
                       <div className="bg-white rounded-lg p-4 shadow">
                         <p className="font-medium">Email</p>
@@ -320,6 +431,7 @@ export default function CommandeSuivi() {
                   )}
                 </div>
               </div>
+
               <OrderedItems
                 items={order?.prod ? order : null}
                 totalPrice={order.prix}
@@ -333,77 +445,293 @@ export default function CommandeSuivi() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <p className="font-medium">Status du paiement</p>
-                      <p className="text-gray-600">{order.statusPayment}</p>
+                      <p className={`${order.statusPayment === "échec"
+                          ? "text-red-600"
+                          : order.statusPayment === "payé" || order.statusPayment === "payé à la livraison"
+                            ? "text-green-600"
+                            : "text-gray-600"
+                        }`}>
+                        {order.statusPayment}
+                      </p>
                     </div>
                     <div>
                       <p className="font-medium">Status de la livraison</p>
-                      <p className="text-gray-600">{order.statusLivraison}</p>
+                      <p className={`${order.statusLivraison === "annulé"
+                          ? "text-red-600"
+                          : order.statusLivraison === "livré"
+                            ? "text-green-600"
+                            : "text-gray-600"
+                        }`}>
+                        {order.statusLivraison}
+                      </p>
                     </div>
                     <div>
                       <p className="font-medium">État du traitement</p>
-                      <p className="text-gray-600">{order.etatTraitement}</p>
+                      <p className="text-gray-600">{order.statusLivraison === "annulé" ? order.statusLivraison : order.etatTraitement}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Référence</p>
+                      <p className="text-gray-600">{order.reference}</p>
                     </div>
                   </div>
                 </div>
               </div>
+
+              {order?.codePro && promoCode && (
+                <div className="mb-8">
+                  <h2 className="font-semibold text-lg mb-4">Code promo appliqué</h2>
+                  <div className="bg-green-50 rounded-lg p-4">
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="h-5 w-5 text-green-600" />
+                      <span className="text-green-800 font-medium">
+                        Réduction appliquée : {formatPrice(promoCode.prixReduiction)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           )}
 
-          {/* {activeTab === "map" && (
-            <div className="h-96 bg-gray-100 rounded-lg flex items-center justify-center">
-              <p className="text-gray-500">Carte en cours de développement</p>
-            </div>
-          )} */}
-
-          {activeTab === "map" && (
+          {/* Afficher le suivi de carte seulement pour les commandes non annulées */}
+          {activeTab === "map" && orderType !== "cancelled" && (
             <div className="bg-white rounded-lg">
               <OrderTracking order={order} />
             </div>
           )}
+
+          {/* Section de contact avec le livreur (masquée pour commandes annulées) */}
+          {/* {orderType !== "cancelled" && (
+            <div className="mt-8">
+              <h2 className="font-semibold text-lg mb-4">Contact livreur</h2>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button
+                  onClick={() => handleContact("phone")}
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                >
+                  <Phone className="w-4 h-4" />
+                  Appeler le livreur
+                </button>
+                <button
+                  onClick={() => handleContact("message")}
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Envoyer un message
+                </button>
+              </div>
+            </div>
+          )} */}
+
+          {/* Chat section pour les messages avec le livreur */}
+          {selectedContact === "message" && messages.length > 0 && (
+            <div className="mt-8 bg-gray-50 rounded-lg p-4">
+              <h2 className="font-semibold text-lg mb-4">Conversation avec le livreur</h2>
+              <div className="max-h-96 overflow-y-auto mb-4">
+                {messages.map((message) => (
+                  <ChatMessage key={message.id} message={message} />
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Formulaire d'envoi de message */}
+              <form onSubmit={handleSendMessage} className="flex gap-2">
+                <input
+                  type="text"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder="Tapez votre message..."
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                />
+                <button
+                  type="submit"
+                  disabled={!newMessage.trim()}
+                  className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* Informations supplémentaires pour commandes annulées */}
+          {orderType === "cancelled" && (
+            <div className="mt-8">
+              <h2 className="font-semibold text-lg mb-4">Raison de l'annulation</h2>
+              <div className="bg-red-50 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-red-800 font-medium">Commande annulée</p>
+                    <p className="text-red-600 text-sm mt-1">
+                      Cette commande a été annulée. Les raisons possibles incluent :
+                    </p>
+                    <ul className="text-red-600 text-sm mt-2 list-disc list-inside space-y-1">
+                      <li>Produit non disponible en stock</li>
+                      <li>Problème de livraison dans votre zone</li>
+                      <li>Annulation à la demande du client</li>
+                      <li>Problème de paiement</li>
+                    </ul>
+                    <div className="mt-4 p-3 bg-white rounded border border-red-200">
+                      <p className="text-red-800 text-sm font-medium">
+                        💡 Astuce : Vous pouvez relancer cette commande en cliquant sur le bouton "Relancer la commande" ci-dessus.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Historique des modifications de statut */}
+          <div className="mt-8">
+            <h2 className="font-semibold text-lg mb-4">Historique de la commande</h2>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-teal-600 rounded-full"></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">Commande passée</p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(order.date).toLocaleString("fr-FR")}
+                    </p>
+                  </div>
+                </div>
+
+                {order.dateValidation && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900">Commande validée</p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(order.dateValidation).toLocaleString("fr-FR")}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3">
+                  <div className={`w-2 h-2 rounded-full ${orderType === "cancelled"
+                      ? "bg-red-600"
+                      : orderType === "completed"
+                        ? "bg-green-600"
+                        : "bg-yellow-600"
+                    }`}></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">
+                      Statut actuel : {order.etatTraitement}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Livraison : {order.statusLivraison} | Paiement : {order.statusPayment}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Informations de facturation */}
+          <div className="mt-8">
+            <h2 className="font-semibold text-lg mb-4">Résumé financier</h2>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                 
+                  <span className="text-gray-600">Sous-total</span>
+                  <span className="font-medium">{formatPrice(order.prix - (order.reduction || 0))}</span>
+                </div>
+
+                {order.reduction && order.reduction > 0 && (
+                  <div className="flex justify-between items-center text-green-600">
+                    <span>Réduction</span>
+                    <span>-{formatPrice(order.reduction)}111</span>
+                  </div>
+                )}
+
+                {promoCode && (
+                  <div className="flex justify-between items-center text-green-600">
+                    <span>Code promo</span>
+                    <span>-{formatPrice(promoCode.prixReduiction)}</span>
+                  </div>
+                )}
+
+                <div className="border-t pt-3">
+                  <div className="flex justify-between items-center font-bold text-lg">
+                    <span>Total</span>
+                    <span>{formatPrice(order.prix)}</span>
+                  </div>
+                </div>
+
+                <div className="text-sm text-gray-500 mt-2">
+                  <p>Mode de paiement : {order.statusPayment}</p>
+                  <p>Référence : {order.reference}</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
+      {/* Modal pour contact et messages */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">
-              {selectedContact === "message"
-                ? "Envoyer un message"
-                : "Appeler le livreur"}
-            </h3>
-            {selectedContact === "message" && (
-              <textarea
-                className="w-full p-2 border rounded-lg mb-4"
-                rows="4"
-                placeholder="Votre message..."
-                value={modalMessage}
-                onChange={(e) => setModalMessage(e.target.value)}
-              />
-            )}
-            <div className="flex justify-end space-x-2">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">
+                {selectedContact === "message"
+                  ? "Envoyer un message au livreur"
+                  : "Contacter le livreur"}
+              </h3>
               <button
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
                 onClick={handleCloseModal}
+                className="text-gray-400 hover:text-gray-600"
               >
-                Annuler
+                <XCircle className="w-5 h-5" />
               </button>
-              {selectedContact === "message" && (
-                <button
-                  className="px-4 py-2 bg-teal text-white rounded-lg hover:bg-teal-dark"
-                  onClick={handleSendMessage}
-                >
-                  Envoyer
-                </button>
-              )}
             </div>
-            {order?.codePro && promoCode && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4 text-muted-foreground" />
-                  <span>
-                    Code promo appliqué :{" "}
-                    {formatPrice(promoCode.prixReduiction)} de réduction
-                  </span>
+
+            {selectedContact === "phone" && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                  <Phone className="w-5 h-5 text-blue-600" />
+                  <div>
+                    <p className="font-medium text-blue-800">Numéro du livreur</p>
+                    <p className="text-blue-600">+227 XX XX XX XX</p>
+                    <p className="text-xs text-blue-500 mt-1">
+                      Disponible de 8h à 20h
+                    </p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Cliquez sur le numéro pour appeler directement le livreur.
+                </p>
+              </div>
+            )}
+
+            {selectedContact === "message" && (
+              <div className="space-y-4">
+                <textarea
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  rows="4"
+                  placeholder="Tapez votre message au livreur..."
+                  value={modalMessage}
+                  onChange={(e) => setModalMessage(e.target.value)}
+                />
+                <div className="flex justify-end space-x-2">
+                  <button
+                    className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+                    onClick={handleCloseModal}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50 transition-colors duration-200"
+                    onClick={handleSendMessage}
+                    disabled={!modalMessage.trim()}
+                  >
+                    <Send className="w-4 h-4 inline mr-2" />
+                    Envoyer
+                  </button>
                 </div>
               </div>
             )}
